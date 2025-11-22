@@ -1,0 +1,35 @@
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #f0f2f5;
+}
+
+.login-box {
+  width: 300px;
+  margin: 100px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.sidebar {
+  width: 260px;
+  background: #222;
+  height: 100vh;
+  color: white;
+  padding: 20px;
+  position: fixed;
+}
+
+.sidebar a {
+  color: white;
+  display: block;
+  margin: 8px 0;
+  text-decoration: none;
+}
+
+.content {
+  margin-left: 280px;
+  padding: 30px;
+}
