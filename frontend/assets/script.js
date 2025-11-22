@@ -1,4 +1,4 @@
-const API = "https://SEU-BACKEND.onrender.com";
+const API = "https://datainsight-sst-suite.onrender.com";
 
 async function login() {
     let email = document.getElementById("email").value;
@@ -24,3 +24,4 @@ function logout() {
     localStorage.removeItem("token");
     window.location.href = "index.html";
 }
+
