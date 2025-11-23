@@ -1,11 +1,101 @@
-/* ====== RESET ====== */
+/* ========= GERAL ========= */
 body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, sans-serif;
     background: #eef1f5;
 }
 
-/* ====== SIDEBAR ====== */
+/* ========= LOGIN ========= */
+
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2f7;
+}
+
+.login-card {
+    width: 380px;
+    background: #ffffff;
+    border-radius: 26px;
+    padding: 32px 32px 40px;
+    box-shadow: 0 22px 55px rgba(15, 23, 42, 0.16);
+    text-align: center;
+}
+
+.login-logo {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.login-logo img {
+    width: 190px;
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.login-title {
+    margin: 4px 0 4px;
+    font-size: 20px;
+    color: #0f172a;
+}
+
+.login-subtitle {
+    margin: 0 0 20px;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.login-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    margin-top: 10px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+    background: #f9fafb;
+}
+
+.login-input:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+    background: #ffffff;
+}
+
+.login-button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 11px 0;
+    border-radius: 999px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    background: linear-gradient(90deg, #0f766e, #22c55e);
+    box-shadow: 0 12px 25px rgba(34, 197, 94, 0.45);
+    transition: 0.25s;
+}
+
+.login-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 32px rgba(34, 197, 94, 0.6);
+}
+
+.login-msg {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #b91c1c;
+}
+
+/* ========= SIDEBAR / DASHBOARD ========= */
+
 .sidebar {
     width: 260px;
     background: #0f172a;
@@ -63,7 +153,8 @@ body {
     background: #ef4444 !important;
 }
 
-/* ====== CONTENT ====== */
+/* ========= ÁREA PRINCIPAL ========= */
+
 .content {
     margin-left: 280px;
     padding: 30px;
@@ -80,7 +171,8 @@ h1 {
     margin-bottom: 30px;
 }
 
-/* ====== CARDS ====== */
+/* ========= CARDS DO DASHBOARD ========= */
+
 .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
