@@ -9,22 +9,30 @@
 
 <div class="login-box">
 
-  <!-- ⭐️ Banner com o logo -->
+  <!-- Logo -->
   <div class="login-logo">
     <img src="assets/datainsight.jpg" alt="Datainsight SST Suite">
   </div>
 
-  <h2>Datainsight SST Suite</h2>
+  <h2 class="login-title">Datainsight SST Suite</h2>
+  <p class="login-subtitle">Acesse com seu usuário profissional</p>
 
-  <input id="email" type="text" placeholder="Email">
-  <input id="password" type="password" placeholder="Senha">
+  <div class="login-field">
+    <input id="email" type="text" placeholder="Email profissional">
+  </div>
 
-  <button onclick="login()">Entrar</button>
+  <div class="login-field">
+    <input id="password" type="password" placeholder="Senha">
+  </div>
 
-  <p id="msg"></p>
+  <button class="login-btn" onclick="login()">Entrar</button>
+
+  <p id="msg" class="login-msg"></p>
 </div>
 
 <script src="assets/script.js"></script>
 </body>
 </html>
+
+
 
