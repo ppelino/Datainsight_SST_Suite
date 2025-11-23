@@ -2,10 +2,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 
-# Se DB_URL não existir no ambiente, usa SQLite local automaticamente.
-DB_URL = os.environ.get("DB_URL", "sqlite:///./datainsight_sst.db")
+# Se DB_URL não existir, usa um NOVO arquivo de banco SQLite
+DB_URL = os.environ.get("DB_URL", "sqlite:///./datainsight_sst_v2.db")
 
-# Config extra para SQLite (necessário)
 connect_args = {"check_same_thread": False} if DB_URL.startswith("sqlite") else {}
 
 engine = create_engine(DB_URL, connect_args=connect_args)
@@ -20,5 +19,6 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 
