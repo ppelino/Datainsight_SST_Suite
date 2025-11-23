@@ -33,6 +33,8 @@ body {
   margin-left: 280px;
   padding: 30px;
 }
+
+/* LOGIN — logo */
 .login-logo {
   width: 100%;
   display: flex;
@@ -46,3 +48,17 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
+/* DASHBOARD — logo na sidebar */
+.sidebar-logo {
+  width: 100%;
+  padding: 16px 12px 8px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.sidebar-logo img {
+  width: 100%;
+  max-width: 160px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+}
