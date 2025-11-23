@@ -8,9 +8,8 @@
 <body>
 
 <div class="sidebar">
-  <!-- Logo na lateral -->
   <div class="sidebar-logo">
-    <img src="assets/datainsight.jpg" alt="Datainsight SST Suite">
+    <img src="assets/datainsight.jpg" alt="Datainsight SST">
   </div>
 
   <h3>SST Suite</h3>
@@ -20,7 +19,9 @@
   <a href="#">NR-17</a>
   <a href="#">Psico / Campanhas</a>
   <a href="#">LTCAT / Laudos</a>
-  <a href="#" onclick="logout()">Sair</a>
+
+  <!-- IMPORTANTE: chamar logout() e não navegar -->
+  <a href="#" onclick="logout(); return false;">Sair</a>
 </div>
 
 <div class="content">
@@ -28,7 +29,15 @@
   <p>Sistema base instalado com sucesso.</p>
 </div>
 
+<!-- 👇 AQUI é o segredo: carregar seu JS -->
+<script src="assets/script.js"></script>
+
+<!-- Protege o dashboard: se não tiver token, volta pro login -->
+<script>
+  if (!localStorage.getItem('token')) {
+    window.location.href = "index.html";
+  }
+</script>
+
 </body>
 </html>
-
-
