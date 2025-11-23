@@ -27,7 +27,9 @@ app.add_middleware(
 )
 
 # 🗄️ cria tabelas caso ainda não existam
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
+print("Tabelas já estão no Supabase — create_all desativado.")
+
 
 
 # ============================================================
@@ -47,3 +49,4 @@ app.include_router(pgr_router)
 @app.get("/health")
 def health():
     return {"status": "OK"}
+
