@@ -1,38 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Login | Datainsight SST Suite</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
 
-<div class="login-box">
+  <div class="login-page">
+    <div class="login-card">
 
-  <!-- Logo -->
-  <div class="login-logo">
-    <img src="assets/datainsight.jpg" alt="Datainsight SST Suite">
+      <!-- Logo -->
+      <div class="login-logo">
+        <img src="assets/datainsight.jpg" alt="Datainsight SST" />
+      </div>
+
+      <!-- Título -->
+      <h1 class="login-title">Datainsight SST Suite</h1>
+      <p class="login-subtitle">Acesse com seu usuário profissional</p>
+
+      <!-- Campos -->
+      <input
+        id="email"
+        type="text"
+        placeholder="Email profissional"
+        class="login-input"
+      />
+      <input
+        id="password"
+        type="password"
+        placeholder="Senha"
+        class="login-input"
+      />
+
+      <!-- Botão -->
+      <button class="login-button" onclick="login()">Entrar</button>
+
+      <!-- Mensagem -->
+      <p id="msg" class="login-msg"></p>
+    </div>
   </div>
 
-  <h2 class="login-title">Datainsight SST Suite</h2>
-  <p class="login-subtitle">Acesse com seu usuário profissional</p>
-
-  <div class="login-field">
-    <input id="email" type="text" placeholder="Email profissional">
-  </div>
-
-  <div class="login-field">
-    <input id="password" type="password" placeholder="Senha">
-  </div>
-
-  <button class="login-btn" onclick="login()">Entrar</button>
-
-  <p id="msg" class="login-msg"></p>
-</div>
-
-<script src="assets/script.js"></script>
+  <script src="assets/script.js"></script>
 </body>
 </html>
-
-
-
