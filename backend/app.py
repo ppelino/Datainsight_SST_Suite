@@ -2,15 +2,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import Base, engine
+
+# importa os routers
 from routers import auth_router
+from routers.pgr_router import router as pgr_router   # ➜ ADICIONADO
+
 
 app = FastAPI(title="Datainsight SST Suite")
 
 # ⚙️ CORS - libera o front da Netlify e testes locais
 origins = [
-    "https://datainsightsstsuite.netlify.app",   # seu frontend em produção
-    "https://datainsight-sst-suite.onrender.com",  # a própria API (se precisar)
-    "http://localhost:5500",                     # testes locais (opcional)
+    "https://datainsightsstsuite.netlify.app",     # seu frontend em produção
+    "https://datainsight-sst-suite.onrender.com",  # a própria API
+    "http://localhost:5500",                       # ambiente local
     "http://127.0.0.1:5500",
 ]
 
@@ -22,8 +26,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 🗄️ cria tabelas se ainda não existirem
+# 🗄️ cria tabelas caso ainda não existam
 Base.metadata.create_all(bind=engine)
+
+
+# ============================================================
+# ROTAS
+# ============================================================
 
 @app.get("/")
 def home():
@@ -32,9 +41,9 @@ def home():
 # rotas de autenticação
 app.include_router(auth_router.router)
 
+# rotas do PGR / NR-01  (NOVO)
+app.include_router(pgr_router)
+
 @app.get("/health")
 def health():
     return {"status": "OK"}
-
-
-
