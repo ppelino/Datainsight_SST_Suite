@@ -1,8 +1,15 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import (
+    Column, Integer, String, Boolean, DateTime,
+    Text, ForeignKey, Date
+)
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from database import Base
 
 
+# ============================================================
+#  USUÁRIOS DO SISTEMA
+# ============================================================
 class User(Base):
     __tablename__ = "users"
 
@@ -11,26 +18,96 @@ class User(Base):
     password = Column(String, nullable=False)
     name = Column(String, nullable=False)
 
-    # Papel do usuário no sistema:
-    #  - admin  -> você / super administrador
-    #  - gestor -> cliente responsável pela conta da empresa
-    #  - user   -> colaborador comum
+    # admin  -> você, super administrador
+    # gestor -> dono da empresa contratante
+    # user   -> funcionário
     role = Column(String, default="user")
 
-    # Plano de assinatura:
-    #  - free
-    #  - pro
-    #  - enterprise
+    # free / pro / enterprise
     plan = Column(String, default="free")
 
-    # ID da empresa (quando você criar a tabela de empresas depois)
     company_id = Column(Integer, nullable=True)
 
-    # Se o usuário está ativo (pode logar)
     is_active = Column(Boolean, default=True)
-
-    # Para controle de quando a conta foi criada
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============================================================
+#  MÓDULO PGR / NR-01
+# ============================================================
+
+# 1. Empresas
+class Company(Base):
+    __tablename__ = "companies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    cnpj = Column(String)
+    endereco = Column(String)
+    atividade = Column(String)
+    grau_risco = Column(Integer)
+    criado_em = Column(DateTime, default=datetime.utcnow)
+
+    sectors = relationship("Sector", back_populates="company")
+
+
+# 2. Setores
+class Sector(Base):
+    __tablename__ = "sectors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    company_id = Column(Integer, ForeignKey("companies.id"))
+    nome = Column(String, nullable=False)
+    descricao = Column(Text)
+
+    company = relationship("Company", back_populates="sectors")
+    hazards = relationship("Hazard", back_populates="sector")
+
+
+# 3. Perigos (Hazards)
+class Hazard(Base):
+    __tablename__ = "hazards"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sector_id = Column(Integer, ForeignKey("sectors.id"))
+    nome = Column(String, nullable=False)
+    agente = Column(String)
+    fonte = Column(String)
+    descricao = Column(Text)
+
+    sector = relationship("Sector", back_populates="hazards")
+    risks = relationship("Risk", back_populates="hazard")
+
+
+# 4. Riscos
+class Risk(Base):
+    __tablename__ = "risks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    hazard_id = Column(Integer, ForeignKey("hazards.id"))
+    probabilidade = Column(Integer)
+    severidade = Column(Integer)
+    medidas_existentes = Column(Text)
+
+    hazard = relationship("Hazard", back_populates="risks")
+    actions = relationship("Action", back_populates="risk")
+
+
+# 5. Ações de Controle
+class Action(Base):
+    __tablename__ = "actions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    risk_id = Column(Integer, ForeignKey("risks.id"))
+    recomendacao = Column(Text)
+    tipo = Column(String)
+    prazo = Column(Date)
+    responsavel = Column(String)
+    status = Column(String, default="pendente")
+
+    risk = relationship("Risk", back_populates="actions")
+
+
 
 
 
