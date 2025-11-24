@@ -18,7 +18,7 @@
     </div>
 
     <div style="margin-left:auto; display:flex; gap:8px;">
-      <a class="btn secondary" href="dashboard.html">🏠 Dashboard</a>
+      <a class="btn active" href="dashboard.html">🏠 Dashboard</a>
       <a class="btn secondary" href="pgr.html">📝 PGR / NR-01</a>
       <a class="btn secondary" href="pcmso.html">⚕️ PCMSO / ASO</a>
       <a class="btn secondary" href="nr17.html">🪑 NR-17</a>
@@ -30,9 +30,31 @@
 
 <div class="container">
 
-  <div class="card">
-    <h2>📊 Visão Geral</h2>
-    <p>Bem-vindo à suíte DataInsight SST — escolha um módulo no menu acima.</p>
+  <div class="card-grid">
+    <div class="card">
+      <h2>📊 Visão Geral da Suíte</h2>
+      <p class="mt-2">
+        Centralize a gestão de SST em um único ambiente: PGR / NR-01, PCMSO / ASO,
+        avaliações ergonômicas (NR-17) e LTCAT.
+      </p>
+      <p class="section-subtitle mt-3">
+        Use o menu superior para acessar cada módulo. Em versões futuras, este
+        painel mostrará indicadores, gráficos e alertas automáticos.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>⚙️ Atalhos Rápidos</h2>
+      <div class="mt-3" style="display:flex; flex-wrap:wrap; gap:8px;">
+        <a class="btn secondary" href="pgr.html">➕ Novo PGR / NR-01</a>
+        <a class="btn secondary" href="pcmso.html">➕ Registrar ASO</a>
+        <a class="btn secondary" href="nr17.html">➕ Avaliação NR-17</a>
+        <a class="btn secondary" href="ltcat.html">📂 Gerenciar LTCAT</a>
+      </div>
+      <p class="section-subtitle mt-3">
+        Esses atalhos podem ser personalizados depois para o fluxo real de cada cliente.
+      </p>
+    </div>
   </div>
 
 </div>
@@ -40,7 +62,8 @@
 <script>
 function logout() {
   localStorage.clear();
-  window.location.href = "login.html";
+  // volta para a home (ajuste se a sua home for outra)
+  window.location.href = "index.html";
 }
 </script>
 
