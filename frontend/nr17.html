@@ -6,6 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="assets/branding.css">
+
+  <!-- Biblioteca para gerar PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
   <script src="nr17.js" defer></script>
 </head>
 
@@ -31,6 +35,7 @@
 
 <div class="container">
 
+  <!-- CARD PRINCIPAL – FORMULÁRIO -->
   <div class="card">
     <h2>🪑 NR-17 — Avaliação Ergonômica de Posto de Trabalho</h2>
     <p class="section-subtitle">
@@ -124,19 +129,34 @@
 
     <div class="actions-row">
       <span class="section-subtitle">
-        Índice global de risco: <strong id="resultadoRisco">–</strong>
+        Índice global de risco:
+        <strong id="resultadoRisco">–</strong>
       </span>
     </div>
 
     <div class="actions-row">
       <button class="btn primary" onclick="salvarNR17()">💾 Salvar Avaliação</button>
       <button class="btn secondary" onclick="limparNR17()">🧹 Limpar</button>
+      <button class="btn secondary" onclick="imprimirUltimaNR17()">🖨️ Imprimir última avaliação</button>
+      <button class="btn secondary" onclick="exportarPDFUltimaNR17()">📄 Exportar PDF (última)</button>
     </div>
 
   </div>
 
+  <!-- CARD TABELA + FILTRO -->
   <div class="card">
     <h2>📋 Avaliações Registradas — NR-17</h2>
+
+    <div class="actions-row">
+      <input
+        type="text"
+        id="filtroNR17"
+        placeholder="Filtrar por setor, função ou risco..."
+        oninput="filtrarNR17()"
+        style="flex:1; max-width:320px;"
+      >
+    </div>
+
     <table class="table" id="tabelaNR17">
       <thead>
         <tr>
@@ -149,6 +169,13 @@
       </thead>
       <tbody></tbody>
     </table>
+  </div>
+
+  <!-- ÁREA OCULTA PARA GERAR PDF BONITINHO -->
+  <div id="areaRelatorioNR17" style="display:none;">
+    <div id="conteudoRelatorioNR17" style="padding:20px; font-family:system-ui;">
+      <!-- O JS preenche isso aqui antes de gerar PDF -->
+    </div>
   </div>
 
 </div>
