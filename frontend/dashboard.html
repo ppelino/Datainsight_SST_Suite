@@ -1,83 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8" />
-    <title>Dashboard | Datainsight SST Suite</title>
-    <link rel="stylesheet" href="assets/style.css" />
+  <meta charset="utf-8">
+  <title>DataInsight SST Suite — Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="assets/branding.css">
 </head>
 
 <body>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <img src="assets/datainsight.jpg" alt="Logo Datainsight" />
-        </div>
+<nav class="nav">
+  <div class="wrap">
+    <div class="logo">
+      <img src="assets/datainsight.jpg" alt="Logo">
+      <span>DataInsight SST Suite</span>
+    </div>
 
-        <nav class="menu">
-            <a href="#" class="menu-item active">📊 Dashboard Geral</a>
-            <a href="pgr.html" class="menu-item">📝 PGR / NR-01</a>
-            <a href="#">⚕️ PCMSO / ASO</a>
-            <a href="#">🪑 NR-17</a>
-            <a href="#">🧠 Psico / Campanhas</a>
-            <a href="#">📄 LTCAT / Laudos</a>
+    <div style="margin-left:auto; display:flex; gap:8px;">
+      <a class="btn secondary" href="dashboard.html">🏠 Dashboard</a>
+      <a class="btn secondary" href="pgr.html">📝 PGR / NR-01</a>
+      <a class="btn secondary" href="pcmso.html">⚕️ PCMSO / ASO</a>
+      <a class="btn secondary" href="nr17.html">🪑 NR-17</a>
+      <a class="btn secondary" href="ltcat.html">📄 LTCAT</a>
+      <button class="btn danger" onclick="logout()">Sair</button>
+    </div>
+  </div>
+</nav>
 
-            <a href="#" onclick="logout()" class="logout">🚪 Sair</a>
-        </nav>
-    </aside>
+<div class="container">
 
-    <!-- ÁREA PRINCIPAL -->
-    <main class="content">
-        <h1>Bem-vindo, Edson! 👋</h1>
-        <p class="sub">Sistema base instalado com sucesso.</p>
+  <div class="card">
+    <h2>📊 Visão Geral</h2>
+    <p>Bem-vindo à suíte DataInsight SST — escolha um módulo no menu acima.</p>
+  </div>
 
-        <!-- CARDS DO SISTEMA -->
-        <section class="cards">
+</div>
 
-            <div class="card">
-                <h3>PGR / NR-01</h3>
-                <p>Gestão de perigos, riscos e ações.</p>
-                <button onclick="">Abrir módulo</button>
-            </div>
-
-            <div class="card">
-                <h3>PCMSO / ASO</h3>
-                <p>Exames, ASO e monitoramento médico.</p>
-                <button onclick="">Acessar</button>
-            </div>
-
-            <div class="card">
-                <h3>NR-17</h3>
-                <p>Análises ergonômicas e ergonomia do trabalho.</p>
-                <button onclick="">Acessar</button>
-            </div>
-
-            <div class="card">
-                <h3>Campanhas Psico</h3>
-                <p>Campanhas anônimas e relatórios.</p>
-                <button onclick="">Abrir</button>
-            </div>
-
-            <div class="card">
-                <h3>LTCAT / Laudos</h3>
-                <p>Geração de laudos técnicos automatizados.</p>
-                <button onclick="">Gerenciar</button>
-            </div>
-
-        </section>
-    </main>
-
-    <script src="assets/script.js"></script>
-
-    <!-- PROTEÇÃO: se não houver token, volta ao login -->
-    <script>
-        if (!localStorage.getItem("token")) {
-            window.location.href = "index.html";
-        }
-    </script>
+<script>
+function logout() {
+  localStorage.clear();
+  window.location.href = "login.html";
+}
+</script>
 
 </body>
-
 </html>
-
