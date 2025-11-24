@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>DataInsight SST – PCMSO / ASO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="assets/branding.css">
+  <script src="pcmso.js" defer></script>
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <div class="logo">
+      <img src="assets/datainsight.jpg" alt="Logo">
+      <span>PCMSO / ASO</span>
+    </div>
+
+    <div style="margin-left:auto; display:flex; gap:8px;">
+      <a class="btn secondary" href="dashboard.html">🏠 Dashboard</a>
+      <a class="btn secondary" href="pgr.html">📝 PGR / NR-01</a>
+      <a class="btn active" href="pcmso.html">⚕️ PCMSO / ASO</a>
+      <a class="btn secondary" href="nr17.html">🪑 NR-17</a>
+      <a class="btn secondary" href="ltcat.html">📄 LTCAT</a>
+      <button onclick="logout()" class="btn danger">Sair</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="card">
+    <h2 style="margin-top:0;">⚕️ PCMSO / ASO — Registro de Exames</h2>
+    <p>Preencha os dados abaixo para registrar um exame ocupacional.</p>
+
+    <div class="form-grid">
+
+      <label>Nome do Trabalhador
+        <input type="text" id="nome" placeholder="Ex: João Silva">
+      </label>
+
+      <label>CPF
+        <input type="text" id="cpf" placeholder="000.000.000-00">
+      </label>
+
+      <label>Função
+        <input type="text" id="funcao" placeholder="Ex: Operador de Máquina">
+      </label>
+
+      <label>Setor
+        <input type="text" id="setor" placeholder="Ex: Produção">
+      </label>
+
+      <label>Tipo de Exame
+        <select id="tipoExame">
+          <option value="Admissional">Admissional</option>
+          <option value="Periódico">Periódico</option>
+          <option value="Retorno ao Trabalho">Retorno ao Trabalho</option>
+          <option value="Mudança de Função">Mudança de Função</option>
+          <option value="Demissional">Demissional</option>
+        </select>
+      </label>
+
+      <label>Data do Exame
+        <input type="date" id="dataExame">
+      </label>
+
+      <label>Médico Responsável
+        <input type="text" id="medico" placeholder="CRM / Nome">
+      </label>
+
+      <label>Resultado
+        <select id="resultado">
+          <option value="Apto">Apto</option>
+          <option value="Apto com restrições">Apto com restrições</option>
+          <option value="Inapto">Inapto</option>
+        </select>
+      </label>
+
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="btn primary" onclick="salvarASO()">💾 Salvar Registro</button>
+      <button class="btn secondary" onclick="limparFormulario()">🧹 Limpar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;">📑 Registros de ASO</h2>
+    <table class="table" id="tabelaASO">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>CPF</th>
+          <th>Função</th>
+          <th>Tipo de Exame</th>
+          <th>Data</th>
+          <th>Resultado</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+function logout() {
+  localStorage.clear();
+  window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
