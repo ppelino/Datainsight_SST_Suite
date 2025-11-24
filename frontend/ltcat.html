@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>DataInsight SST – LTCAT / Laudo Técnico</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="assets/branding.css">
+
+  <!-- Biblioteca para gerar PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+  <script src="ltcat.js" defer></script>
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <div class="logo">
+      <img src="assets/datainsight.jpg" alt="Logo">
+      <span>LTCAT — Laudo Técnico de Condições Ambientais</span>
+    </div>
+
+    <div style="margin-left:auto; display:flex; gap:8px;">
+      <a class="btn secondary" href="dashboard.html">🏠 Dashboard</a>
+      <a class="btn secondary" href="pgr.html">📝 PGR / NR-01</a>
+      <a class="btn secondary" href="pcmso.html">⚕️ PCMSO / ASO</a>
+      <a class="btn secondary" href="nr17.html">🪑 NR-17</a>
+      <a class="btn active" href="ltcat.html">📄 LTCAT</a>
+      <button onclick="logout()" class="btn danger">Sair</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- FORMULÁRIO LTCAT -->
+  <div class="card">
+    <h2>📄 Registro de Informações para LTCAT</h2>
+    <p class="section-subtitle">
+      Estruture as informações essenciais para elaboração do LTCAT: agente nocivo, exposição e enquadramento previdenciário.
+    </p>
+
+    <div class="form-grid mt-3">
+
+      <label>Empresa
+        <input type="text" id="empresa" placeholder="Ex: Metalúrgica Alfa LTDA">
+      </label>
+
+      <label>CNPJ
+        <input type="text" id="cnpj" placeholder="00.000.000/0000-00">
+      </label>
+
+      <label>Setor
+        <input type="text" id="setor" placeholder="Ex: Caldeiraria / Oficina / Escritório">
+      </label>
+
+      <label>Função
+        <input type="text" id="funcao" placeholder="Ex: Soldador / Operador de Prensa">
+      </label>
+
+      <label>GHE (opcional)
+        <input type="text" id="ghe" placeholder="Ex: GHE 01 – Soldagem">
+      </label>
+
+      <label>Agente Nocivo
+        <input type="text" id="agente" placeholder="Ex: Ruído, Benzeno, Calor, Sílica...">
+      </label>
+
+      <label>Classificação do Agente
+        <select id="classificacao">
+          <option value="Físico">Físico</option>
+          <option value="Químico">Químico</option>
+          <option value="Biológico">Biológico</option>
+          <option value="Misto">Misto</option>
+        </select>
+      </label>
+
+      <label>Fonte Geradora
+        <input type="text" id="fonte" placeholder="Ex: Prensa hidráulica, forno, produto químico...">
+      </label>
+
+      <label>Meio de Propagação
+        <input type="text" id="meio" placeholder="Ex: Ar, contato direto, superfícies...">
+      </label>
+
+      <label>Intensidade / Concentração
+        <input type="text" id="intensidade" placeholder="Ex: 92 dB(A), 15 ppm, 28 ºC IBUTG">
+      </label>
+
+      <label>Unidade
+        <input type="text" id="unidade" placeholder="Ex: dB(A), ppm, ºC, mg/m³">
+      </label>
+
+      <label>Jornada diária (h)
+        <input type="number" id="jornada" min="0" step="0.25" placeholder="Ex: 8">
+      </label>
+
+      <label>Dias por semana
+        <input type="number" id="diasSemana" min="1" max="7" placeholder="Ex: 5">
+      </label>
+
+      <label>Tempo de exposição (anos)
+        <input type="number" id="tempoAnos" min="0" step="0.5" placeholder="Ex: 12">
+      </label>
+
+      <label>EPC / EPI eficaz?
+        <select id="epiEficaz">
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+          <option value="Parcial">Parcial</option>
+        </select>
+      </label>
+
+      <label>Enquadramento Previdenciário
+        <select id="enquadramento">
+          <option value="Sem enquadramento">Sem enquadramento</option>
+          <option value="Especial – 15 anos">Especial – 15 anos</option>
+          <option value="Especial – 20 anos">Especial – 20 anos</option>
+          <option value="Especial – 25 anos">Especial – 25 anos</option>
+        </select>
+      </label>
+
+      <label>Data da Avaliação / Medição
+        <input type="date" id="data">
+      </label>
+
+      <label>Responsável Técnico
+        <input type="text" id="responsavel" placeholder="Nome / Registro profissional">
+      </label>
+
+      <label style="grid-column: 1 / -1;">Observações (opcional)
+        <textarea id="observacoes" rows="3" placeholder="Descrever metodologia utilizada, normas técnicas, condições atípicas, recomendações..."></textarea>
+      </label>
+
+    </div>
+
+    <div class="actions-row">
+      <button class="btn primary" onclick="salvarLTCAT()">💾 Salvar Registro</button>
+      <button class="btn secondary" onclick="limparLTCAT()">🧹 Limpar</button>
+      <button class="btn secondary" onclick="imprimirUltimoLTCAT()">🖨️ Imprimir último</button>
+      <button class="btn secondary" onclick="exportarPDFUltimoLTCAT()">📄 Exportar PDF (último)</button>
+    </div>
+  </div>
+
+  <!-- LISTA DE REGISTROS -->
+  <div class="card">
+    <h2>📚 Registros para LTCAT</h2>
+
+    <div class="actions-row">
+      <input
+        type="text"
+        id="filtroLTCAT"
+        placeholder="Filtrar por empresa, setor, função ou agente..."
+        oninput="filtrarLTCAT()"
+        style="flex:1; max-width:360px;"
+      >
+    </div>
+
+    <table class="table" id="tabelaLTCAT">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Empresa</th>
+          <th>Setor</th>
+          <th>Função</th>
+          <th>Agente</th>
+          <th>Classificação</th>
+          <th>Enquadramento</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- ÁREA OCULTA PARA RELATÓRIO PDF -->
+  <div id="areaRelatorioLTCAT" style="display:none;">
+    <div id="conteudoRelatorioLTCAT" style="padding:20px; font-family:system-ui;"></div>
+  </div>
+
+</div>
+
+<script>
+function logout() {
+  localStorage.clear();
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
