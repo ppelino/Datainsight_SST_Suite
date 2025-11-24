@@ -32,10 +32,12 @@
 <div class="container">
 
   <div class="card">
-    <h2 style="margin-top:0;">⚕️ PCMSO / ASO — Registro de Exames</h2>
-    <p>Preencha os dados abaixo para registrar um exame ocupacional.</p>
+    <h2>⚕️ PCMSO / ASO — Registro de Exames</h2>
+    <p class="section-subtitle">
+      Preencha os dados abaixo para registrar um exame ocupacional.
+    </p>
 
-    <div class="form-grid">
+    <div class="form-grid mt-3">
 
       <label>Nome do Trabalhador
         <input type="text" id="nome" placeholder="Ex: João Silva">
@@ -81,14 +83,14 @@
 
     </div>
 
-    <div style="margin-top:20px; display:flex; gap:10px;">
+    <div class="actions-row">
       <button class="btn primary" onclick="salvarASO()">💾 Salvar Registro</button>
       <button class="btn secondary" onclick="limparFormulario()">🧹 Limpar</button>
     </div>
   </div>
 
   <div class="card">
-    <h2 style="margin-top:0;">📑 Registros de ASO</h2>
+    <h2>📑 Registros de ASO</h2>
     <table class="table" id="tabelaASO">
       <thead>
         <tr>
@@ -109,9 +111,10 @@
 <script>
 function logout() {
   localStorage.clear();
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 }
 </script>
 
 </body>
 </html>
+
