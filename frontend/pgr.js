@@ -357,3 +357,50 @@ function selectRisk(r, row) {
 
   loadActions(r.id);
 }
+
+// ============================
+//  Ações rápidas (barra do topo)
+// ============================
+
+function limparPGR() {
+  // zera estados
+  currentCompany = null;
+  currentSector = null;
+  currentHazard = null;
+  currentRisk = null;
+
+  // reseta todos os formulários
+  document.querySelectorAll("form").forEach(form => form.reset());
+
+  // limpa destaques
+  document.querySelectorAll("tr.highlight").forEach(tr => tr.classList.remove("highlight"));
+
+  // limpa tabelas (mas mantém cabeçalho)
+  document.querySelector("#table-sectors tbody").innerHTML = "";
+  document.querySelector("#table-hazards tbody").innerHTML = "";
+  document.querySelector("#table-risks tbody").innerHTML = "";
+  document.querySelector("#table-actions tbody").innerHTML = "";
+
+  // reseta textos
+  document.getElementById("current-company").textContent = "Nenhuma empresa selecionada.";
+  document.getElementById("current-sector").textContent = "Nenhum setor selecionado.";
+  document.getElementById("current-hazard").textContent = "Nenhum perigo selecionado.";
+  document.getElementById("current-risk").textContent = "Nenhum risco selecionado.";
+
+  // desabilita botões em cascata
+  document.getElementById("btn-save-sector").disabled = true;
+  document.getElementById("btn-save-hazard").disabled = true;
+  document.getElementById("btn-save-risk").disabled = true;
+  document.getElementById("btn-save-action").disabled = true;
+
+  // recarrega lista de empresas
+  loadCompanies();
+}
+
+function imprimirPGR() {
+  window.print();
+}
+
+function exportarPDF_PGR() {
+  alert("📄 Exportar PDF do PGR será integrado ao backend futuramente.\nA tela já está preparada para isso.");
+}
