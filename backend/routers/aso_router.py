@@ -63,3 +63,14 @@ def list_aso_records(db: Session = Depends(get_db)):
     """
     registros = db.query(AsoRecord).order_by(AsoRecord.created_at.desc()).all()
     return registros
+
+@router.delete("/aso/records/{record_id}")
+def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
+    record = db.query(ASORecord).filter(ASORecord.id == record_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Registro ASO não encontrado.")
+
+    db.delete(record)
+    db.commit()
+    return {"ok": True}
+
