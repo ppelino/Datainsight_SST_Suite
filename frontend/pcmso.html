@@ -83,7 +83,7 @@
 
     </div>
 
-    <!-- 🔥 AQUI: BARRA DE AÇÕES COMPLETA -->
+    <!-- Barra de ações -->
     <div class="actions-row" style="display:flex; gap:10px; margin-top:20px;">
       <button class="btn primary" onclick="salvarASO()">💾 Salvar Registro</button>
       <button class="btn secondary" onclick="limparFormulario()">🧹 Limpar</button>
@@ -104,6 +104,7 @@
           <th>Tipo de Exame</th>
           <th>Data</th>
           <th>Resultado</th>
+          <th>Ações</th> <!-- ✅ nova coluna -->
         </tr>
       </thead>
       <tbody></tbody>
@@ -116,18 +117,6 @@
 function logout() {
   localStorage.clear();
   window.location.href = "index.html";
-}
-
-function limparFormulario() {
-  document.querySelectorAll("input, select").forEach(el => el.value = "");
-}
-
-function imprimirUltimoASO() {
-  window.print();
-}
-
-function exportarPDF_ASO() {
-  alert("📄 Exportar PDF será integrado ao backend.");
 }
 </script>
 
