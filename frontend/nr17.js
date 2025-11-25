@@ -87,11 +87,11 @@ async function salvarNR17() {
         // Atualiza lista trazendo tudo do servidor de novo
         await carregarNR17DoServidor();
 
-        // Mantém campos limpos, índice visível
-        limparNR17(false);
-
-        // Guarda id da última avaliação no localStorage (usado pelo relatório)
+        // guarda id da última avaliação salva (para imprimir / PDF)
         localStorage.setItem("ultimaNR17Id", String(saved.id));
+
+        // Limpa campos, mas mantém índice na tela
+        limparNR17(false);
 
         alert("✅ Avaliação NR-17 salva com sucesso!");
     } catch (err) {
@@ -134,12 +134,15 @@ function carregarNR17(listaFiltrada = null) {
     tbody.innerHTML = "";
 
     lista.forEach(item => {
+        const data = item.data_avaliacao || item.dataAvaliacao || "";
+        const tipoPosto = item.tipo_posto || item.tipoPosto || "";
+
         const linha = `
             <tr>
-                <td>${item.data_avaliacao || item.dataAvaliacao || ""}</td>
+                <td>${data}</td>
                 <td>${item.setor || ""}</td>
                 <td>${item.funcao || ""}</td>
-                <td>${item.tipo_posto || item.tipoPosto || ""}</td>
+                <td>${tipoPosto}</td>
                 <td>${item.risco} (score: ${item.score})</td>
             </tr>
         `;
@@ -200,21 +203,122 @@ function filtrarNR17() {
 }
 
 // ===============================
-// Relatório – última avaliação (usa localStorage)
+// RELATÓRIO – ÚLTIMA AVALIAÇÃO
 // ===============================
 function obterUltimaAvaliacaoNR17() {
     let lista = JSON.parse(localStorage.getItem("avaliacoesNR17")) || [];
-    if (lista.length === 0) return null;
+    if (lista.length === 0) {
+        return null;
+    }
 
     const ultimaId = localStorage.getItem("ultimaNR17Id");
     if (ultimaId) {
-        const achada = lista.find(a => String(a.id) === ultimaId);
+        const achada = lista.find(a => String(a.id) === String(ultimaId));
         if (achada) return achada;
     }
 
+    // fallback: última da lista
     return lista[lista.length - 1];
 }
 
-// --- a partir daqui mantém seu código de montarHTMLRelatorio,
-// imprimirUltimaNR17 e exportarPDFUltimaNR17 exatamente como já estava ---
+function montarHTMLRelatorio(av) {
+    const riscoCor =
+        av.risco === "Alto" ? "#dc2626" :
+        av.risco === "Médio" ? "#f97316" :
+        "#16a34a";
 
+    const data = av.data_avaliacao || av.dataAvaliacao || "-";
+    const tipoPosto = av.tipo_posto || av.tipoPosto || "-";
+
+    return `
+      <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#111827;">
+        <h1 style="font-size:20px; margin-bottom:4px;">Relatório de Avaliação Ergonômica – NR-17</h1>
+        <p style="font-size:13px; color:#6b7280; margin-bottom:18px;">
+          Gerado pela suíte DataInsight SST.
+        </p>
+
+        <h2 style="font-size:16px; margin-bottom:6px;">1. Identificação</h2>
+        <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:12px;">
+          <tr>
+            <td style="padding:4px 0;"><strong>Empresa:</strong> ${av.empresa || "-"}</td>
+            <td style="padding:4px 0;"><strong>Setor:</strong> ${av.setor || "-"}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 0;"><strong>Função Avaliada:</strong> ${av.funcao || "-"}</td>
+            <td style="padding:4px 0;"><strong>Trabalhador:</strong> ${av.trabalhador || "-"}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 0;"><strong>Tipo de Posto:</strong> ${tipoPosto}</td>
+            <td style="padding:4px 0;"><strong>Data da Avaliação:</strong> ${data}</td>
+          </tr>
+        </table>
+
+        <h2 style="font-size:16px; margin-bottom:6px;">2. Resultado Global</h2>
+        <p style="font-size:13px; margin-bottom:4px;">
+          <strong>Classificação de risco: </strong>
+          <span style="color:${riscoCor}; font-weight:600;">
+            ${av.risco} (score: ${av.score})
+          </span>
+        </p>
+        <p style="font-size:12px; color:#6b7280; margin-bottom:14px;">
+          Score calculado a partir de fatores de mobiliário, postura, esforço físico, pausas, ambiente físico e organização do trabalho.
+        </p>
+
+        <h2 style="font-size:16px; margin-bottom:6px;">3. Observações</h2>
+        <div style="font-size:13px; border:1px solid #e5e7eb; border-radius:8px; padding:10px; min-height:60px;">
+          ${av.observacoes && av.observacoes.trim() !== "" ? av.observacoes : "Sem observações registradas."}
+        </div>
+
+        <p style="font-size:11px; color:#9ca3af; margin-top:18px;">
+          Este relatório simplificado não substitui o laudo ergonômico completo, mas serve como registro estruturado da avaliação do posto de trabalho segundo a NR-17.
+        </p>
+      </div>
+    `;
+}
+
+function imprimirUltimaNR17() {
+    const av = obterUltimaAvaliacaoNR17();
+    if (!av) {
+        alert("⚠️ Ainda não há avaliações NR-17 salvas.");
+        return;
+    }
+
+    const html = montarHTMLRelatorio(av);
+    const win = window.open("", "_blank");
+    win.document.write(`
+      <!doctype html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Relatório NR-17</title>
+      </head>
+      <body style="margin:20px;">${html}</body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    win.print();
+}
+
+function exportarPDFUltimaNR17() {
+    const av = obterUltimaAvaliacaoNR17();
+    if (!av) {
+        alert("⚠️ Ainda não há avaliações NR-17 salvas.");
+        return;
+    }
+
+    const container = document.getElementById("conteudoRelatorioNR17");
+    container.innerHTML = montarHTMLRelatorio(av);
+
+    const setorSlug = (av.setor || "setor").replace(/\s+/g, "_");
+
+    const opt = {
+        margin:       10,
+        filename:     `Relatorio_NR17_${setorSlug}.pdf`,
+        image:        { type: 'jpeg', quality: 0.95 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().from(container).set(opt).save();
+}
