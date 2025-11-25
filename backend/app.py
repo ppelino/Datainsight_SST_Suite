@@ -7,6 +7,7 @@ from database import Base, engine
 from routers import auth_router
 from routers.pgr_router import router as pgr_router          # PGR / NR-01
 from routers.aso_router import router as aso_router          # PCMSO / ASO
+from routers.nr17_router import router as nr17_router      # NR-17
 
 app = FastAPI(title="Datainsight SST Suite")
 
@@ -54,6 +55,10 @@ app.include_router(pgr_router)
 # módulo PCMSO / ASO
 app.include_router(aso_router)
 
+# rotas da NR-17
+app.include_router(nr17_router)
+
 @app.get("/health")
 def health():
     return {"status": "OK"}
+
