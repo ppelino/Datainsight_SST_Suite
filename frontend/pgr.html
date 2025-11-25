@@ -203,6 +203,14 @@
     Cadastre empresas, setores, perigos, riscos e ações de controle em uma única tela.
   </p>
 
+  <!-- 🔥 BARRA DE AÇÕES GERAL DO PGR -->
+  <div class="card" style="margin-bottom:24px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <span style="font-size:14px; color:#636e72; margin-right:8px;">Ações rápidas:</span>
+    <button class="btn btn-outline" onclick="limparPGR()">🧹 Limpar tela</button>
+    <button class="btn btn-primary" onclick="imprimirPGR()">🖨️ Imprimir relatório</button>
+    <button class="btn btn-outline" onclick="exportarPDF_PGR()">📄 Exportar PDF</button>
+  </div>
+
   <!-- EMPRESAS + SETORES -->
   <div class="grid">
     <div class="card" id="card-companies">
@@ -400,5 +408,23 @@
 </div>
 
 <script src="pgr.js"></script>
+
+<!-- 🔥 Funções dos botões de ação geral -->
+<script>
+function limparPGR() {
+  // Limpa todos os formulários da página
+  const forms = document.querySelectorAll("form");
+  forms.forEach(form => form.reset());
+}
+
+function imprimirPGR() {
+  window.print();
+}
+
+function exportarPDF_PGR() {
+  alert("📄 Exportar PDF do PGR será integrado ao backend futuramente. A tela já está preparada para isso.");
+}
+</script>
+
 </body>
 </html>
