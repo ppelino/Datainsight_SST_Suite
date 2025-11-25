@@ -128,5 +128,27 @@ class AsoRecord(Base):
     medico = Column(String)
     resultado = Column(String, nullable=False)
 
+# ============================================================
+#  MÓDULO NR-17 – Avaliações Ergonômicas
+# ============================================================
+
+class NR17Record(Base):
+    __tablename__ = "nr17_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    empresa = Column(String)
+    setor = Column(String)
+    funcao = Column(String)
+    trabalhador = Column(String)
+    tipo_posto = Column(String)
+    data_avaliacao = Column(Date)
+
+    risco = Column(String)
+    score = Column(Integer)
+
+    observacoes = Column(Text)
+
 
 
