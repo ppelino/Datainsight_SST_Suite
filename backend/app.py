@@ -5,7 +5,8 @@ from database import Base, engine
 
 # importa os routers
 from routers import auth_router
-from routers.pgr_router import router as pgr_router   # ➜ ADICIONADO
+from routers.pgr_router import router as pgr_router          # PGR / NR-01
+from routers.aso_router import router as aso_router          # ✅ NOVO – PCMSO / ASO
 
 
 app = FastAPI(title="Datainsight SST Suite")
@@ -31,7 +32,6 @@ app.add_middleware(
 print("Tabelas já estão no Supabase — create_all desativado.")
 
 
-
 # ============================================================
 # ROTAS
 # ============================================================
@@ -43,10 +43,15 @@ def home():
 # rotas de autenticação
 app.include_router(auth_router.router)
 
-# rotas do PGR / NR-01  (NOVO)
+# rotas do PGR / NR-01
 app.include_router(pgr_router)
+
+# ✅ rotas do PCMSO / ASO
+app.include_router(aso_router)
+
 
 @app.get("/health")
 def health():
     return {"status": "OK"}
+
 
