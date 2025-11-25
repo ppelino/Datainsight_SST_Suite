@@ -82,3 +82,53 @@ function limparFormulario() {
     document.getElementById("medico").value = "";
     document.getElementById("resultado").value = "Apto";
 }
+
+// =========================
+// Funções extras dos botões
+// =========================
+
+// Imprimir a última avaliação registrada
+function imprimirUltimoASO() {
+    const lista = JSON.parse(localStorage.getItem("asos")) || [];
+    if (lista.length === 0) {
+        alert("⚠️ Não há registros para imprimir.");
+        return;
+    }
+
+    const ultimo = lista[lista.length - 1];
+
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Imprimir ASO</title>
+        </head>
+        <body>
+            <h1>ASO – Avaliação de Saúde Ocupacional</h1>
+            <p><strong>Nome:</strong> ${ultimo.nome}</p>
+            <p><strong>CPF:</strong> ${ultimo.cpf}</p>
+            <p><strong>Função:</strong> ${ultimo.funcao}</p>
+            <p><strong>Setor:</strong> ${ultimo.setor}</p>
+            <p><strong>Tipo de Exame:</strong> ${ultimo.tipoExame}</p>
+            <p><strong>Data do Exame:</strong> ${ultimo.dataExame}</p>
+            <p><strong>Médico Responsável:</strong> ${ultimo.medico}</p>
+            <p><strong>Resultado:</strong> ${ultimo.resultado}</p>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// "Exportar PDF" – placeholder para futura integração com backend
+function exportarPDF_ASO() {
+    const lista = JSON.parse(localStorage.getItem("asos")) || [];
+
+    if (lista.length === 0) {
+        alert("⚠️ Não há registros para exportar.");
+        return;
+    }
+
+    alert("📄 Exportar PDF será integrado ao backend futuramente.\n\nA função já está pronta para receber a geração de PDF.");
+}
