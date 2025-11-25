@@ -117,16 +117,16 @@ class AsoRecord(Base):
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    nome = Column(String)
-    cpf = Column(String)
-    funcao = Column(String)
-    setor = Column(String)
-    tipo_exame = Column(String)
-    data_exame = Column(Date)
+    nome = Column(String, nullable=False)
+    cpf = Column(String, nullable=False)
+    funcao = Column(String, nullable=False)
+    setor = Column(String, nullable=False)
+
+    tipo_exame = Column(String, nullable=False)
+    data_exame = Column(Date, nullable=False)
+
     medico = Column(String)
-    resultado = Column(String)
-
-
+    resultado = Column(String, nullable=False)
 
 
 
