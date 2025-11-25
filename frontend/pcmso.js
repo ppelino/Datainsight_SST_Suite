@@ -4,6 +4,9 @@
 
 const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
+// cache em memória para usar na lupa / impressão por ID
+let _asoCache = [];
+
 // Carrega automaticamente os registros ao abrir a página
 document.addEventListener("DOMContentLoaded", () => {
   carregarASO();
@@ -79,7 +82,8 @@ async function carregarASO() {
 
     const lista = await res.json();
 
-    // 🔁 mantém um espelho no localStorage para o dashboard
+    // guarda no cache em memória e no localStorage (para o dashboard)
+    _asoCache = lista;
     localStorage.setItem("registrosASO", JSON.stringify(lista));
 
     if (!lista.length) {
@@ -98,8 +102,14 @@ async function carregarASO() {
           <td>${item.tipo_exame}</td>
           <td>${item.data_exame}</td>
           <td>${item.resultado}</td>
-          <td>
-            <button class="btn danger" style="padding:4px 8px; font-size:12px;"
+          <td style="display:flex; gap:4px; flex-wrap:wrap;">
+            <button class="btn secondary" 
+                    style="padding:4px 8px; font-size:12px;"
+                    onclick="visualizarASO(${item.id})">
+              🔍 Ver
+            </button>
+            <button class="btn danger" 
+                    style="padding:4px 8px; font-size:12px;"
                     onclick="deletarASO(${item.id})">
               🗑 Excluir
             </button>
@@ -154,6 +164,62 @@ function limparFormulario() {
 }
 
 // =========================
+// Funções extras – visualização / impressão
+// =========================
+
+// Monta HTML padrão do ASO (reaproveitado pela lupa e pela impressão)
+function montarHTMLASO(reg) {
+  return `
+    <div style="font-family: system-ui; padding: 20px;">
+      <h1 style="margin-bottom: 8px;">ASO – Avaliação de Saúde Ocupacional</h1>
+      <p style="margin: 4px 0;"><strong>Nome:</strong> ${reg.nome}</p>
+      <p style="margin: 4px 0;"><strong>CPF:</strong> ${reg.cpf}</p>
+      <p style="margin: 4px 0;"><strong>Função:</strong> ${reg.funcao}</p>
+      <p style="margin: 4px 0;"><strong>Setor:</strong> ${reg.setor || "-"}</p>
+      <p style="margin: 4px 0;"><strong>Tipo de Exame:</strong> ${reg.tipo_exame}</p>
+      <p style="margin: 4px 0;"><strong>Data do Exame:</strong> ${reg.data_exame}</p>
+      <p style="margin: 4px 0;"><strong>Médico Responsável:</strong> ${reg.medico || "-"}</p>
+      <p style="margin: 4px 0;"><strong>Resultado:</strong> ${reg.resultado}</p>
+
+      <hr style="margin: 16px 0;">
+
+      <p style="font-size: 12px; color:#6b7280;">
+        Gerado pela suíte <strong>DataInsight SST</strong>.
+      </p>
+      <button onclick="window.print()" 
+              style="padding:6px 12px; margin-top:8px;">
+        🖨 Imprimir
+      </button>
+    </div>
+  `;
+}
+
+// Lupa: abre o registro selecionado em uma nova aba para visualizar/imprimir
+function visualizarASO(id) {
+  const reg = _asoCache.find((r) => r.id === id);
+  if (!reg) {
+    alert("⚠️ Registro não encontrado na memória.");
+    return;
+  }
+
+  const win = window.open("", "_blank");
+  win.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Detalhes do ASO</title>
+    </head>
+    <body>
+      ${montarHTMLASO(reg)}
+    </body>
+    </html>
+  `);
+  win.document.close();
+  win.focus();
+}
+
+// =========================
 // Funções extras dos botões
 // =========================
 
@@ -177,26 +243,22 @@ async function imprimirUltimoASO() {
 
   const printWindow = window.open("", "_blank");
   printWindow.document.write(`
+    <!doctype html>
     <html>
     <head>
       <meta charset="utf-8">
       <title>Imprimir ASO</title>
     </head>
-    <body style="font-family: system-ui; padding: 20px;">
-      <h1>ASO – Avaliação de Saúde Ocupacional</h1>
-      <p><strong>Nome:</strong> ${ultimo.nome}</p>
-      <p><strong>CPF:</strong> ${ultimo.cpf}</p>
-      <p><strong>Função:</strong> ${ultimo.funcao}</p>
-      <p><strong>Setor:</strong> ${ultimo.setor}</p>
-      <p><strong>Tipo de Exame:</strong> ${ultimo.tipo_exame}</p>
-      <p><strong>Data do Exame:</strong> ${ultimo.data_exame}</p>
-      <p><strong>Médico Responsável:</strong> ${ultimo.medico || "-"}</p>
-      <p><strong>Resultado:</strong> ${ultimo.resultado}</p>
+    <body>
+      ${montarHTMLASO(ultimo)}
+      <script>
+        window.print();
+      </script>
     </body>
     </html>
   `);
   printWindow.document.close();
-  printWindow.print();
+  printWindow.focus();
 }
 
 // "Exportar PDF" – por enquanto só placeholder
