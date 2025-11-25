@@ -65,7 +65,7 @@ async function salvarASO() {
 // --------- CARREGAR TABELA ---------
 async function carregarASO() {
   const tbody = document.querySelector("#tabelaASO tbody");
-  tbody.innerHTML = "<tr><td colspan='6'>Carregando...</td></tr>";
+  tbody.innerHTML = "<tr><td colspan='7'>Carregando...</td></tr>";
 
   try {
     const res = await fetch(`${API_BASE}/aso/records`);
@@ -73,15 +73,18 @@ async function carregarASO() {
       const msg = await res.text();
       console.error("Erro ao carregar ASO:", res.status, msg);
       tbody.innerHTML =
-        "<tr><td colspan='6'>Erro ao carregar registros.</td></tr>";
+        "<tr><td colspan='7'>Erro ao carregar registros.</td></tr>";
       return;
     }
 
     const lista = await res.json();
 
+    // 🔁 mantém um espelho no localStorage para o dashboard
+    localStorage.setItem("registrosASO", JSON.stringify(lista));
+
     if (!lista.length) {
       tbody.innerHTML =
-        "<tr><td colspan='6'>Nenhum ASO registrado ainda.</td></tr>";
+        "<tr><td colspan='7'>Nenhum ASO registrado ainda.</td></tr>";
       return;
     }
 
@@ -95,6 +98,12 @@ async function carregarASO() {
           <td>${item.tipo_exame}</td>
           <td>${item.data_exame}</td>
           <td>${item.resultado}</td>
+          <td>
+            <button class="btn danger" style="padding:4px 8px; font-size:12px;"
+                    onclick="deletarASO(${item.id})">
+              🗑 Excluir
+            </button>
+          </td>
         </tr>
       `;
       tbody.insertAdjacentHTML("beforeend", linha);
@@ -102,7 +111,33 @@ async function carregarASO() {
   } catch (err) {
     console.error("Erro de rede ao carregar ASO:", err);
     tbody.innerHTML =
-      "<tr><td colspan='6'>Erro de comunicação com o servidor.</td></tr>";
+      "<tr><td colspan='7'>Erro de comunicação com o servidor.</td></tr>";
+  }
+}
+
+// --------- DELETAR REGISTRO ---------
+async function deletarASO(id) {
+  if (!confirm("❓ Deseja realmente excluir este registro de ASO?")) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/aso/records/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const msg = await res.text();
+      console.error("Erro ao excluir ASO:", res.status, msg);
+      alert("❌ Erro ao excluir o registro.");
+      return;
+    }
+
+    await carregarASO();
+    alert("🗑 Registro excluído com sucesso!");
+  } catch (err) {
+    console.error("Erro de rede ao excluir ASO:", err);
+    alert("❌ Erro de comunicação com o servidor ao excluir.");
   }
 }
 
@@ -128,8 +163,7 @@ async function obterUltimoASO() {
   if (!res.ok) return null;
   const lista = await res.json();
   if (!lista.length) return null;
-  // como a API já devolve ordenado por created_at desc,
-  // o primeiro é o mais recente
+  // assumindo ordenação desc no backend: primeiro = mais recente
   return lista[0];
 }
 
@@ -178,5 +212,3 @@ async function exportarPDF_ASO() {
       "Os dados já estão vindo do banco (Supabase) direitinho."
   );
 }
-
-
