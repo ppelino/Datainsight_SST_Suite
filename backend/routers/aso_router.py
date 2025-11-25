@@ -66,15 +66,10 @@ def list_aso_records(db: Session = Depends(get_db)):
 
 @router.delete("/records/{record_id}")
 def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
-    """
-    Exclui um registro de ASO pelo ID.
-    """
-    # 1) Busca o registro
     aso = db.query(AsoRecord).filter(AsoRecord.id == record_id).first()
     if not aso:
         raise HTTPException(status_code=404, detail="Registro não encontrado.")
 
-    # 2) Se encontrou, deleta
     try:
         db.delete(aso)
         db.commit()
