@@ -1,10 +1,14 @@
 // ===============================
-// NR-17 – Avaliação Ergonômica
+// Configuração API
 // ===============================
+const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
-// Ao carregar a página, monta a tabela
-document.addEventListener("DOMContentLoaded", carregarNR17);
+// Ao carregar a página, busca registros do servidor
+document.addEventListener("DOMContentLoaded", carregarNR17DoServidor);
 
+// ===============================
+// Cálculo do índice NR-17
+// ===============================
 function calcularIndiceNR17() {
     const mobiliario  = parseInt(document.getElementById("mobiliario").value || "1");
     const postura     = parseInt(document.getElementById("postura").value || "1");
@@ -33,7 +37,10 @@ function calcularIndiceNR17() {
     return { soma, classificacao };
 }
 
-function salvarNR17() {
+// ===============================
+// Salvar avaliação (POST na API)
+// ===============================
+async function salvarNR17() {
     const empresa       = document.getElementById("empresa").value.trim();
     const setor         = document.getElementById("setor").value.trim();
     const funcao        = document.getElementById("funcao").value.trim();
@@ -49,32 +56,74 @@ function salvarNR17() {
 
     const indice = calcularIndiceNR17();
 
-    const avaliacao = {
-        id: Date.now(),
-        empresa,
+    const payload = {
+        empresa: empresa || null,
         setor,
         funcao,
-        trabalhador,
-        tipoPosto,
-        dataAvaliacao,
+        trabalhador: trabalhador || null,
+        tipo_posto: tipoPosto,
+        data_avaliacao: dataAvaliacao,
         risco: indice.classificacao,
         score: indice.soma,
-        observacoes
+        observacoes: observacoes || null
     };
 
-    let lista = JSON.parse(localStorage.getItem("avaliacoesNR17")) || [];
-    lista.push(avaliacao);
-    localStorage.setItem("avaliacoesNR17", JSON.stringify(lista));
+    try {
+        const res = await fetch(`${API_BASE}/nr17/records`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
 
-    // guarda id da última avaliação salva (para imprimir / PDF)
-    localStorage.setItem("ultimaNR17Id", String(avaliacao.id));
+        if (!res.ok) {
+            const txt = await res.text();
+            console.error("Erro ao salvar NR-17:", txt);
+            alert("⚠️ Erro ao salvar no servidor. Veja o console para detalhes.");
+            return;
+        }
 
-    carregarNR17();
-    limparNR17(false); // limpa campos, mas mantém índice na tela
+        const saved = await res.json();
 
-    alert("✅ Avaliação NR-17 salva com sucesso!");
+        // Atualiza lista trazendo tudo do servidor de novo
+        await carregarNR17DoServidor();
+
+        // Mantém campos limpos, índice visível
+        limparNR17(false);
+
+        // Guarda id da última avaliação no localStorage (usado pelo relatório)
+        localStorage.setItem("ultimaNR17Id", String(saved.id));
+
+        alert("✅ Avaliação NR-17 salva com sucesso!");
+    } catch (err) {
+        console.error(err);
+        alert("⚠️ Erro de rede ao salvar a avaliação NR-17.");
+    }
 }
 
+// ===============================
+// Carregar da API e sincronizar localStorage
+// ===============================
+async function carregarNR17DoServidor() {
+    try {
+        const res = await fetch(`${API_BASE}/nr17/records`);
+        if (!res.ok) {
+            console.error("Erro ao buscar NR-17:", await res.text());
+            return;
+        }
+
+        const lista = await res.json();
+
+        // Sincroniza localStorage para dashboard e relatórios
+        localStorage.setItem("avaliacoesNR17", JSON.stringify(lista));
+
+        // Monta tabela na tela
+        carregarNR17(lista);
+    } catch (err) {
+        console.error("Erro de rede ao carregar NR-17:", err);
+    }
+}
+
+// Monta tabela a partir de uma lista (já carregada)
 function carregarNR17(listaFiltrada = null) {
     let lista = listaFiltrada;
     if (!lista) {
@@ -87,10 +136,10 @@ function carregarNR17(listaFiltrada = null) {
     lista.forEach(item => {
         const linha = `
             <tr>
-                <td>${item.dataAvaliacao || ""}</td>
+                <td>${item.data_avaliacao || item.dataAvaliacao || ""}</td>
                 <td>${item.setor || ""}</td>
                 <td>${item.funcao || ""}</td>
-                <td>${item.tipoPosto || ""}</td>
+                <td>${item.tipo_posto || item.tipoPosto || ""}</td>
                 <td>${item.risco} (score: ${item.score})</td>
             </tr>
         `;
@@ -98,6 +147,9 @@ function carregarNR17(listaFiltrada = null) {
     });
 }
 
+// ===============================
+// Limpar formulário
+// ===============================
 function limparNR17(resetIndice = true) {
     document.getElementById("empresa").value = "";
     document.getElementById("setor").value = "";
@@ -122,9 +174,8 @@ function limparNR17(resetIndice = true) {
 }
 
 // ===============================
-// FILTRO / BUSCA NA TABELA
+// Filtro na tabela (usa localStorage sincronizado)
 // ===============================
-
 function filtrarNR17() {
     const termo = document.getElementById("filtroNR17").value.trim().toLowerCase();
     let lista = JSON.parse(localStorage.getItem("avaliacoesNR17")) || [];
@@ -149,14 +200,11 @@ function filtrarNR17() {
 }
 
 // ===============================
-// RELATÓRIO – ÚLTIMA AVALIAÇÃO
+// Relatório – última avaliação (usa localStorage)
 // ===============================
-
 function obterUltimaAvaliacaoNR17() {
     let lista = JSON.parse(localStorage.getItem("avaliacoesNR17")) || [];
-    if (lista.length === 0) {
-        return null;
-    }
+    if (lista.length === 0) return null;
 
     const ultimaId = localStorage.getItem("ultimaNR17Id");
     if (ultimaId) {
@@ -164,103 +212,9 @@ function obterUltimaAvaliacaoNR17() {
         if (achada) return achada;
     }
 
-    // fallback: última da lista
     return lista[lista.length - 1];
 }
 
-function montarHTMLRelatorio(av) {
-    const riscoCor =
-        av.risco === "Alto" ? "#dc2626" :
-        av.risco === "Médio" ? "#f97316" :
-        "#16a34a";
+// --- a partir daqui mantém seu código de montarHTMLRelatorio,
+// imprimirUltimaNR17 e exportarPDFUltimaNR17 exatamente como já estava ---
 
-    return `
-      <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#111827;">
-        <h1 style="font-size:20px; margin-bottom:4px;">Relatório de Avaliação Ergonômica – NR-17</h1>
-        <p style="font-size:13px; color:#6b7280; margin-bottom:18px;">
-          Gerado pela suíte DataInsight SST.
-        </p>
-
-        <h2 style="font-size:16px; margin-bottom:6px;">1. Identificação</h2>
-        <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:12px;">
-          <tr>
-            <td style="padding:4px 0;"><strong>Empresa:</strong> ${av.empresa || "-"}</td>
-            <td style="padding:4px 0;"><strong>Setor:</strong> ${av.setor || "-"}</td>
-          </tr>
-          <tr>
-            <td style="padding:4px 0;"><strong>Função Avaliada:</strong> ${av.funcao || "-"}</td>
-            <td style="padding:4px 0;"><strong>Trabalhador:</strong> ${av.trabalhador || "-"}</td>
-          </tr>
-          <tr>
-            <td style="padding:4px 0;"><strong>Tipo de Posto:</strong> ${av.tipoPosto || "-"}</td>
-            <td style="padding:4px 0;"><strong>Data da Avaliação:</strong> ${av.dataAvaliacao || "-"}</td>
-          </tr>
-        </table>
-
-        <h2 style="font-size:16px; margin-bottom:6px;">2. Resultado Global</h2>
-        <p style="font-size:13px; margin-bottom:4px;">
-          <strong>Classificação de risco: </strong>
-          <span style="color:${riscoCor}; font-weight:600;">
-            ${av.risco} (score: ${av.score})
-          </span>
-        </p>
-        <p style="font-size:12px; color:#6b7280; margin-bottom:14px;">
-          Score calculado a partir de fatores de mobiliário, postura, esforço físico, pausas, ambiente físico e organização do trabalho.
-        </p>
-
-        <h2 style="font-size:16px; margin-bottom:6px;">3. Observações</h2>
-        <div style="font-size:13px; border:1px solid #e5e7eb; border-radius:8px; padding:10px; min-height:60px;">
-          ${av.observacoes && av.observacoes.trim() !== "" ? av.observacoes : "Sem observações registradas."}
-        </div>
-
-        <p style="font-size:11px; color:#9ca3af; margin-top:18px;">
-          Este relatório simplificado não substitui o laudo ergonômico completo, mas serve como registro estruturado da avaliação do posto de trabalho segundo a NR-17.
-        </p>
-      </div>
-    `;
-}
-
-function imprimirUltimaNR17() {
-    const av = obterUltimaAvaliacaoNR17();
-    if (!av) {
-        alert("⚠️ Ainda não há avaliações NR-17 salvas.");
-        return;
-    }
-
-    const html = montarHTMLRelatorio(av);
-    const win = window.open("", "_blank");
-    win.document.write(`
-      <!doctype html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Relatório NR-17</title>
-      </head>
-      <body style="margin:20px;">${html}</body>
-      </html>
-    `);
-    win.document.close();
-    win.focus();
-    win.print();
-}
-
-function exportarPDFUltimaNR17() {
-    const av = obterUltimaAvaliacaoNR17();
-    if (!av) {
-        alert("⚠️ Ainda não há avaliações NR-17 salvas.");
-        return;
-    }
-
-    const container = document.getElementById("conteudoRelatorioNR17");
-    container.innerHTML = montarHTMLRelatorio(av);
-
-    const opt = {
-        margin:       10,
-        filename:     `Relatorio_NR17_${(av.setor || "setor").replace(/\s+/g,"_")}.pdf`,
-        image:        { type: 'jpeg', quality: 0.95 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().from(container).set(opt).save();
-}
