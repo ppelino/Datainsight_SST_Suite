@@ -83,10 +83,14 @@
 
     </div>
 
-    <div class="actions-row">
+    <!-- 🔥 AQUI: BARRA DE AÇÕES COMPLETA -->
+    <div class="actions-row" style="display:flex; gap:10px; margin-top:20px;">
       <button class="btn primary" onclick="salvarASO()">💾 Salvar Registro</button>
       <button class="btn secondary" onclick="limparFormulario()">🧹 Limpar</button>
+      <button class="btn secondary" onclick="imprimirUltimoASO()">🖨️ Imprimir última avaliação</button>
+      <button class="btn secondary" onclick="exportarPDF_ASO()">📄 Exportar PDF (última)</button>
     </div>
+
   </div>
 
   <div class="card">
@@ -113,8 +117,19 @@ function logout() {
   localStorage.clear();
   window.location.href = "index.html";
 }
+
+function limparFormulario() {
+  document.querySelectorAll("input, select").forEach(el => el.value = "");
+}
+
+function imprimirUltimoASO() {
+  window.print();
+}
+
+function exportarPDF_ASO() {
+  alert("📄 Exportar PDF será integrado ao backend.");
+}
 </script>
 
 </body>
 </html>
-
