@@ -107,6 +107,25 @@ class Action(Base):
 
     risk = relationship("Risk", back_populates="actions")
 
+# ============================================================
+#  MÓDULO PCMSO / ASO
+# ============================================================
+
+class AsoRecord(Base):
+    __tablename__ = "aso_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    nome = Column(String)
+    cpf = Column(String)
+    funcao = Column(String)
+    setor = Column(String)
+    tipo_exame = Column(String)
+    data_exame = Column(Date)
+    medico = Column(String)
+    resultado = Column(String)
+
 
 
 
