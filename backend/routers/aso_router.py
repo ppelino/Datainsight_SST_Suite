@@ -64,8 +64,10 @@ def list_aso_records(db: Session = Depends(get_db)):
     registros = db.query(AsoRecord).order_by(AsoRecord.created_at.desc()).all()
     return registros
 
-@router.delete("/aso/records/{record_id}")
-def delete_aso_record(record_id: int):
+@router.delete("/records/{record_id}")
+async def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
+    ...
+
     try:
         query = "DELETE FROM aso_records WHERE id = %s"
         session = engine.raw_connection()
