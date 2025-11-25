@@ -132,7 +132,8 @@ async function deletarASO(id) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/aso/records/${id}`, {
+    // 👇 aqui é o ajuste: /aso/aso/records/{id}
+    const res = await fetch(`${API_BASE}/aso/aso/records/${id}`, {
       method: "DELETE",
     });
 
@@ -150,6 +151,7 @@ async function deletarASO(id) {
     alert("❌ Erro de comunicação com o servidor ao excluir.");
   }
 }
+
 
 // --------- LIMPAR FORM ---------
 function limparFormulario() {
