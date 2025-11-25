@@ -7,6 +7,30 @@
 
   <link rel="stylesheet" href="assets/branding.css">
 
+  <!-- Ajustes específicos para o dashboard -->
+  <style>
+    /* Deixa o container mais enxuto e sem altura exagerada */
+    .container {
+      max-width: 1180px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+    }
+
+    /* Garante que os cards se organizem bem em várias larguras */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    /* Limita a altura dos gráficos para evitar scroll gigantesco */
+    .card canvas {
+      max-height: 260px;
+      height: 260px;
+    }
+  </style>
+
   <!-- Chart.js para gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -72,7 +96,7 @@
   <div class="card-grid mt-3">
     <div class="card">
       <h3>Distribuição de Registros por Módulo</h3>
-      <canvas id="chartModulos" height="200"></canvas>
+      <canvas id="chartModulos"></canvas>
       <p class="section-subtitle mt-2">
         Quantidade de registros nos módulos ASO, NR-17 e LTCAT.
       </p>
@@ -80,7 +104,7 @@
 
     <div class="card">
       <h3>Perfil de Risco — NR-17</h3>
-      <canvas id="chartNR17Risco" height="200"></canvas>
+      <canvas id="chartNR17Risco"></canvas>
       <p class="section-subtitle mt-2">
         Quantidade de avaliações classificadas como Baixo, Médio e Alto risco.
       </p>
@@ -90,7 +114,7 @@
   <div class="card-grid mt-3">
     <div class="card">
       <h3>Agentes nocivos mais registrados — LTCAT</h3>
-      <canvas id="chartAgentesLTCAT" height="200"></canvas>
+      <canvas id="chartAgentesLTCAT"></canvas>
       <p class="section-subtitle mt-2">
         Top 5 agentes com maior número de ocorrências nos registros LTCAT.
       </p>
@@ -131,7 +155,7 @@ function getArrayFromLocalStorage(key) {
 
 // tentativa de descobrir ASO em diferentes chaves
 function getASORegistros() {
-  const possibleKeys = ["registrosASO", "asosRegistrados", "registrosPCMSO"];
+  const possibleKeys = ["asos", "registrosASO", "asosRegistrados", "registrosPCMSO"];
   for (const key of possibleKeys) {
     const arr = getArrayFromLocalStorage(key);
     if (arr.length > 0) return arr;
@@ -284,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ordenar por data (desc) – datas no formato AAAA-MM-DD funcionam bem
+  // ordenar por data (desc)
   atividades.sort((a, b) => {
     const da = a.data || "";
     const db = b.data || "";
