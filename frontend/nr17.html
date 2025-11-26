@@ -10,6 +10,91 @@
   <!-- Biblioteca para gerar PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 
+  <!-- Estilos específicos da tela NR-17 -->
+  <style>
+    .nr17-grid {
+      max-width: 1500px;
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      column-gap: 24px;
+      align-items: flex-start;
+    }
+
+    .nr17-sidebar.card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .nr17-sidebar h1 {
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+    }
+
+    .nr17-sidebar p {
+      margin: 0;
+    }
+
+    .nr17-sidebar .risk-indicator {
+      margin-top: 8px;
+      font-size: 0.95rem;
+    }
+
+    .nr17-sidebar .risk-indicator strong {
+      font-size: 1.05rem;
+    }
+
+    .nr17-sidebar .btn {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .nr17-main {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .nr17-main .form-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    @media (min-width: 900px) {
+      .nr17-main .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .nr17-main .form-grid > label[style*="grid-column: 1 / -1"],
+      .nr17-main .form-grid > label.nr17-full {
+        grid-column: 1 / -1 !important;
+      }
+    }
+
+    /* Tabela ocupa largura total do card */
+    #tabelaNR17 {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #tabelaNR17 th,
+    #tabelaNR17 td {
+      padding: 6px 8px;
+    }
+
+    /* Layout responsivo: empilha tudo no mobile */
+    @media (max-width: 900px) {
+      .nr17-grid {
+        display: block;
+        margin: 16px auto;
+      }
+      .nr17-sidebar {
+        margin-bottom: 16px;
+      }
+    }
+  </style>
+
   <script src="nr17.js" defer></script>
 </head>
 
@@ -19,7 +104,7 @@
   <div class="wrap">
     <div class="logo">
       <img src="assets/datainsight.jpg" alt="Logo">
-      <span>NR-17 — Avaliação Ergonômica</span>
+      <span>DataInsight SST Suite</span>
     </div>
 
     <div style="margin-left:auto; display:flex; gap:8px;">
@@ -33,152 +118,160 @@
   </div>
 </nav>
 
-<div class="container">
+<main class="page">
+  <div class="nr17-grid">
 
-  <!-- CARD PRINCIPAL – FORMULÁRIO -->
-  <div class="card">
-    <h2>🪑 NR-17 — Avaliação Ergonômica de Posto de Trabalho</h2>
-    <p class="section-subtitle">
-      Registre as condições ergonômicas do posto e obtenha uma classificação simples de risco.
-    </p>
+    <!-- COLUNA ESQUERDA: TÍTULO + ÍNDICE + AÇÕES RÁPIDAS -->
+    <section class="card nr17-sidebar">
+      <div>
+        <h1>NR-17 — Avaliação Ergonômica</h1>
+        <p>Registre as condições ergonômicas do posto e obtenha uma classificação simples de risco.</p>
+      </div>
 
-    <div class="form-grid mt-3">
-
-      <label>Empresa (opcional)
-        <input type="text" id="empresa" placeholder="Ex: Metalúrgica Alfa LTDA">
-      </label>
-
-      <label>Setor
-        <input type="text" id="setor" placeholder="Ex: Administrativo / Produção">
-      </label>
-
-      <label>Função Avaliada
-        <input type="text" id="funcao" placeholder="Ex: Operador de Máquina / Digitador">
-      </label>
-
-      <label>Trabalhador (opcional)
-        <input type="text" id="trabalhador" placeholder="Nome ou código">
-      </label>
-
-      <label>Tipo de Posto
-        <select id="tipoPosto">
-          <option value="Administrativo">Administrativo</option>
-          <option value="Produção">Produção</option>
-          <option value="Atendimento">Atendimento</option>
-          <option value="Outro">Outro</option>
-        </select>
-      </label>
-
-      <label>Data da Avaliação
-        <input type="date" id="dataAvaliacao">
-      </label>
-
-      <label>Mobiliário / Ajustes
-        <select id="mobiliario" onchange="calcularIndiceNR17()">
-          <option value="1">Adequado (ajustes suficientes)</option>
-          <option value="2">Parcialmente adequado</option>
-          <option value="3">Inadequado / sem ajustes</option>
-        </select>
-      </label>
-
-      <label>Posturas de Trabalho
-        <select id="postura" onchange="calcularIndiceNR17()">
-          <option value="1">Confortável / poucas queixas</option>
-          <option value="2">Algum desconforto / posturas mantidas</option>
-          <option value="3">Posturas forçadas / queixas frequentes</option>
-        </select>
-      </label>
-
-      <label>Esforço Físico / Carga
-        <select id="esforco" onchange="calcularIndiceNR17()">
-          <option value="1">Esforço leve</option>
-          <option value="2">Esforço moderado</option>
-          <option value="3">Esforço intenso / repetitivo</option>
-        </select>
-      </label>
-
-      <label>Pausas / Ritmo de Trabalho
-        <select id="pausas" onchange="calcularIndiceNR17()">
-          <option value="1">Pausas adequadas</option>
-          <option value="2">Pausas insuficientes</option>
-          <option value="3">Sem pausas / ritmo elevado</option>
-        </select>
-      </label>
-
-      <label>Ambiente Físico (iluminação, ruído, temperatura)
-        <select id="ambiente" onchange="calcularIndiceNR17()">
-          <option value="1">Condições adequadas</option>
-          <option value="2">Alguns incômodos</option>
-          <option value="3">Condições desfavoráveis</option>
-        </select>
-      </label>
-
-      <label>Organização do Trabalho / Exigências cognitivas
-        <select id="organizacao" onchange="calcularIndiceNR17()">
-          <option value="1">Organizado, demandas claras</option>
-          <option value="2">Alguma pressão / demandas pouco claras</option>
-          <option value="3">Alta pressão / demandas conflitantes</option>
-        </select>
-      </label>
-
-      <label style="grid-column: 1 / -1;">Observações (opcional)
-        <textarea id="observacoes" rows="3" placeholder="Descreva situações críticas, queixas, sugestões de melhoria..."></textarea>
-      </label>
-
-    </div>
-
-    <div class="actions-row">
-      <span class="section-subtitle">
+      <div class="risk-indicator">
         Índice global de risco:
         <strong id="resultadoRisco">–</strong>
-      </span>
-    </div>
+      </div>
 
-    <div class="actions-row">
-      <button class="btn primary" onclick="salvarNR17()">💾 Salvar Avaliação</button>
-      <button class="btn secondary" onclick="limparNR17()">🧹 Limpar</button>
-      <button class="btn secondary" onclick="imprimirUltimaNR17()">🖨️ Imprimir última avaliação</button>
-      <button class="btn secondary" onclick="exportarPDFUltimaNR17()">📄 Exportar PDF (última)</button>
-    </div>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+        <button class="btn primary" onclick="salvarNR17()">💾 Salvar Avaliação</button>
+        <button class="btn secondary" onclick="limparNR17()">🧹 Limpar</button>
+        <button class="btn secondary" onclick="imprimirUltimaNR17()">🖨️ Imprimir última avaliação</button>
+        <button class="btn secondary" onclick="exportarPDFUltimaNR17()">📄 Exportar PDF (última)</button>
+      </div>
+    </section>
 
+    <!-- COLUNA DIREITA: FORMULÁRIO + TABELA -->
+    <div class="nr17-main">
+
+      <!-- CARD FORMULÁRIO -->
+      <section class="card">
+        <h2>🪑 Dados da Avaliação de Posto de Trabalho</h2>
+
+        <div class="form-grid mt-3">
+
+          <label>Empresa (opcional)
+            <input type="text" id="empresa" placeholder="Ex: Metalúrgica Alfa LTDA">
+          </label>
+
+          <label>Setor
+            <input type="text" id="setor" placeholder="Ex: Administrativo / Produção">
+          </label>
+
+          <label>Função Avaliada
+            <input type="text" id="funcao" placeholder="Ex: Operador de Máquina / Digitador">
+          </label>
+
+          <label>Trabalhador (opcional)
+            <input type="text" id="trabalhador" placeholder="Nome ou código">
+          </label>
+
+          <label>Tipo de Posto
+            <select id="tipoPosto">
+              <option value="Administrativo">Administrativo</option>
+              <option value="Produção">Produção</option>
+              <option value="Atendimento">Atendimento</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </label>
+
+          <label>Data da Avaliação
+            <input type="date" id="dataAvaliacao">
+          </label>
+
+          <label>Mobiliário / Ajustes
+            <select id="mobiliario" onchange="calcularIndiceNR17()">
+              <option value="1">Adequado (ajustes suficientes)</option>
+              <option value="2">Parcialmente adequado</option>
+              <option value="3">Inadequado / sem ajustes</option>
+            </select>
+          </label>
+
+          <label>Posturas de Trabalho
+            <select id="postura" onchange="calcularIndiceNR17()">
+              <option value="1">Confortável / poucas queixas</option>
+              <option value="2">Algum desconforto / posturas mantidas</option>
+              <option value="3">Posturas forçadas / queixas frequentes</option>
+            </select>
+          </label>
+
+          <label>Esforço Físico / Carga
+            <select id="esforco" onchange="calcularIndiceNR17()">
+              <option value="1">Esforço leve</option>
+              <option value="2">Esforço moderado</option>
+              <option value="3">Esforço intenso / repetitivo</option>
+            </select>
+          </label>
+
+          <label>Pausas / Ritmo de Trabalho
+            <select id="pausas" onchange="calcularIndiceNR17()">
+            <option value="1">Pausas adequadas</option>
+              <option value="2">Pausas insuficientes</option>
+              <option value="3">Sem pausas / ritmo elevado</option>
+            </select>
+          </label>
+
+          <label>Ambiente Físico (iluminação, ruído, temperatura)
+            <select id="ambiente" onchange="calcularIndiceNR17()">
+              <option value="1">Condições adequadas</option>
+              <option value="2">Alguns incômodos</option>
+              <option value="3">Condições desfavoráveis</option>
+            </select>
+          </label>
+
+          <label>Organização do Trabalho / Exigências cognitivas
+            <select id="organizacao" onchange="calcularIndiceNR17()">
+              <option value="1">Organizado, demandas claras</option>
+              <option value="2">Alguma pressão / demandas pouco claras</option>
+              <option value="3">Alta pressão / demandas conflitantes</option>
+            </select>
+          </label>
+
+          <label class="nr17-full">Observações (opcional)
+            <textarea id="observacoes" rows="3" placeholder="Descreva situações críticas, queixas, sugestões de melhoria..."></textarea>
+          </label>
+
+        </div>
+      </section>
+
+      <!-- CARD TABELA + FILTRO -->
+      <section class="card">
+        <h2>📋 Avaliações Registradas — NR-17</h2>
+
+        <div class="actions-row">
+          <input
+            type="text"
+            id="filtroNR17"
+            placeholder="Filtrar por setor, função ou risco..."
+            oninput="filtrarNR17()"
+            style="flex:1; max-width:320px;"
+          >
+        </div>
+
+        <table class="table" id="tabelaNR17">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Setor</th>
+              <th>Função</th>
+              <th>Tipo de Posto</th>
+              <th>Classificação de Risco</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- ÁREA OCULTA PARA GERAR PDF BONITINHO -->
+      <div id="areaRelatorioNR17" style="display:none;">
+        <div id="conteudoRelatorioNR17" style="padding:20px; font-family:system-ui;">
+          <!-- O JS preenche isso aqui antes de gerar PDF -->
+        </div>
+      </div>
+
+    </div>
   </div>
-
-  <!-- CARD TABELA + FILTRO -->
-  <div class="card">
-    <h2>📋 Avaliações Registradas — NR-17</h2>
-
-    <div class="actions-row">
-      <input
-        type="text"
-        id="filtroNR17"
-        placeholder="Filtrar por setor, função ou risco..."
-        oninput="filtrarNR17()"
-        style="flex:1; max-width:320px;"
-      >
-    </div>
-
-    <table class="table" id="tabelaNR17">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Setor</th>
-          <th>Função</th>
-          <th>Tipo de Posto</th>
-          <th>Classificação de Risco</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- ÁREA OCULTA PARA GERAR PDF BONITINHO -->
-  <div id="areaRelatorioNR17" style="display:none;">
-    <div id="conteudoRelatorioNR17" style="padding:20px; font-family:system-ui;">
-      <!-- O JS preenche isso aqui antes de gerar PDF -->
-    </div>
-  </div>
-
-</div>
+</main>
 
 <script>
 function logout() {
