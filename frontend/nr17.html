@@ -134,7 +134,7 @@
       </div>
 
       <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-        <button class="btn primary" onclick="salvarNR17()">💾 Salvar Avaliação</button>
+        <button id="btn-salvar-nr17" class="btn primary" onclick="salvarNR17()">💾 Salvar Avaliação</button>
         <button class="btn secondary" onclick="limparNR17()">🧹 Limpar</button>
         <button class="btn secondary" onclick="imprimirUltimaNR17()">🖨️ Imprimir última avaliação</button>
         <button class="btn secondary" onclick="exportarPDFUltimaNR17()">📄 Exportar PDF (última)</button>
@@ -249,16 +249,17 @@
         </div>
 
         <table class="table" id="tabelaNR17">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Setor</th>
-              <th>Função</th>
-              <th>Tipo de Posto</th>
-              <th>Classificação de Risco</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Setor</th>
+            <th>Função</th>
+            <th>Tipo de Posto</th>
+            <th>Classificação de Risco</th>
+            <th style="width:110px; text-align:center;">Ações</th>
+          </tr>
+        </thead>
+            <tbody></tbody>
         </table>
       </section>
 
