@@ -2,432 +2,325 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Datainsight SST Suite — PGR / NR-01</title>
+  <title>DataInsight SST Suite — PGR / NR-01</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Se você já usa algum CSS global (branding.css, etc.), importe aqui -->
   <link rel="stylesheet" href="assets/branding.css">
-
-  <style>
-    body {
-      background: #f5f7fb;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      margin: 0;
-    }
-
-    nav {
-      background: #ffffff;
-      border-bottom: 1px solid #e4e7f2;
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    nav .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    nav .logo img {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-    }
-
-    nav .logo span {
-      font-weight: 600;
-      font-size: 18px;
-    }
-
-    .btn {
-      border-radius: 999px;
-      padding: 8px 16px;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(90deg, #00b894, #0984e3);
-      color: #fff;
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #d0d4e4;
-      color: #2d3436;
-    }
-
-    .container {
-      max-width: 1180px;
-      margin: 24px auto;
-      padding: 0 16px 40px;
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 26px;
-    }
-
-    .subtitle {
-      color: #636e72;
-      margin-bottom: 24px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 16px 18px;
-      box-shadow: 0 6px 20px rgba(15, 35, 95, 0.06);
-      border: 1px solid #edf0fb;
-    }
-
-    .card h2 {
-      margin: 0 0 4px;
-      font-size: 18px;
-    }
-
-    .card small {
-      color: #7f8c8d;
-    }
-
-    form {
-      display: grid;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    label {
-      font-size: 13px;
-      color: #636e72;
-    }
-
-    input, select, textarea {
-      border-radius: 8px;
-      border: 1px solid #dfe4f2;
-      padding: 6px 8px;
-      font-size: 14px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    textarea {
-      min-height: 60px;
-      resize: vertical;
-    }
-
-    .section-title {
-      font-weight: 600;
-      margin: 24px 0 8px;
-      font-size: 16px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin-top: 8px;
-    }
-
-    th, td {
-      text-align: left;
-      padding: 6px 8px;
-      border-bottom: 1px solid #edf0fb;
-    }
-
-    tr:hover {
-      background-color: #f7f9ff;
-      cursor: pointer;
-    }
-
-    .pill {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-    }
-
-    .pill-green { background: #d1f5e8; color: #1e7e52; }
-    .pill-yellow { background: #fff3bf; color: #a88400; }
-    .pill-red { background: #ffd6d6; color: #b33939; }
-
-    .badge-id {
-      font-size: 11px;
-      color: #636e72;
-    }
-
-    .highlight {
-      outline: 2px solid #0984e3;
-      outline-offset: 2px;
-    }
-
-    @media (max-width: 720px) {
-      nav {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-      h1 {
-        font-size: 22px;
-      }
-    }
-  </style>
 </head>
 <body>
 
-<nav>
-  <div class="logo">
-    <img src="assets/datainsight.jpg" alt="Datainsight SST">
-    <span>Datainsight SST Suite</span>
-  </div>
-  <div style="display:flex; gap:8px;">
-    <a href="dashboard.html" class="btn btn-outline">Voltar ao Dashboard</a>
+<nav class="nav">
+  <div class="wrap">
+    <div class="logo">
+      <img src="assets/datainsight.jpg" alt="Logo DataInsight SST">
+      <span>DataInsight SST Suite</span>
+    </div>
+
+    <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+      <a class="btn secondary" href="dashboard.html">← Voltar ao Dashboard</a>
+    </div>
   </div>
 </nav>
 
-<div class="container">
-<h1>PGR / NR-01 (v2)</h1>
-  <p class="subtitle">
-    Cadastre empresas, setores, perigos, riscos e ações de controle em uma única tela.
-  </p>
+<main class="page">
+  <div class="wrap">
+    <header style="margin-bottom: 16px;">
+      <h1>PGR / NR-01 (v2)</h1>
+      <p>Cadastre empresas, setores, perigos, riscos e ações de controle em uma única tela.</p>
+    </header>
 
-  <!-- 🔥 BARRA DE AÇÕES GERAL DO PGR -->
-  <div class="card" style="margin-bottom:24px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <span style="font-size:14px; color:#636e72; margin-right:8px;">Ações rápidas:</span>
-    <button class="btn btn-outline" onclick="limparPGR()">🧹 Limpar tela</button>
-    <button class="btn btn-primary" onclick="imprimirPGR()">🖨️ Imprimir relatório</button>
-    <button class="btn btn-outline" onclick="exportarPDF_PGR()">📄 Exportar PDF</button>
-  </div>
+    <!-- Ações rápidas -->
+    <section class="card" style="margin-bottom: 16px;">
+      <div class="card-body" style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="btn-clear-all" class="btn secondary">🧹 Limpar tela</button>
+        <button id="btn-print" class="btn secondary">🖨️ Imprimir relatório</button>
+        <button id="btn-export-pdf" class="btn secondary">⬇️ Exportar PDF</button>
+      </div>
+    </section>
 
-  <!-- EMPRESAS + SETORES -->
-  <div class="grid">
-    <div class="card" id="card-companies">
-      <h2>Empresas</h2>
-      <small>Selecione a empresa para gerenciar seu PGR.</small>
+    <div class="grid-2">
+      <!-- EMPRESAS / SETORES -->
+      <div class="stack-vertical">
 
-      <form id="form-company">
-        <label>Nome da empresa</label>
-        <input type="text" name="name" required>
+        <!-- Empresas -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Empresas</h2>
+            <p>Selecione a empresa para gerenciar seu PGR.</p>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="company-name">Nome da empresa</label>
+                <input id="company-name" type="text" placeholder="Razão social">
+              </div>
 
-        <label>CNPJ</label>
-        <input type="text" name="cnpj">
+              <div class="form-group">
+                <label for="company-cnpj">CNPJ</label>
+                <input id="company-cnpj" type="text" placeholder="Somente números">
+              </div>
 
-        <label>Endereço</label>
-        <input type="text" name="endereco">
+              <div class="form-group">
+                <label for="company-address">Endereço</label>
+                <input id="company-address" type="text" placeholder="Rua, nº, bairro, cidade">
+              </div>
 
-        <label>Atividade principal</label>
-        <input type="text" name="atividade">
+              <div class="form-group">
+                <label for="company-activity">Atividade principal</label>
+                <input id="company-activity" type="text" placeholder="Ex.: Comércio varejista">
+              </div>
 
-        <label>Grau de risco (1 a 4)</label>
-        <input type="number" name="grau_risco" min="1" max="4">
+              <div class="form-group">
+                <label for="company-risk">Grau de risco (1 a 4)</label>
+                <input id="company-risk" type="number" min="1" max="4" step="1">
+              </div>
+            </div>
 
-        <button type="submit" class="btn btn-primary" style="margin-top:8px;">Salvar empresa</button>
-      </form>
+            <div style="margin-top:12px; text-align:right;">
+              <button id="btn-save-company" class="btn primary">Salvar empresa</button>
+            </div>
 
-      <table class="data-table" id="companies-table">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Empresa</th>
-      <th>CNPJ</th>
-      <th>Grau</th>
-      <th style="width: 110px; text-align:center;">Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- linhas via JS -->
-  </tbody>
-</table>
+            <h3 style="margin-top:16px;">Empresas cadastradas</h3>
+            <div class="table-wrapper">
+              <table class="data-table" id="companies-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Empresa</th>
+                    <th>CNPJ</th>
+                    <th>Grau</th>
+                    <th style="width:110px; text-align:center;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- linhas via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
+        <!-- Setores -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Setores</h2>
+            <p>Vinculados à empresa selecionada.</p>
+            <small id="current-company-label">Nenhuma empresa selecionada.</small>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="sector-name">Nome do setor</label>
+                <input id="sector-name" type="text" placeholder="Ex.: Produção, Escritório...">
+              </div>
 
-    <div class="card" id="card-sectors">
-      <h2>Setores</h2>
-      <small>Vinculados à empresa selecionada.</small>
+              <div class="form-group">
+                <label for="sector-description">Descrição</label>
+                <textarea id="sector-description" rows="2" placeholder="Descrição resumida do setor"></textarea>
+              </div>
+            </div>
 
-      <p id="current-company" class="badge-id">Nenhuma empresa selecionada.</p>
+            <div style="margin-top:12px; text-align:right;">
+              <button id="btn-save-sector" class="btn primary">Salvar setor</button>
+            </div>
 
-      <form id="form-sector">
-        <label>Nome do setor</label>
-        <input type="text" name="nome" required>
+            <h3 style="margin-top:16px;">Setores cadastrados</h3>
+            <div class="table-wrapper">
+              <table class="data-table" id="sectors-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Setor</th>
+                    <th>Descrição</th>
+                    <th style="width:110px; text-align:center;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- linhas via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
-        <label>Descrição</label>
-        <textarea name="descricao"></textarea>
+      </div>
 
-        <button type="submit" class="btn btn-primary" style="margin-top:8px;" disabled id="btn-save-sector">
-          Salvar setor
-        </button>
-      </form>
+      <!-- PERIGOS / RISCOS / AÇÕES -->
+      <div class="stack-vertical">
 
-      <div class="section-title">Setores cadastrados</div>
-      <table id="table-sectors">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Setor</th>
-            <th>Descrição</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+        <!-- Perigos -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Perigos</h2>
+            <p>Vinculados ao setor selecionado.</p>
+            <small id="current-sector-label">Nenhum setor selecionado.</small>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="hazard-name">Nome do perigo</label>
+                <input id="hazard-name" type="text" placeholder="Ex.: Ruído, Poeira, Postura estática...">
+              </div>
+
+              <div class="form-group">
+                <label for="hazard-agent">Agente</label>
+                <input id="hazard-agent" type="text" placeholder="Ex.: Equipamento X, Produto Y">
+              </div>
+
+              <div class="form-group">
+                <label for="hazard-source">Fonte</label>
+                <input id="hazard-source" type="text" placeholder="Fonte geradora do perigo">
+              </div>
+
+              <div class="form-group">
+                <label for="hazard-description">Descrição</label>
+                <textarea id="hazard-description" rows="2"></textarea>
+              </div>
+            </div>
+
+            <div style="margin-top:12px; text-align:right;">
+              <button id="btn-save-hazard" class="btn primary">Salvar perigo</button>
+            </div>
+
+            <h3 style="margin-top:16px;">Perigos cadastrados</h3>
+            <div class="table-wrapper">
+              <table class="data-table" id="hazards-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Perigo</th>
+                    <th>Agente</th>
+                    <th>Fonte</th>
+                    <th style="width:110px; text-align:center;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Riscos -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Riscos</h2>
+            <p>Avaliação qualitativa do perigo selecionado.</p>
+            <small id="current-hazard-label">Nenhum perigo selecionado.</small>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="risk-probability">Probabilidade (1 a 5)</label>
+                <input id="risk-probability" type="number" min="1" max="5">
+              </div>
+
+              <div class="form-group">
+                <label for="risk-severity">Severidade (1 a 5)</label>
+                <input id="risk-severity" type="number" min="1" max="5">
+              </div>
+
+              <div class="form-group">
+                <label for="risk-measures">Medidas existentes</label>
+                <textarea id="risk-measures" rows="2"></textarea>
+              </div>
+            </div>
+
+            <div style="margin-top:12px; text-align:right;">
+              <button id="btn-save-risk" class="btn primary">Salvar risco</button>
+            </div>
+
+            <h3 style="margin-top:16px;">Riscos cadastrados</h3>
+            <div class="table-wrapper">
+              <table class="data-table" id="risks-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nível</th>
+                    <th>P</th>
+                    <th>S</th>
+                    <th>Medidas existentes</th>
+                    <th style="width:110px; text-align:center;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Ações de Controle -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Ações de Controle</h2>
+            <p>Plano de ação para o risco selecionado.</p>
+            <small id="current-risk-label">Nenhum risco selecionado.</small>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="action-recommendation">Recomendação</label>
+                <textarea id="action-recommendation" rows="2"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="action-type">Tipo (EPI, EPC, administrativa...)</label>
+                <input id="action-type" type="text">
+              </div>
+
+              <div class="form-group">
+                <label for="action-deadline">Prazo</label>
+                <input id="action-deadline" type="date">
+              </div>
+
+              <div class="form-group">
+                <label for="action-responsible">Responsável</label>
+                <input id="action-responsible" type="text">
+              </div>
+
+              <div class="form-group">
+                <label for="action-status">Status</label>
+                <select id="action-status">
+                  <option value="Pendente">Pendente</option>
+                  <option value="Em andamento">Em andamento</option>
+                  <option value="Concluído">Concluído</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top:12px; text-align:right;">
+              <button id="btn-save-action" class="btn primary">Salvar ação</button>
+            </div>
+
+            <h3 style="margin-top:16px;">Ações cadastradas</h3>
+            <div class="table-wrapper">
+              <table class="data-table" id="actions-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Recomendação</th>
+                    <th>Tipo</th>
+                    <th>Prazo</th>
+                    <th>Status</th>
+                    <th style="width:110px; text-align:center;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
     </div>
   </div>
-
-  <!-- PERIGOS + RISCOS + AÇÕES -->
-  <div class="grid">
-    <div class="card" id="card-hazards">
-      <h2>Perigos</h2>
-      <small>Vinculados ao setor selecionado.</small>
-
-      <p id="current-sector" class="badge-id">Nenhum setor selecionado.</p>
-
-      <form id="form-hazard">
-        <label>Nome do perigo</label>
-        <input type="text" name="nome" required>
-
-        <label>Agente</label>
-        <input type="text" name="agente">
-
-        <label>Fonte</label>
-        <input type="text" name="fonte">
-
-        <label>Descrição</label>
-        <textarea name="descricao"></textarea>
-
-        <button type="submit" class="btn btn-primary" style="margin-top:8px;" disabled id="btn-save-hazard">
-          Salvar perigo
-        </button>
-      </form>
-
-      <div class="section-title">Perigos cadastrados</div>
-      <table id="table-hazards">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Perigo</th>
-            <th>Agente</th>
-            <th>Fonte</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div class="card" id="card-risks">
-      <h2>Riscos</h2>
-      <small>Avaliação qualitativa do perigo selecionado.</small>
-
-      <p id="current-hazard" class="badge-id">Nenhum perigo selecionado.</p>
-
-      <form id="form-risk">
-        <label>Probabilidade (1 a 5)</label>
-        <input type="number" name="probabilidade" min="1" max="5" required>
-
-        <label>Severidade (1 a 5)</label>
-        <input type="number" name="severidade" min="1" max="5" required>
-
-        <label>Medidas existentes</label>
-        <textarea name="medidas_existentes"></textarea>
-
-        <button type="submit" class="btn btn-primary" style="margin-top:8px;" disabled id="btn-save-risk">
-          Salvar risco
-        </button>
-      </form>
-
-<div class="section-title">Riscos cadastrados</div>
-<table id="table-risks">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Nível</th>
-      <th>P</th>
-      <th>S</th>
-      <th>Medidas existentes</th>
-      <th>Ações</th> <!-- 🔍 ✏️ 🗑 -->
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-    </div>
-
-    <div class="card" id="card-actions">
-      <h2>Ações de Controle</h2>
-      <small>Plano de ação para o risco selecionado.</small>
-
-      <p id="current-risk" class="badge-id">Nenhum risco selecionado.</p>
-
-      <form id="form-action">
-        <label>Recomendação</label>
-        <textarea name="recomendacao" required></textarea>
-
-        <label>Tipo (EPI, EPC, administrativa...)</label>
-        <input type="text" name="tipo">
-
-        <label>Prazo</label>
-        <input type="date" name="prazo">
-
-        <label>Responsável</label>
-        <input type="text" name="responsavel">
-
-        <label>Status</label>
-        <select name="status">
-          <option value="pendente">Pendente</option>
-          <option value="em andamento">Em andamento</option>
-          <option value="concluída">Concluída</option>
-        </select>
-
-        <button type="submit" class="btn btn-primary" style="margin-top:8px;" disabled id="btn-save-action">
-          Salvar ação
-        </button>
-      </form>
-
-      <div class="section-title">Ações cadastradas</div>
-      <table id="table-actions">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Recomendação</th>
-            <th>Tipo</th>
-            <th>Prazo</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-
-</div>
+</main>
 
 <script src="pgr.js"></script>
-
-<!-- 🔥 Funções dos botões de ação geral -->
-<script>
-function limparPGR() {
-  // Limpa todos os formulários da página
-  const forms = document.querySelectorAll("form");
-  forms.forEach(form => form.reset());
-}
-
-function imprimirPGR() {
-  window.print();
-}
-
-function exportarPDF_PGR() {
-  alert("📄 Exportar PDF do PGR será integrado ao backend futuramente. A tela já está preparada para isso.");
-}
-</script>
-
 </body>
 </html>
+
