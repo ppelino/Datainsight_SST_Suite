@@ -15,11 +15,11 @@ app = FastAPI(title="Datainsight SST Suite")
 # CORS – liberar front (Netlify) + API Render + local
 # ============================================================
 origins = [
-    "https://datainsightsstsuite.netlify.app",     # frontend em produção
-    "https://datainsight-sst-suite.onrender.com",  # API em produção
-    "http://localhost:5500",                       # dev local
-    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "https://datainsightsstsuite.netlify.app",   # SEU SITE ATUAL
+    "https://datainsightsstsuite.netlify.app/",  # variação com barra
 ]
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -61,4 +61,5 @@ app.include_router(nr17_router)
 @app.get("/health")
 def health():
     return {"status": "OK"}
+
 
