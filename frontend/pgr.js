@@ -25,6 +25,41 @@ async function apiPost(path, body) {
   }
   return res.json();
 }
+async function selectCompany(id) {
+  try {
+    const company = await apiGet(`/pgr/companies/${id}`);
+    selectedCompanyId = company.id;
+    fillCompanyForm(company);
+    await loadSectorsForCompany(id); // se já tiver essa função
+    // recarrega a lista para aplicar destaque
+    await loadCompanies();
+  } catch (err) {
+    console.error("Erro ao buscar empresa:", err);
+    alert("Erro ao buscar dados da empresa.");
+  }
+}
+
+function fillCompanyForm(company) {
+  document.querySelector("#company-name").value = company.name || "";
+  document.querySelector("#company-cnpj").value = company.cnpj || "";
+  document.querySelector("#company-address").value = company.endereco || "";
+  document.querySelector("#company-activity").value = company.atividade || "";
+  document.querySelector("#company-risk").value =
+    company.grau_risco != null ? company.grau_risco : "";
+}
+
+function clearCompanyForm() {
+  selectedCompanyId = null;
+  document.querySelector("#company-name").value = "";
+  document.querySelector("#company-cnpj").value = "";
+  document.querySelector("#company-address").value = "";
+  document.querySelector("#company-activity").value = "";
+  document.querySelector("#company-risk").value = "";
+
+  const btnSave = document.querySelector("#btn-save-company");
+  if (btnSave) btnSave.textContent = "Salvar empresa";
+}
+
 
 async function apiPut(path, body) {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -60,8 +95,93 @@ async function apiDelete(path) {
   }
   return res.json();
 }
+async function loadCompanies() {
+  try {
+    const companies = await apiGet("/pgr/companies");
+    renderCompanies(companies);
+  } catch (err) {
+    console.error("Erro ao carregar empresas:", err);
+    alert("Erro ao carregar empresas. Veja o console.");
+  }
+}
+const companiesTable = document.querySelector("#companies-table");
+
+if (companiesTable) {
+  companiesTable.addEventListener("click", async (ev) => {
+    const btn = ev.target.closest("button");
+    if (!btn) return;
+
+    const tr = btn.closest("tr");
+    const id = Number(tr.dataset.id);
+
+    if (btn.classList.contains("view")) {
+      // Selecionar empresa (lupa): carrega dados no formulário
+      await selectCompany(id);
+    } else if (btn.classList.contains("edit")) {
+      // Editar: carrega dados no formulário e altera texto do botão
+      await selectCompany(id);
+      const btnSave = document.querySelector("#btn-save-company");
+      if (btnSave) btnSave.textContent = "Atualizar empresa";
+    } else if (btn.classList.contains("delete")) {
+      // Excluir
+      if (confirm("Deseja realmente excluir esta empresa?")) {
+        try {
+          await apiDelete(`/pgr/companies/${id}`);
+          if (selectedCompanyId === id) {
+            selectedCompanyId = null;
+            clearCompanyForm();
+            // aqui também você pode limpar setores, perigos etc.
+          }
+          await loadCompanies();
+        } catch (err) {
+          console.error("Erro ao excluir empresa:", err);
+          alert("Erro ao excluir empresa.");
+        }
+      }
+    }
+  });
+}
+
+
+function renderCompanies(companies) {
+  const tbody = document.querySelector("#companies-table tbody");
+  tbody.innerHTML = "";
+
+  companies.forEach((c) => {
+    const tr = document.createElement("tr");
+    tr.dataset.id = c.id;
+
+    tr.innerHTML = `
+      <td>${c.id}</td>
+      <td>${c.name}</td>
+      <td>${c.cnpj || "-"}</td>
+      <td>${c.grau_risco ?? ""}</td>
+      <td class="actions-cell">
+        <button class="icon-btn view" title="Selecionar empresa">
+          🔍
+        </button>
+        <button class="icon-btn edit" title="Editar empresa">
+          ✏️
+        </button>
+        <button class="icon-btn delete" title="Excluir empresa">
+          🗑️
+        </button>
+      </td>
+    `;
+
+    // destaque se for a selecionada
+    if (selectedCompanyId === c.id) {
+      tr.classList.add("row-selected");
+    }
+
+    tbody.appendChild(tr);
+  });
+}
+
+
 
 // estados selecionados
+let selectedCompanyId = null;
 let currentCompany = null;
 let currentSector = null;
 let currentHazard = null;
