@@ -59,6 +59,39 @@ function clearCompanyForm() {
   const btnSave = document.querySelector("#btn-save-company");
   if (btnSave) btnSave.textContent = "Salvar empresa";
 }
+const btnSaveCompany = document.querySelector("#btn-save-company");
+
+if (btnSaveCompany) {
+  btnSaveCompany.addEventListener("click", async (ev) => {
+    ev.preventDefault();
+
+    const payload = {
+      name: document.querySelector("#company-name").value.trim(),
+      cnpj: document.querySelector("#company-cnpj").value.trim(),
+      endereco: document.querySelector("#company-address").value.trim(),
+      atividade: document.querySelector("#company-activity").value.trim(),
+      grau_risco: Number(
+        document.querySelector("#company-risk").value || 0
+      ),
+    };
+
+    try {
+      if (!selectedCompanyId) {
+        // criar
+        await apiPost("/pgr/companies", payload);
+      } else {
+        // atualizar
+        await apiPut(`/pgr/companies/${selectedCompanyId}`, payload);
+      }
+
+      clearCompanyForm();
+      await loadCompanies();
+    } catch (err) {
+      console.error("Erro ao salvar empresa:", err);
+      alert("Erro ao salvar empresa. Veja o console.");
+    }
+  });
+}
 
 
 async function apiPut(path, body) {
