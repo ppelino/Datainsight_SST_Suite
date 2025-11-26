@@ -150,31 +150,6 @@ class NR17Record(Base):
 
     observacoes = Column(Text)
 
-class PGRRecord(Base):
-    __tablename__ = "pgr_records"
-
-    id = Column(Integer, primary_key=True, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    empresa = Column(String)
-    setor = Column(String)
-    ghe = Column(String)
-    atividade = Column(String)
-
-    perigo = Column(String)
-    risco = Column(String)
-
-    probabilidade = Column(Integer)
-    severidade = Column(Integer)
-    nivel_risco = Column(String)
-
-    medidas = Column(Text)
-    plano_acao = Column(Text)
-    prazo = Column(Date)
-    responsavel = Column(String)
-    status = Column(String)
-
-
 # ============================================================
 #  MÓDULO PGR / NR-01 – Registros simplificados
 # ============================================================
@@ -205,6 +180,7 @@ class PGRRecord(Base):
     prazo = Column(Date, nullable=True)          # data limite
     responsavel = Column(String, nullable=True)  # responsável pela ação
     status = Column(String, nullable=True)       # ex: "Pendente", "Em andamento", "Concluído"
+
 
 
 
