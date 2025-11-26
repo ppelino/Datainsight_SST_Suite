@@ -852,17 +852,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ------------------------
 const styleExtra = document.createElement("style");
 styleExtra.textContent = `
-  /* Centralizar melhor o conteúdo e usar mais largura */
+  /* ====== LAYOUT GERAL DA PÁGINA PGR ====== */
+
+  /* Centraliza o conteúdo e usa mais largura na horizontal */
+  .page {
+    display: flex;
+    justify-content: center;
+  }
+
   .page .wrap {
-    max-width: 1400px;
+    width: 100%;
+    max-width: 1500px; /* Aumenta a área útil */
     margin: 0 auto;
   }
 
+  /* Deixa os cards usarem a largura toda da coluna (branding.css limita demais) */
+  .page .card {
+    max-width: none;
+  }
+
+  /* Duas colunas grandes: esquerda (Empresas+Setores) e direita (Perigos+Riscos+Ações) */
   .grid-2 {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
     gap: 16px;
     align-items: flex-start;
+    margin-top: 8px;
   }
 
   .stack-vertical {
@@ -871,6 +886,7 @@ styleExtra.textContent = `
     gap: 16px;
   }
 
+  /* Forms mais fluidos */
   .form-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -883,11 +899,13 @@ styleExtra.textContent = `
     }
   }
 
+  /* Tabelas com rolagem interna, mas sem esmagar demais */
   .table-wrapper {
     max-height: 260px;
     overflow: auto;
   }
 
+  /* Botões de ação nas tabelas (lupa, editar, excluir) */
   .actions-cell {
     display: flex;
     gap: 4px;
@@ -920,6 +938,13 @@ styleExtra.textContent = `
 
   .row-selected {
     background: #e3f2ff !important;
+  }
+
+  /* Em telas muito pequenas, empilha tudo pra não ficar apertado */
+  @media (max-width: 900px) {
+    .grid-2 {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 `;
 document.head.appendChild(styleExtra);
