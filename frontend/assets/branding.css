@@ -264,3 +264,38 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+.actions-cell {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.icon-btn {
+  border: none;
+  background: #e9eff7;
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  transition: background 0.15s, transform 0.05s;
+}
+
+.icon-btn:hover {
+  background: #d3e2ff;
+  transform: translateY(-1px);
+}
+
+.icon-btn.view { /* lupa */
+}
+
+.icon-btn.edit { /* lápis */
+}
+
+.icon-btn.delete { /* lixeira */
+  background: #ffe1e1;
+}
+
+.icon-btn.delete:hover {
+  background: #ffc4c4;
+}
