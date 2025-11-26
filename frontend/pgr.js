@@ -852,31 +852,52 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ------------------------
 const styleExtra = document.createElement("style");
 styleExtra.textContent = `
-  /* Área útil mais larga e centralizada */
+  /* ====== LAYOUT GERAL DA PÁGINA PGR ====== */
+
+  /* Divide a página em duas colunas:
+     - Esquerda: título + ações rápidas
+     - Direita: todos os cards de cadastro */
   .page .wrap {
     max-width: 1500px;
     margin: 0 auto;
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 24px;
+    align-items: flex-start;
   }
 
+  /* Título fica na coluna esquerda, em cima */
+  .page .wrap > header {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* Primeiro card (Limpar / Imprimir / PDF) fica logo abaixo do título */
+  .page .wrap > section.card:first-of-type {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  /* Os cards de Empresas / Setores / Perigos / Riscos / Ações
+     ficam na coluna direita, ocupando as duas linhas */
+  .page .wrap > .grid-2 {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  /* Deixa os cards usarem a largura toda da coluna */
   .page .card {
     max-width: none;
   }
 
-  /* Linha superior: Empresas + Ações rápidas lado a lado */
-  .top-row {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
-    gap: 16px;
-    align-items: flex-start;
-    margin-bottom: 16px;
-  }
-
-  /* Grid de baixo: Setores (esq) e Perigos/Riscos/Ações (dir) */
+  /* Dentro da coluna direita, continuamos com 2 colunas (esq/dir) */
   .grid-2 {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
     gap: 16px;
     align-items: flex-start;
+    margin-top: 0;
   }
 
   .stack-vertical {
@@ -885,6 +906,7 @@ styleExtra.textContent = `
     gap: 16px;
   }
 
+  /* Forms mais fluidos */
   .form-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -897,11 +919,13 @@ styleExtra.textContent = `
     }
   }
 
+  /* Tabelas com rolagem interna */
   .table-wrapper {
     max-height: 260px;
     overflow: auto;
   }
 
+  /* Botões de ação nas tabelas (lupa, editar, excluir) */
   .actions-cell {
     display: flex;
     gap: 4px;
@@ -936,9 +960,11 @@ styleExtra.textContent = `
     background: #e3f2ff !important;
   }
 
-  /* Mobile: empilha tudo bonitinho */
+  /* Em telas pequenas, volta tudo empilhado (layout mobile) */
   @media (max-width: 900px) {
-    .top-row,
+    .page .wrap {
+      display: block;
+    }
     .grid-2 {
       grid-template-columns: minmax(0, 1fr);
     }
