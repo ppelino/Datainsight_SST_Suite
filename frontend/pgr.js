@@ -32,12 +32,23 @@ async function apiPut(path, body) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Erro PUT ${path}: ${text}`);
-  }
+  if (!res.ok) throw new Error(`Erro PUT ${path}`);
   return res.json();
 }
+
+async function apiDelete(path) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(`Erro DELETE ${path}`);
+  // muitos DELETE retornam vazio; só tenta json se tiver
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 
 async function apiDelete(path) {
   const res = await fetch(`${API_BASE}${path}`, {
