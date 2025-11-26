@@ -8,10 +8,12 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import AsoRecord
 
+
 router = APIRouter(
     prefix="/aso",
-    tags=["aso"]
+    tags=["aso"],
 )
+
 
 # ---------- SCHEMAS Pydantic ----------
 
@@ -25,8 +27,10 @@ class AsoBase(BaseModel):
     medico: Optional[str] = None
     resultado: str
 
+
 class AsoCreate(AsoBase):
     pass
+
 
 class AsoOut(AsoBase):
     id: int
@@ -63,7 +67,8 @@ def list_aso_records(db: Session = Depends(get_db)):
     registros = db.query(AsoRecord).order_by(AsoRecord.created_at.desc()).all()
     return registros
 
-@router.delete("/records/{record_id}")
+
+@router.delete("/records/{record_id}", response_model=dict)
 def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
     """
     Exclui um registro de ASO pelo ID.
@@ -71,12 +76,12 @@ def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
     # 1) Busca o registro
     aso = db.query(AsoRecord).filter(AsoRecord.id == record_id).first()
 
-    if not aso:
+    if aso is None:
+        # Vai gerar status 404 (front vai cair no "Erro ao excluir o registro")
         raise HTTPException(status_code=404, detail="Registro não encontrado")
 
-    # 2) Exclui e confirma
+    # 2) Remove e confirma
     db.delete(aso)
     db.commit()
 
     return {"msg": "Registro excluído com sucesso"}
-
