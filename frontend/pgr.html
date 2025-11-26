@@ -236,19 +236,21 @@
         <button type="submit" class="btn btn-primary" style="margin-top:8px;">Salvar empresa</button>
       </form>
 
-      <div class="section-title">Empresas cadastradas</div>
-      <table id="table-companies">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Empresa</th>
-            <th>CNPJ</th>
-            <th>Grau</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+      <table class="data-table" id="companies-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Empresa</th>
+      <th>CNPJ</th>
+      <th>Grau</th>
+      <th style="width: 110px; text-align:center;">Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- linhas via JS -->
+  </tbody>
+</table>
+
 
     <div class="card" id="card-sectors">
       <h2>Setores</h2>
