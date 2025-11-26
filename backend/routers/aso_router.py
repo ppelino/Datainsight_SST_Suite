@@ -14,7 +14,6 @@ router = APIRouter(
     tags=["aso"],
 )
 
-
 # ---------- SCHEMAS Pydantic ----------
 
 class AsoBase(BaseModel):
@@ -40,7 +39,7 @@ class AsoOut(AsoBase):
         orm_mode = True
 
 
-# ---------- ENDPOINTS ----------
+# ---------- CRIAR ----------
 
 @router.post("/records", response_model=AsoOut)
 def create_aso_record(payload: AsoCreate, db: Session = Depends(get_db)):
@@ -59,6 +58,8 @@ def create_aso_record(payload: AsoCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Erro ao salvar ASO no banco.")
 
 
+# ---------- LISTAR ----------
+
 @router.get("/records", response_model=List[AsoOut])
 def list_aso_records(db: Session = Depends(get_db)):
     """
@@ -68,14 +69,14 @@ def list_aso_records(db: Session = Depends(get_db)):
     return registros
 
 
-# ---------- DELETE SIMPLIFICADO ----------
+# ---------- DELETAR (VERSÃO FINAL) ----------
 
 @router.delete("/records/{record_id}", response_model=dict)
 def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
     """
     Exclui um registro de ASO pelo ID.
-    Mesmo que nenhuma linha seja afetada (já excluído, por exemplo),
-    retorna 200 para não quebrar o frontend.
+    Mesmo que nenhuma linha seja afetada (registro já não exista),
+    retorna 200 para o frontend.
     """
     try:
         linhas = (
@@ -85,10 +86,8 @@ def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
         )
         db.commit()
 
-        # linhas pode ser 0 ou 1; para você, tanto faz, o efeito é “não está mais lá”.
         return {"msg": f"Registros afetados: {linhas}"}
     except Exception as e:
         db.rollback()
         print("Erro ao excluir ASO:", e)
         raise HTTPException(status_code=500, detail="Erro ao excluir registro no banco.")
-
