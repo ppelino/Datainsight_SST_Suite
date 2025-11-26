@@ -852,11 +852,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ------------------------
 const styleExtra = document.createElement("style");
 styleExtra.textContent = `
-  /* ====== LAYOUT GERAL DA PÁGINA PGR ====== */
-
-  /* Divide a página em duas colunas:
-     - Esquerda: título + ações rápidas
-     - Direita: todos os cards de cadastro */
+  /* Layout geral: coluna esquerda (título + ações), coluna direita (grid completo) */
   .page .wrap {
     max-width: 1500px;
     margin: 0 auto;
@@ -867,37 +863,28 @@ styleExtra.textContent = `
     align-items: flex-start;
   }
 
-  /* Título fica na coluna esquerda, em cima */
-  .page .wrap > header {
+  .pgr-header {
     grid-column: 1;
     grid-row: 1;
+    margin-bottom: 12px;
   }
 
-  /* Primeiro card (Limpar / Imprimir / PDF) fica logo abaixo do título */
-  .page .wrap > section.card:first-of-type {
+  .pgr-actions {
     grid-column: 1;
     grid-row: 2;
   }
 
-  /* Os cards de Empresas / Setores / Perigos / Riscos / Ações
-     ficam na coluna direita, ocupando as duas linhas */
-  .page .wrap > .grid-2 {
+  .pgr-grid {
     grid-column: 2;
     grid-row: 1 / span 2;
-  }
-
-  /* Deixa os cards usarem a largura toda da coluna */
-  .page .card {
-    max-width: none;
-  }
-
-  /* Dentro da coluna direita, continuamos com 2 colunas (esq/dir) */
-  .grid-2 {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
     gap: 16px;
     align-items: flex-start;
-    margin-top: 0;
+  }
+
+  .page .card {
+    max-width: none;
   }
 
   .stack-vertical {
@@ -906,7 +893,6 @@ styleExtra.textContent = `
     gap: 16px;
   }
 
-  /* Forms mais fluidos */
   .form-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -919,13 +905,11 @@ styleExtra.textContent = `
     }
   }
 
-  /* Tabelas com rolagem interna */
   .table-wrapper {
     max-height: 260px;
     overflow: auto;
   }
 
-  /* Botões de ação nas tabelas (lupa, editar, excluir) */
   .actions-cell {
     display: flex;
     gap: 4px;
@@ -960,12 +944,14 @@ styleExtra.textContent = `
     background: #e3f2ff !important;
   }
 
-  /* Em telas pequenas, volta tudo empilhado (layout mobile) */
+  /* Mobile: empilha tudo bonitinho */
   @media (max-width: 900px) {
     .page .wrap {
       display: block;
     }
-    .grid-2 {
+    .pgr-grid {
+      margin-top: 16px;
+      display: grid;
       grid-template-columns: minmax(0, 1fr);
     }
   }
