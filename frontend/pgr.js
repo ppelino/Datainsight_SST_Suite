@@ -854,30 +854,50 @@ const styleExtra = document.createElement("style");
 styleExtra.textContent = `
   /* ====== LAYOUT GERAL DA PÁGINA PGR ====== */
 
-  /* Centraliza o conteúdo e usa mais largura na horizontal */
-  .page {
-    display: flex;
-    justify-content: center;
-  }
-
+  /* Divide a página em duas colunas:
+     - Esquerda: título + ações rápidas
+     - Direita: todos os cards de cadastro */
   .page .wrap {
-    width: 100%;
-    max-width: 1500px; /* Aumenta a área útil */
+    max-width: 1500px;
     margin: 0 auto;
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 24px;
+    align-items: flex-start;
   }
 
-  /* Deixa os cards usarem a largura toda da coluna (branding.css limita demais) */
+  /* Título fica na coluna esquerda, em cima */
+  .page .wrap > header {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* Primeiro card (Limpar / Imprimir / PDF) fica logo abaixo do título */
+  .page .wrap > section.card:first-of-type {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  /* Os cards de Empresas / Setores / Perigos / Riscos / Ações
+     ficam na coluna direita, ocupando as duas linhas */
+  .page .wrap > .grid-2 {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  /* Deixa os cards usarem a largura toda da coluna */
   .page .card {
     max-width: none;
   }
 
-  /* Duas colunas grandes: esquerda (Empresas+Setores) e direita (Perigos+Riscos+Ações) */
+  /* Dentro da coluna direita, continuamos com 2 colunas (esq/dir) */
   .grid-2 {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
     gap: 16px;
     align-items: flex-start;
-    margin-top: 8px;
+    margin-top: 0;
   }
 
   .stack-vertical {
@@ -899,7 +919,7 @@ styleExtra.textContent = `
     }
   }
 
-  /* Tabelas com rolagem interna, mas sem esmagar demais */
+  /* Tabelas com rolagem interna */
   .table-wrapper {
     max-height: 260px;
     overflow: auto;
@@ -940,8 +960,11 @@ styleExtra.textContent = `
     background: #e3f2ff !important;
   }
 
-  /* Em telas muito pequenas, empilha tudo pra não ficar apertado */
+  /* Em telas pequenas, volta tudo empilhado (layout mobile) */
   @media (max-width: 900px) {
+    .page .wrap {
+      display: block;
+    }
     .grid-2 {
       grid-template-columns: minmax(0, 1fr);
     }
