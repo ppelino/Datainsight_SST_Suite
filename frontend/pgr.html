@@ -23,19 +23,149 @@
 
 <main class="page">
   <div class="wrap">
+    <!-- TÍTULO -->
     <header style="margin-bottom: 16px;">
       <h1>PGR / NR-01 (v2)</h1>
       <p>Cadastre empresas, setores, perigos, riscos e ações de controle em uma única tela.</p>
     </header>
 
-    <!-- Ações rápidas -->
-    <section class="card" style="margin-bottom: 16px;">
-      <div class="card-body" style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button id="btn-clear-all" class="btn secondary">🧹 Limpar tela</button>
-        <button id="btn-print" class="btn secondary">🖨️ Imprimir relatório</button>
-        <button id="btn-export-pdf" class="btn secondary">⬇️ Exportar PDF</button>
+    <!-- LINHA SUPERIOR: EMPRESAS + AÇÕES RÁPIDAS -->
+    <div class="top-row">
+      <!-- CARD EMPRESAS (inteiro) -->
+      <section class="card">
+        <div class="card-header">
+          <h2>Empresas</h2>
+          <p>Selecione a empresa para gerenciar seu PGR.</p>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="company-name">Nome da empresa</label>
+              <input id="company-name" type="text" placeholder="Razão social">
+            </div>
+
+            <div class="form-group">
+              <label for="company-cnpj">CNPJ</label>
+              <input id="company-cnpj" type="text" placeholder="Somente números">
+            </div>
+
+            <div class="form-group">
+              <label for="company-address">Endereço</label>
+              <input id="company-address" type="text" placeholder="Rua, nº, bairro, cidade">
+            </div>
+
+            <div class="form-group">
+              <label for="company-activity">Atividade principal</label>
+              <input id="company-activity" type="text" placeholder="Ex.: Comércio varejista">
+            </div>
+
+            <div class="form-group">
+              <label for="company-risk">Grau de risco (1 a 4)</label>
+              <input id="company-risk" type="number" min="1" max="4" step="1">
+            </div>
+          </div>
+
+          <div style="margin-top:12px; text-align:right;">
+            <button id="btn-save-company" class="btn primary">Salvar empresa</button>
+          </div>
+
+          <h3 style="margin-top:16px;">Empresas cadastradas</h3>
+          <div class="table-wrapper">
+            <table class="data-table" id="companies-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Empresa</th>
+                  <th>CNPJ</th>
+                  <th>Grau</th>
+                  <th style="width:110px; text-align:center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- linhas via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD AÇÕES RÁPIDAS -->
+      <section class="card">
+        <div class="card-body" style="display:flex; flex-direction:column; gap:8px;">
+          <button id="btn-clear-all" class="btn secondary">🧹 Limpar tela</button>
+          <button id="btn-print" class="btn secondary">🖨️ Imprimir relatório</button>
+          <button id="btn-export-pdf" class="btn secondary">⬇️ Exportar PDF</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- A PARTIR DAQUI VEM O RESTANTE (Setores / Perigos / Riscos / Ações) -->
+    <div class="grid-2">
+      <!-- Coluna esquerda: SOMENTE SETORES -->
+      <div class="stack-vertical">
+
+        <!-- Setores -->
+        <section class="card">
+          <div class="card-header">
+            <h2>Setores</h2>
+            <p>Vinculados à empresa selecionada.</p>
+            <small id="current-company-label">Nenhuma empresa selecionada.</small>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="sector-name">Nome do setor</label>
+                <input id="sector-name" type="text" placeholder="Ex.: Produção, Escritório...">
+              </div>
+
+              <div class="form-group">
+                <label for="sector-description">Descrição</label>
+                <textarea id="sector-description" rows="2" placeholder="Descrição resumida do setor"></textarea>
+              </div>
+            </div>
+
+            <div style="margin-top:12px; text-align:right;">
+              <button id="btn-save-sector" class="btn primary">Salvar setor</button>
+            </div>
+
+            <h3 style="margin-top:16px;">Setores cadastrados</h3>
+            <div class="table-wrapper">
+              <table class="data-table" id="sectors-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Setor</th>
+                    <th>Descrição</th>
+                    <th style="width:110px; text-align:center;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- linhas via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
       </div>
-    </section>
+
+      <!-- Coluna direita: Perigos / Riscos / Ações de Controle -->
+      <div class="stack-vertical">
+
+        <!-- Perigos -->
+        <!-- (deixa aqui exatamente como já estava no seu arquivo) -->
+
+        <!-- Riscos -->
+        <!-- (idem) -->
+
+        <!-- Ações de Controle -->
+        <!-- (idem) -->
+
+      </div>
+    </div>
+  </div>
+</main>
+
 
     <div class="grid-2">
       <!-- EMPRESAS / SETORES -->
