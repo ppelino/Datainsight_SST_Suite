@@ -132,15 +132,14 @@ async function deletarASO(id) {
   }
 
   try {
-    // 👇 aqui é o ajuste: /aso/aso/records/{id}
-    const res = await fetch(`${API_BASE}/aso/aso/records/${id}`, {
+    const res = await fetch(`${API_BASE}/aso/records/${id}`, {
       method: "DELETE",
     });
 
     if (!res.ok) {
       const msg = await res.text();
       console.error("Erro ao excluir ASO:", res.status, msg);
-      alert("❌ Erro ao excluir o registro.");
+      alert(`❌ Erro ao excluir o registro (status ${res.status}).`);
       return;
     }
 
