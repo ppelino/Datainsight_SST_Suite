@@ -150,5 +150,36 @@ class NR17Record(Base):
 
     observacoes = Column(Text)
 
+# ============================================================
+#  MÓDULO PGR / NR-01 – Registros simplificados
+# ============================================================
+
+class PGRRecord(Base):
+    __tablename__ = "pgr_records"  # <-- tem que ser igual ao nome da tabela no Supabase
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Campos básicos
+    empresa = Column(String, nullable=True)
+    setor = Column(String, nullable=True)
+    ghe = Column(String, nullable=True)          # ex: "GHE 01 – Soldagem"
+    atividade = Column(String, nullable=True)    # descrição da atividade
+
+    # Perigo / risco
+    perigo = Column(String, nullable=True)       # fonte / situação perigosa
+    risco = Column(String, nullable=True)        # nome do risco
+
+    probabilidade = Column(Integer, nullable=True)  # 1 a 5
+    severidade = Column(Integer, nullable=True)     # 1 a 5
+    nivel_risco = Column(String, nullable=True)     # ex: "Baixo", "Médio", "Alto"
+
+    # Controle
+    medidas = Column(Text, nullable=True)        # medidas existentes
+    plano_acao = Column(Text, nullable=True)     # o que fazer
+    prazo = Column(Date, nullable=True)          # data limite
+    responsavel = Column(String, nullable=True)  # responsável pela ação
+    status = Column(String, nullable=True)       # ex: "Pendente", "Em andamento", "Concluído"
+
 
 
