@@ -905,9 +905,16 @@ styleExtra.textContent = `
     }
   }
 
-  .table-wrapper {
+    .table-wrapper {
     max-height: 260px;
     overflow: auto;
+  }
+
+  /* Faz todas as tabelas ocuparem a largura total do card */
+  .table-wrapper > table {
+    width: 100%;
+    min-width: 100%;
+    border-collapse: collapse;
   }
 
   .actions-cell {
