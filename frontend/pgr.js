@@ -852,36 +852,48 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ------------------------
 const styleExtra = document.createElement("style");
 styleExtra.textContent = `
+  /* Centralizar melhor o conteúdo e usar mais largura */
+  .page .wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
   .grid-2 {
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr);
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
     gap: 16px;
     align-items: flex-start;
   }
+
   .stack-vertical {
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
+
   .form-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
   }
+
   @media (min-width: 900px) {
     .form-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
+
   .table-wrapper {
     max-height: 260px;
     overflow: auto;
   }
+
   .actions-cell {
     display: flex;
     gap: 4px;
     justify-content: center;
   }
+
   .icon-btn {
     border: none;
     background: #e9eff7;
@@ -892,16 +904,20 @@ styleExtra.textContent = `
     line-height: 1;
     transition: background 0.15s, transform 0.05s;
   }
+
   .icon-btn:hover {
     background: #d3e2ff;
     transform: translateY(-1px);
   }
+
   .icon-btn.delete {
     background: #ffe1e1;
   }
+
   .icon-btn.delete:hover {
     background: #ffc4c4;
   }
+
   .row-selected {
     background: #e3f2ff !important;
   }
