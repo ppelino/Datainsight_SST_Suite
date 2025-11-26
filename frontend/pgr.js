@@ -1,10 +1,12 @@
+// ==================================
+// Datainsight SST – PGR / NR-01
+// Integração completa com API + lupa/editar/excluir RISCO
+// ==================================
+
 // URL base da API no Render
 const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
-// ============================
-//  Helpers básicos de API
-// ============================
-
+// helpers básicos
 async function apiGet(path) {
   const res = await fetch(`${API_BASE}${path}`);
   if (!res.ok) throw new Error(`Erro GET ${path}`);
@@ -48,17 +50,14 @@ async function apiDelete(path) {
   return res.json();
 }
 
-// ============================
-//  Estados em memória
-// ============================
-
+// estados selecionados
 let currentCompany = null;
 let currentSector = null;
 let currentHazard = null;
 let currentRisk = null;
 
-// cache só dos riscos (pra lupa / editar)
-let risksCache = [];
+// cache de riscos para lupa/edição
+let currentRiskList = [];
 let editingRiskId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -66,10 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCompanies();
 });
 
-// ============================
-//  Configura envio dos formulários
-// ============================
-
+// configura envio dos formulários
 function setupForms() {
   // Empresa
   document
@@ -86,9 +82,14 @@ function setupForms() {
           ? parseInt(form.grau_risco.value)
           : null,
       };
-      await apiPost("/pgr/companies", data);
-      form.reset();
-      await loadCompanies();
+      try {
+        await apiPost("/pgr/companies", data);
+        form.reset();
+        await loadCompanies();
+      } catch (err) {
+        console.error(err);
+        alert("❌ Erro ao salvar empresa.");
+      }
     });
 
   // Setor
@@ -103,9 +104,14 @@ function setupForms() {
         nome: form.nome.value,
         descricao: form.descricao.value,
       };
-      await apiPost("/pgr/sectors", data);
-      form.reset();
-      await loadSectors(currentCompany.id);
+      try {
+        await apiPost("/pgr/sectors", data);
+        form.reset();
+        await loadSectors(currentCompany.id);
+      } catch (err) {
+        console.error(err);
+        alert("❌ Erro ao salvar setor.");
+      }
     });
 
   // Perigo
@@ -122,12 +128,17 @@ function setupForms() {
         fonte: form.fonte.value,
         descricao: form.descricao.value,
       };
-      await apiPost("/pgr/hazards", data);
-      form.reset();
-      await loadHazards(currentSector.id);
+      try {
+        await apiPost("/pgr/hazards", data);
+        form.reset();
+        await loadHazards(currentSector.id);
+      } catch (err) {
+        console.error(err);
+        alert("❌ Erro ao salvar perigo.");
+      }
     });
 
-  // Risco (aqui tem modo criar / editar)
+  // Risco (criar ou editar)
   document
     .getElementById("form-risk")
     .addEventListener("submit", async (e) => {
@@ -142,23 +153,24 @@ function setupForms() {
       };
 
       try {
-        const btn = document.getElementById("btn-save-risk");
-
         if (editingRiskId) {
-          // 📝 EDITAR
+          // ✏️ modo edição
           await apiPut(`/pgr/risks/${editingRiskId}`, data);
           editingRiskId = null;
-          btn.textContent = "Salvar risco";
+          alert("✅ Risco atualizado com sucesso!");
         } else {
-          // ➕ NOVO
+          // novo risco
           await apiPost("/pgr/risks", data);
+          alert("✅ Risco cadastrado com sucesso!");
         }
 
         form.reset();
+        document.getElementById("label-risk-mode").textContent =
+          "Cadastro de risco";
         await loadRisks(currentHazard.id);
       } catch (err) {
         console.error(err);
-        alert("Erro ao salvar risco (ver console).");
+        alert("❌ Erro ao salvar risco.");
       }
     });
 
@@ -177,9 +189,14 @@ function setupForms() {
         responsavel: form.responsavel.value,
         status: form.status.value,
       };
-      await apiPost("/pgr/actions", data);
-      form.reset();
-      await loadActions(currentRisk.id);
+      try {
+        await apiPost("/pgr/actions", data);
+        form.reset();
+        await loadActions(currentRisk.id);
+      } catch (err) {
+        console.error(err);
+        alert("❌ Erro ao salvar ação.");
+      }
     });
 }
 
@@ -272,8 +289,7 @@ async function loadHazards(sectorId) {
     }
   } catch (err) {
     console.error(err);
-    tbody.innerHTML =
-      "<tr><td colspan='4'>Erro ao carregar perigos.</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='4'>Erro ao carregar perigos.</td></tr>";
   }
 }
 
@@ -283,7 +299,7 @@ async function loadRisks(hazardId) {
 
   try {
     const risks = await apiGet(`/pgr/risks/by-hazard/${hazardId}`);
-    risksCache = risks; // 👈 guarda pra lupa / editar
+    currentRiskList = risks; // cache para lupa/edição
 
     tbody.innerHTML = "";
 
@@ -300,17 +316,20 @@ async function loadRisks(hazardId) {
         <td>${r.probabilidade}</td>
         <td>${r.severidade}</td>
         <td>${r.medidas_existentes || "-"}</td>
-        <td>
-          <button class="btn btn-outline" style="padding:2px 6px; font-size:11px;"
-                  onclick="viewRisk(${r.id}); event.stopPropagation();">
+        <td style="display:flex; gap:4px; flex-wrap:wrap;">
+          <button class="btn btn-outline"
+                  style="padding:4px 8px; font-size:12px;"
+                  onclick="verRisco(event, ${r.id})">
             🔍 Ver
           </button>
-          <button class="btn btn-primary" style="padding:2px 6px; font-size:11px;"
-                  onclick="startEditRisk(${r.id}); event.stopPropagation();">
+          <button class="btn btn-outline"
+                  style="padding:4px 8px; font-size:12px;"
+                  onclick="editarRisco(event, ${r.id})">
             ✏️ Editar
           </button>
-          <button class="btn btn-outline" style="padding:2px 6px; font-size:11px; color:#b33939;"
-                  onclick="deleteRisk(${r.id}); event.stopPropagation();">
+          <button class="btn btn-primary"
+                  style="padding:4px 8px; font-size:12px; background:#e11d48;"
+                  onclick="deletarRisco(event, ${r.id})">
             🗑 Excluir
           </button>
         </td>
@@ -325,8 +344,7 @@ async function loadRisks(hazardId) {
     }
   } catch (err) {
     console.error(err);
-    tbody.innerHTML =
-      "<tr><td colspan='6'>Erro ao carregar riscos.</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='6'>Erro ao carregar riscos.</td></tr>";
   }
 }
 
@@ -356,8 +374,7 @@ async function loadActions(riskId) {
     }
   } catch (err) {
     console.error(err);
-    tbody.innerHTML =
-      "<tr><td colspan='5'>Erro ao carregar ações.</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='5'>Erro ao carregar ações.</td></tr>";
   }
 }
 
@@ -370,8 +387,6 @@ function selectCompany(c, row) {
   currentSector = null;
   currentHazard = null;
   currentRisk = null;
-  editingRiskId = null;
-  document.getElementById("btn-save-risk").textContent = "Salvar risco";
 
   document
     .querySelectorAll("#table-companies tr")
@@ -383,6 +398,7 @@ function selectCompany(c, row) {
   ).textContent = `Empresa selecionada: [${c.id}] ${c.name}`;
   document.getElementById("btn-save-sector").disabled = false;
 
+  // limpa níveis abaixo
   document.querySelector("#table-sectors tbody").innerHTML = "";
   document.querySelector("#table-hazards tbody").innerHTML = "";
   document.querySelector("#table-risks tbody").innerHTML = "";
@@ -404,8 +420,6 @@ function selectSector(s, row) {
   currentSector = s;
   currentHazard = null;
   currentRisk = null;
-  editingRiskId = null;
-  document.getElementById("btn-save-risk").textContent = "Salvar risco";
 
   document
     .querySelectorAll("#table-sectors tr")
@@ -433,8 +447,6 @@ function selectSector(s, row) {
 function selectHazard(h, row) {
   currentHazard = h;
   currentRisk = null;
-  editingRiskId = null;
-  document.getElementById("btn-save-risk").textContent = "Salvar risco";
 
   document
     .querySelectorAll("#table-hazards tr")
@@ -474,27 +486,125 @@ function selectRisk(r, row) {
 }
 
 // ============================
+//  Lupa / editar / excluir risco
+// ============================
+
+function montarHTMLRisco(r) {
+  const nivel = r.probabilidade * r.severidade;
+
+  return `
+    <div style="font-family: system-ui; padding: 20px;">
+      <h1 style="margin-bottom: 8px;">PGR – Detalhes do Risco</h1>
+      <p style="margin:4px 0;"><strong>ID:</strong> ${r.id}</p>
+      <p style="margin:4px 0;"><strong>Perigo (ID):</strong> ${r.hazard_id}</p>
+      <p style="margin:4px 0;"><strong>Probabilidade (P):</strong> ${r.probabilidade}</p>
+      <p style="margin:4px 0;"><strong>Severidade (S):</strong> ${r.severidade}</p>
+      <p style="margin:4px 0;"><strong>Nível (P×S):</strong> ${nivel}</p>
+      <p style="margin:4px 0;"><strong>Medidas existentes:</strong><br>
+        ${r.medidas_existentes || "-"}
+      </p>
+
+      <hr style="margin:16px 0;">
+      <p style="font-size:12px; color:#6b7280;">
+        Gerado pela suíte <strong>DataInsight SST</strong>.
+      </p>
+      <button onclick="window.print()" style="padding:6px 12px; margin-top:8px;">
+        🖨 Imprimir
+      </button>
+    </div>
+  `;
+}
+
+function verRisco(ev, id) {
+  ev.stopPropagation();
+  const r = currentRiskList.find((x) => x.id === id);
+  if (!r) {
+    alert("⚠️ Risco não encontrado em memória.");
+    return;
+  }
+
+  const win = window.open("", "_blank");
+  win.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Detalhes do risco</title>
+    </head>
+    <body>
+      ${montarHTMLRisco(r)}
+    </body>
+    </html>
+  `);
+  win.document.close();
+  win.focus();
+}
+
+function editarRisco(ev, id) {
+  ev.stopPropagation();
+  const r = currentRiskList.find((x) => x.id === id);
+  if (!r) {
+    alert("⚠️ Risco não encontrado em memória.");
+    return;
+  }
+
+  editingRiskId = id;
+
+  const form = document.getElementById("form-risk");
+  form.probabilidade.value = r.probabilidade;
+  form.severidade.value = r.severidade;
+  form.medidas_existentes.value = r.medidas_existentes || "";
+
+  document.getElementById("label-risk-mode").textContent =
+    `Edição do risco [${id}]`;
+  window.scrollTo({ top: form.offsetTop - 80, behavior: "smooth" });
+}
+
+async function deletarRisco(ev, id) {
+  ev.stopPropagation();
+  if (!confirm("❓ Deseja realmente excluir este risco?")) return;
+
+  try {
+    await apiDelete(`/pgr/risks/${id}`);
+    alert("🗑 Risco excluído com sucesso!");
+
+    if (currentHazard) {
+      await loadRisks(currentHazard.id);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("❌ Erro ao excluir risco.");
+  }
+}
+
+// ============================
 //  Ações rápidas (barra do topo)
 // ============================
 
 function limparPGR() {
+  // zera estados
   currentCompany = null;
   currentSector = null;
   currentHazard = null;
   currentRisk = null;
+  currentRiskList = [];
   editingRiskId = null;
-  document.getElementById("btn-save-risk").textContent = "Salvar risco";
 
+  // reseta todos os formulários
   document.querySelectorAll("form").forEach((form) => form.reset());
+
+  // limpa destaques
   document
     .querySelectorAll("tr.highlight")
     .forEach((tr) => tr.classList.remove("highlight"));
 
+  // limpa tabelas (mas mantém cabeçalho)
   document.querySelector("#table-sectors tbody").innerHTML = "";
   document.querySelector("#table-hazards tbody").innerHTML = "";
   document.querySelector("#table-risks tbody").innerHTML = "";
   document.querySelector("#table-actions tbody").innerHTML = "";
 
+  // reseta textos
   document.getElementById("current-company").textContent =
     "Nenhuma empresa selecionada.";
   document.getElementById("current-sector").textContent =
@@ -503,12 +613,16 @@ function limparPGR() {
     "Nenhum perigo selecionado.";
   document.getElementById("current-risk").textContent =
     "Nenhum risco selecionado.";
+  const label = document.getElementById("label-risk-mode");
+  if (label) label.textContent = "Cadastro de risco";
 
+  // desabilita botões em cascata
   document.getElementById("btn-save-sector").disabled = true;
   document.getElementById("btn-save-hazard").disabled = true;
   document.getElementById("btn-save-risk").disabled = true;
   document.getElementById("btn-save-action").disabled = true;
 
+  // recarrega lista de empresas
   loadCompanies();
 }
 
@@ -520,95 +634,4 @@ function exportarPDF_PGR() {
   alert(
     "📄 Exportar PDF do PGR será integrado ao backend futuramente.\nA tela já está preparada para isso."
   );
-}
-
-// ============================
-//  Funções extras – Riscos
-// ============================
-
-// monta HTML pra lupa / impressão do risco
-function montarHTMLRisco(r) {
-  const empresa = currentCompany ? currentCompany.name : "-";
-  const setor = currentSector ? currentSector.nome : "-";
-  const perigo = currentHazard ? currentHazard.nome : "-";
-  const nivel = r.probabilidade * r.severidade;
-
-  return `
-    <div style="font-family: system-ui; padding: 20px;">
-      <h1 style="margin-bottom: 8px;">PGR – Detalhes do Risco</h1>
-      <p><strong>Empresa:</strong> ${empresa}</p>
-      <p><strong>Setor:</strong> ${setor}</p>
-      <p><strong>Perigo:</strong> ${perigo}</p>
-      <hr style="margin: 12px 0;">
-      <p><strong>ID do Risco:</strong> ${r.id}</p>
-      <p><strong>Nível (P x S):</strong> ${nivel} (${r.probabilidade} x ${r.severidade})</p>
-      <p><strong>Medidas existentes:</strong> ${
-        r.medidas_existentes || "-"
-      }</p>
-      <hr style="margin: 16px 0;">
-      <p style="font-size: 12px; color:#6b7280;">
-        Gerado pela suíte <strong>DataInsight SST</strong>.
-      </p>
-      <button onclick="window.print()" style="padding:6px 12px; margin-top:8px;">
-        🖨 Imprimir
-      </button>
-    </div>
-  `;
-}
-
-function viewRisk(id) {
-  const r = risksCache.find((x) => x.id === id);
-  if (!r) {
-    alert("Risco não encontrado na memória.");
-    return;
-  }
-
-  const win = window.open("", "_blank");
-  win.document.write(`
-    <!doctype html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Detalhes do Risco</title>
-    </head>
-    <body>
-      ${montarHTMLRisco(r)}
-    </body>
-    </html>
-  `);
-  win.document.close();
-  win.focus();
-}
-
-function startEditRisk(id) {
-  const r = risksCache.find((x) => x.id === id);
-  if (!r) {
-    alert("Risco não encontrado para edição.");
-    return;
-  }
-
-  const form = document.getElementById("form-risk");
-  form.probabilidade.value = r.probabilidade;
-  form.severidade.value = r.severidade;
-  form.medidas_existentes.value = r.medidas_existentes || "";
-
-  editingRiskId = id;
-  document.getElementById("btn-save-risk").textContent = "Atualizar risco";
-}
-
-async function deleteRisk(id) {
-  if (!confirm("Deseja realmente excluir este risco?")) return;
-
-  try {
-    await apiDelete(`/pgr/risks/${id}`);
-    if (currentHazard) {
-      await loadRisks(currentHazard.id);
-    } else {
-      // configuração de segurança
-      document.querySelector("#table-risks tbody").innerHTML = "";
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Erro ao excluir risco (ver console).");
-  }
 }
