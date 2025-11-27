@@ -1,5 +1,37 @@
 <!doctype html>
 <html lang="pt-BR">
+ <style>
+  .actions-cell {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .icon-btn {
+    border: none;
+    background: #e5f0ff;
+    border-radius: 6px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    transition: background 0.15s, transform 0.05s;
+  }
+
+  .icon-btn:hover {
+    background: #d0e3ff;
+    transform: translateY(-1px);
+  }
+
+  .icon-btn.delete {
+    background: #ffe4e1;
+  }
+
+  .icon-btn.delete:hover {
+    background: #ffc9c4;
+  }
+</style>
+ 
 <head>
   <meta charset="utf-8">
   <title>DataInsight SST – LTCAT / Laudo Técnico</title>
