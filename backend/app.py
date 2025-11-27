@@ -3,23 +3,30 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import Base, engine
 
-# importa os routers
-from routers import auth_router
-from routers.pgr_router import router as pgr_router          # PGR / NR-01
-from routers.aso_router import router as aso_router          # PCMSO / ASO
-from routers.nr17_router import router as nr17_router      # NR-17
+# Routers
+from routers.auth_router import router as auth_router       # login / usuários
+from routers.pgr_router import router as pgr_router         # PGR / NR-01
+from routers.aso_router import router as aso_router         # PCMSO / ASO
+from routers.nr17_router import router as nr17_router       # NR-17
 
-app = FastAPI(title="Datainsight SST Suite")
+
+app = FastAPI(
+    title="Datainsight SST Suite",
+    version="1.0.0",
+)
+
 
 # ============================================================
-# CORS – liberar front (Netlify) + API Render + local
+# CORS – liberar front (Netlify) + local
 # ============================================================
 origins = [
     "http://localhost:5500",
-    "https://datainsightsstsuite.netlify.app",   # SEU SITE ATUAL
+    "http://127.0.0.1:5500",
+
+    # FRONT DA SUITE NO NETLIFY
+    "https://datainsightsstsuite.netlify.app",
     "https://datainsightsstsuite.netlify.app/",  # variação com barra
 ]
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,11 +36,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # ============================================================
 # DATABASE
 # ============================================================
-
-# Como as tabelas já estão no Supabase, não executamos create_all()
+# As tabelas já existem no Supabase → NÃO rodar create_all()
 # Base.metadata.create_all(bind=engine)
 print("Tabelas já estão no Supabase — create_all desativado.")
 
@@ -46,8 +53,14 @@ print("Tabelas já estão no Supabase — create_all desativado.")
 def home():
     return {"msg": "API funcionando!"}
 
+
+@app.get("/health")
+def health():
+    return {"status": "OK"}
+
+
 # login / cadastro / auth
-app.include_router(auth_router.router)
+app.include_router(auth_router)
 
 # módulo PGR / NR-01
 app.include_router(pgr_router)
@@ -55,11 +68,5 @@ app.include_router(pgr_router)
 # módulo PCMSO / ASO
 app.include_router(aso_router)
 
-# rotas da NR-17
+# módulo NR-17
 app.include_router(nr17_router)
-
-@app.get("/health")
-def health():
-    return {"status": "OK"}
-
-
