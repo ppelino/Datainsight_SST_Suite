@@ -10,6 +10,7 @@ function setLoginMessage(text, isError = false) {
   el.textContent = text || "";
   el.style.color = isError ? "#dc2626" : "#16a34a";
 }
+
 // ===============================
 // Função de login — NOVA VERSÃO
 // ===============================
@@ -68,20 +69,6 @@ async function login() {
   }
 }
 
-
-
-    // guarda token e redireciona
-    localStorage.setItem("authToken", token);
-    setLoginMessage("Login realizado com sucesso. Redirecionando...");
-
-    window.location.href = "dashboard.html";
-  } catch (err) {
-    console.error("Falha de conexão com API:", err);
-    alert("Erro de conexão com o servidor API."); // mesma mensagem que você via
-    setLoginMessage("Erro de conexão com o servidor API.", true);
-  }
-}
-
 // ===============================
 // Atalho: Enter faz login
 // ===============================
@@ -90,6 +77,3 @@ document.addEventListener("keydown", (ev) => {
     login();
   }
 });
-
-
-
