@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import Base, engine
+from models import *  # ou import LTCATRecord, NR17Record, etc.
+
+Base.metadata.create_all(bind=engine)
+
 
 # Routers
 from routers.auth_router import router as auth_router       # login / usuários
@@ -73,4 +77,5 @@ app.include_router(nr17_router)
 
 # módulo LTCAT
 app.include_router(ltcat_router)
+
 
