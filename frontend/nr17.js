@@ -252,6 +252,7 @@ function carregarNR17(listaFiltrada = null) {
         <td>${tipoPosto}</td>
         <td>${risco} (score: ${score})</td>
         <td class="actions-cell">
+          <button class="icon-btn view-nr17" title="Ver detalhes">🔍</button>
           <button class="icon-btn edit-nr17" title="Editar avaliação">✏️</button>
           <button class="icon-btn delete delete-nr17" title="Excluir avaliação">🗑️</button>
         </td>
@@ -319,7 +320,7 @@ function filtrarNR17() {
 }
 
 // ===============================
-// Clique na tabela (Editar / Excluir)
+// Clique na tabela (Ver / Editar / Excluir)
 // ===============================
 function attachTabelaNR17Handlers() {
   const tabela = document.getElementById("tabelaNR17");
@@ -336,6 +337,12 @@ function attachTabelaNR17Handlers() {
     const lista = JSON.parse(localStorage.getItem("avaliacoesNR17")) || [];
     const av = lista.find(a => String(a.id) === String(id));
     if (!av) return;
+
+    // Visualizar (lupinha)
+    if (btn.classList.contains("view-nr17")) {
+      visualizarNR17(av);
+      return;
+    }
 
     // Editar
     if (btn.classList.contains("edit-nr17")) {
@@ -453,6 +460,24 @@ function montarHTMLRelatorio(av) {
       </p>
     </div>
   `;
+}
+
+// Visualizar qualquer avaliação (usada pela lupinha)
+function visualizarNR17(av) {
+  const html = montarHTMLRelatorio(av);
+  const win = window.open("", "_blank");
+  win.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Relatório NR-17</title>
+    </head>
+    <body style="margin:20px;">${html}</body>
+    </html>
+  `);
+  win.document.close();
+  win.focus();
 }
 
 function imprimirUltimaNR17() {
