@@ -183,3 +183,51 @@ class PGRRecord(Base):
     prazo = Column(Date, nullable=True)          # data limite
     responsavel = Column(String, nullable=True)  # responsável pela ação
     status = Column(String, nullable=True)       # ex: "Pendente", "Em andamento", "Concluído"
+
+from sqlalchemy import (
+    Column, Integer, String, Boolean, DateTime,
+    Text, ForeignKey, Date
+)
+from sqlalchemy.orm import relationship
+from datetime import datetime
+from database import Base
+
+# ... seus outros models (User, Company, Sector, Hazard, Risk, Action, AsoRecord, NR17Record, PGRRecord) ...
+
+# ============================================================
+#  MÓDULO LTCAT – Registros
+# ============================================================
+
+class LTCATRecord(Base):
+    __tablename__ = "ltcat_records"  # crie essa tabela no Supabase com mesmo nome
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    empresa = Column(String, nullable=True)
+    cnpj = Column(String, nullable=True)
+    setor = Column(String, nullable=True)
+    funcao = Column(String, nullable=True)
+    ghe = Column(String, nullable=True)
+
+    agente = Column(String, nullable=True)
+    classificacao = Column(String, nullable=True)
+    fonte = Column(String, nullable=True)
+    meio = Column(String, nullable=True)
+    intensidade = Column(String, nullable=True)
+    unidade = Column(String, nullable=True)
+
+    jornada_diaria = Column(String, nullable=True)
+    dias_semana = Column(String, nullable=True)
+    tempo_anos = Column(String, nullable=True)
+
+    epi_eficaz = Column(String, nullable=True)
+    enquadramento = Column(String, nullable=True)
+
+    # guardo como texto pra não dar problema de parse
+    data_avaliacao = Column(String, nullable=True)
+
+    responsavel = Column(String, nullable=True)
+    observacoes = Column(Text, nullable=True)
+
+
