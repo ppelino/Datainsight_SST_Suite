@@ -231,9 +231,6 @@ from database import Base
 #  MÓDULO LTCAT – Registros
 # ============================================================
 
-class LTCATRecord(Base):
-    __tablename__ = "ltcat_records"  # crie essa tabela no Supabase com mesmo nome
-
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -262,6 +259,7 @@ class LTCATRecord(Base):
 
     responsavel = Column(String, nullable=True)
     observacoes = Column(Text, nullable=True)
+
 
 
 
