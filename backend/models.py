@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime,
-    Text, ForeignKey, Date
+    Text, ForeignKey, Date, Float
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -33,7 +33,7 @@ class User(Base):
 
 
 # ============================================================
-#  MÓDULO PGR / NR-01
+#  MÓDULO PGR / NR-01 – ENTIDADES BÁSICAS
 # ============================================================
 
 # 1. Empresas
@@ -111,7 +111,6 @@ class Action(Base):
 # ============================================================
 #  MÓDULO PCMSO / ASO
 # ============================================================
-
 class AsoRecord(Base):
     __tablename__ = "aso_records"
 
@@ -133,7 +132,6 @@ class AsoRecord(Base):
 # ============================================================
 #  MÓDULO NR-17 – Avaliações Ergonômicas
 # ============================================================
-
 class NR17Record(Base):
     __tablename__ = "nr17_records"
 
@@ -151,35 +149,36 @@ class NR17Record(Base):
     score = Column(Integer)
 
     observacoes = Column(Text)
-from sqlalchemy import Column, Integer, String, Float, Date, Text
-from database import Base  # o mesmo Base dos outros models
 
+
+# ============================================================
+#  MÓDULO LTCAT – Laudo Técnico de Condições Ambientais
+# ============================================================
 class LTCATRecord(Base):
     __tablename__ = "ltcat_records"
-    __table_args__ = {"extend_existing": True}  # <- evita conflito se já existir no metadata
 
     id = Column(Integer, primary_key=True, index=True)
 
-    empresa        = Column(String, nullable=False)
-    cnpj           = Column(String, nullable=True)
-    setor          = Column(String, nullable=False)
-    funcao         = Column(String, nullable=False)
-    ghe            = Column(String, nullable=True)
+    empresa       = Column(String, nullable=False)
+    cnpj          = Column(String, nullable=True)
+    setor         = Column(String, nullable=False)
+    funcao        = Column(String, nullable=False)
+    ghe           = Column(String, nullable=True)
 
-    agente         = Column(String, nullable=False)
-    classificacao  = Column(String, nullable=False)
+    agente        = Column(String, nullable=False)
+    classificacao = Column(String, nullable=False)
 
-    fonte          = Column(String, nullable=True)
-    meio           = Column(String, nullable=True)
-    intensidade    = Column(String, nullable=True)
-    unidade        = Column(String, nullable=True)
+    fonte         = Column(String, nullable=True)
+    meio          = Column(String, nullable=True)
+    intensidade   = Column(String, nullable=True)
+    unidade       = Column(String, nullable=True)
 
-    jornada        = Column(Float, nullable=True)
-    dias_semana    = Column(Integer, nullable=True)
-    tempo_anos     = Column(Float, nullable=True)
+    jornada       = Column(Float, nullable=True)      # horas/dia
+    dias_semana   = Column(Integer, nullable=True)    # dias/semana
+    tempo_anos    = Column(Float, nullable=True)      # anos de exposição
 
-    epi_eficaz     = Column(String, nullable=False, default="Sim")
-    enquadramento  = Column(String, nullable=False, default="Sem enquadramento")
+    epi_eficaz    = Column(String, nullable=False, default="Sim")
+    enquadramento = Column(String, nullable=False, default="Sem enquadramento")
 
     data_avaliacao = Column(Date, nullable=True)
     responsavel    = Column(String, nullable=True)
@@ -189,9 +188,8 @@ class LTCATRecord(Base):
 # ============================================================
 #  MÓDULO PGR / NR-01 – Registros simplificados
 # ============================================================
-
 class PGRRecord(Base):
-    __tablename__ = "pgr_records"  # <-- tem que ser igual ao nome da tabela no Supabase
+    __tablename__ = "pgr_records"  # deve bater com o nome da tabela no Supabase
 
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -215,52 +213,4 @@ class PGRRecord(Base):
     plano_acao = Column(Text, nullable=True)     # o que fazer
     prazo = Column(Date, nullable=True)          # data limite
     responsavel = Column(String, nullable=True)  # responsável pela ação
-    status = Column(String, nullable=True)       # ex: "Pendente", "Em andamento", "Concluído"
-
-from sqlalchemy import (
-    Column, Integer, String, Boolean, DateTime,
-    Text, ForeignKey, Date
-)
-from sqlalchemy.orm import relationship
-from datetime import datetime
-from database import Base
-
-# ... seus outros models (User, Company, Sector, Hazard, Risk, Action, AsoRecord, NR17Record, PGRRecord) ...
-
-# ============================================================
-#  MÓDULO LTCAT – Registros
-# ============================================================
-
-    id = Column(Integer, primary_key=True, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    empresa = Column(String, nullable=True)
-    cnpj = Column(String, nullable=True)
-    setor = Column(String, nullable=True)
-    funcao = Column(String, nullable=True)
-    ghe = Column(String, nullable=True)
-
-    agente = Column(String, nullable=True)
-    classificacao = Column(String, nullable=True)
-    fonte = Column(String, nullable=True)
-    meio = Column(String, nullable=True)
-    intensidade = Column(String, nullable=True)
-    unidade = Column(String, nullable=True)
-
-    jornada_diaria = Column(String, nullable=True)
-    dias_semana = Column(String, nullable=True)
-    tempo_anos = Column(String, nullable=True)
-
-    epi_eficaz = Column(String, nullable=True)
-    enquadramento = Column(String, nullable=True)
-
-    # guardo como texto pra não dar problema de parse
-    data_avaliacao = Column(String, nullable=True)
-
-    responsavel = Column(String, nullable=True)
-    observacoes = Column(Text, nullable=True)
-
-
-
-
-
+    status = Column(String, nullable=True)       # "Pendente", "Em andamento", "Concluído"
