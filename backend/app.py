@@ -8,7 +8,7 @@ from routers.auth_router import router as auth_router       # login / usuários
 from routers.pgr_router import router as pgr_router         # PGR / NR-01
 from routers.aso_router import router as aso_router         # PCMSO / ASO
 from routers.nr17_router import router as nr17_router       # NR-17
-
+from routers.ltcat_router import router as ltcat_router     # LTCAT
 
 app = FastAPI(
     title="Datainsight SST Suite",
@@ -70,3 +70,7 @@ app.include_router(aso_router)
 
 # módulo NR-17
 app.include_router(nr17_router)
+
+# módulo LTCAT
+app.include_router(ltcat_router)
+
