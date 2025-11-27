@@ -59,25 +59,21 @@
       color: #374151;
     }
 
-    /* grid principal: coluna esquerda (form) + direita (futuro resumo/gráfico) */
+    /* AGORA: layout 100% coluna única */
     .nr17-main-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
-      gap: 24px;
-      align-items: flex-start;
-    }
-
-    .nr17-left-col {
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
-    .nr17-right-col {
-      min-height: 120px;
+    .nr17-left-col {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    /* formulário da esquerda */
+    /* FORMULÁRIO */
     .nr17-form-card h3 {
       margin-top: 0;
       margin-bottom: 8px;
@@ -93,8 +89,8 @@
 
     .nr17-form-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
     }
 
     .nr17-form-grid label {
@@ -111,23 +107,14 @@
       font-size: 13px;
     }
 
-    @media (min-width: 900px) {
-      .nr17-form-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .nr17-form-grid label.full-row {
-        grid-column: 1 / -1;
-      }
+    .nr17-form-grid label.full-row {
+      grid-column: 1 / -1;
     }
 
-    /* tabela de avaliações (card em largura total) */
-    .nr17-table-card {
-      margin-top: 4px;
-    }
-
+    /* TABELA */
     .nr17-table-card h3 {
       margin-top: 0;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       font-size: 15px;
     }
 
@@ -140,13 +127,18 @@
 
     .nr17-filter-row input {
       flex: 1;
-      max-width: 100%;
+      max-width: 360px;
+    }
+
+    .nr17-table-wrapper {
+      max-height: 260px;
+      overflow-y: auto;
     }
 
     .table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .table thead {
@@ -155,10 +147,10 @@
 
     .table th,
     .table td {
-      padding: 8px 10px;
+      padding: 6px 8px;
       border-bottom: 1px solid #e5e7eb;
       text-align: left;
-      white-space: normal; /* deixa quebrar linha, não fica espremido */
+      white-space: nowrap;
     }
 
     .table th:last-child,
@@ -166,15 +158,10 @@
       text-align: center;
     }
 
-    .nr17-table-wrapper {
-      max-height: 320px;
-      overflow: auto;
-    }
-
-    /* botões de ação da tabela (🔍 ✏️ 🗑️) */
+    /* botões da tabela */
     .actions-cell {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       justify-content: center;
     }
 
@@ -182,10 +169,9 @@
       border: none;
       background: #e5f0ff;
       border-radius: 6px;
-      padding: 3px 8px;
+      padding: 2px 6px;
       cursor: pointer;
-      font-size: 13px;
-      line-height: 1;
+      font-size: 12px;
       transition: background 0.15s, transform 0.05s;
     }
 
@@ -202,17 +188,9 @@
       background: #ffc9c4;
     }
 
-    /* responsivo */
-    @media (max-width: 900px) {
-      .nr17-main-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      .nr17-actions {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
+    /* remove a coluna direita vazia */
+    .nr17-right-col {
+      display: none;
     }
   </style>
 
@@ -242,7 +220,7 @@
 <main>
   <div class="nr17-page">
 
-    <!-- CARD SUPERIOR: título + índice + botões -->
+    <!-- CARD SUPERIOR -->
     <section class="card nr17-header-card">
       <div class="nr17-header-top">
         <div class="nr17-title-block">
@@ -264,12 +242,12 @@
       </div>
     </section>
 
-    <!-- GRID PRINCIPAL (form + coluna livre) -->
+    <!-- GRID PRINCIPAL AGORA COLUNA ÚNICA -->
     <section class="nr17-main-grid">
 
-      <!-- COLUNA ESQUERDA: FORMULÁRIO -->
       <div class="nr17-left-col">
 
+        <!-- FORMULÁRIO -->
         <section class="card nr17-form-card">
           <h3>Dados da Avaliação de Posto de Trabalho</h3>
           <p class="section-subtitle">
@@ -362,46 +340,41 @@
           </div>
         </section>
 
-      </div>
+        <!-- TABELA -->
+        <section class="card nr17-table-card">
+          <h3>📋 Avaliações Registradas — NR-17</h3>
 
-      <!-- COLUNA DIREITA (livre, p/ futuro dashboard NR-17) -->
-      <div class="nr17-right-col">
-        <!-- aqui depois podemos colocar gráficos, cards-resumo, etc. -->
+          <div class="nr17-filter-row">
+            <input
+              type="text"
+              id="filtroNR17"
+              placeholder="Filtrar por setor, função ou risco..."
+              oninput="filtrarNR17()"
+            >
+          </div>
+
+          <div class="nr17-table-wrapper">
+            <table class="table" id="tabelaNR17">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Setor</th>
+                  <th>Função</th>
+                  <th>Tipo de Posto</th>
+                  <th>Classificação de Risco</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
       </div>
 
     </section>
 
-    <!-- TABELA DE AVALIAÇÕES – CARD LARGO EMBAIXO -->
-    <section class="card nr17-table-card">
-      <h3>📋 Avaliações Registradas — NR-17</h3>
-
-      <div class="nr17-filter-row">
-        <input
-          type="text"
-          id="filtroNR17"
-          placeholder="Filtrar por setor, função ou risco..."
-          oninput="filtrarNR17()"
-        >
-      </div>
-
-      <div class="nr17-table-wrapper">
-        <table class="table" id="tabelaNR17">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Setor</th>
-              <th>Função</th>
-              <th>Tipo de Posto</th>
-              <th>Classificação de Risco</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ÁREA OCULTa PARA GERAR PDF BONITO -->
+    <!-- ÁREA DE RELATÓRIO -->
     <div id="areaRelatorioNR17" style="display:none;">
       <div id="conteudoRelatorioNR17" style="padding:20px; font-family:system-ui;"></div>
     </div>
