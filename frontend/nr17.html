@@ -59,11 +59,11 @@
       color: #374151;
     }
 
-    /* grid principal: coluna esquerda (cards) + coluna direita (futuro resumo/gráfico) */
+    /* grid principal: coluna esquerda (form) + direita (futuro resumo/gráfico) */
     .nr17-main-grid {
       display: grid;
-      grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
-      gap: 16px;
+      grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+      gap: 24px;
       align-items: flex-start;
     }
 
@@ -74,7 +74,7 @@
     }
 
     .nr17-right-col {
-      min-height: 100px;
+      min-height: 120px;
     }
 
     /* formulário da esquerda */
@@ -120,10 +120,14 @@
       }
     }
 
-    /* tabela de avaliações */
+    /* tabela de avaliações (card em largura total) */
+    .nr17-table-card {
+      margin-top: 4px;
+    }
+
     .nr17-table-card h3 {
       margin-top: 0;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-size: 15px;
     }
 
@@ -136,13 +140,13 @@
 
     .nr17-filter-row input {
       flex: 1;
-      max-width: 320px;
+      max-width: 100%;
     }
 
     .table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 12px;
+      font-size: 13px;
     }
 
     .table thead {
@@ -151,10 +155,10 @@
 
     .table th,
     .table td {
-      padding: 6px 8px;
+      padding: 8px 10px;
       border-bottom: 1px solid #e5e7eb;
       text-align: left;
-      white-space: nowrap;
+      white-space: normal; /* deixa quebrar linha, não fica espremido */
     }
 
     .table th:last-child,
@@ -163,14 +167,14 @@
     }
 
     .nr17-table-wrapper {
-      max-height: 220px;
+      max-height: 320px;
       overflow: auto;
     }
 
-    /* botões de ação da tabela (✏️ / 🗑️) */
+    /* botões de ação da tabela (🔍 ✏️ 🗑️) */
     .actions-cell {
       display: flex;
-      gap: 4px;
+      gap: 6px;
       justify-content: center;
     }
 
@@ -178,9 +182,9 @@
       border: none;
       background: #e5f0ff;
       border-radius: 6px;
-      padding: 2px 6px;
+      padding: 3px 8px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 13px;
       line-height: 1;
       transition: background 0.15s, transform 0.05s;
     }
@@ -260,13 +264,12 @@
       </div>
     </section>
 
-    <!-- GRID PRINCIPAL -->
+    <!-- GRID PRINCIPAL (form + coluna livre) -->
     <section class="nr17-main-grid">
 
-      <!-- COLUNA ESQUERDA -->
+      <!-- COLUNA ESQUERDA: FORMULÁRIO -->
       <div class="nr17-left-col">
 
-        <!-- FORMULÁRIO -->
         <section class="card nr17-form-card">
           <h3>Dados da Avaliação de Posto de Trabalho</h3>
           <p class="section-subtitle">
@@ -359,36 +362,6 @@
           </div>
         </section>
 
-        <!-- TABELA DE AVALIAÇÕES -->
-        <section class="card nr17-table-card">
-          <h3>📋 Avaliações Registradas — NR-17</h3>
-
-          <div class="nr17-filter-row">
-            <input
-              type="text"
-              id="filtroNR17"
-              placeholder="Filtrar por setor, função ou risco..."
-              oninput="filtrarNR17()"
-            >
-          </div>
-
-          <div class="nr17-table-wrapper">
-            <table class="table" id="tabelaNR17">
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Setor</th>
-                  <th>Função</th>
-                  <th>Tipo de Posto</th>
-                  <th>Classificação de Risco</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </section>
-
       </div>
 
       <!-- COLUNA DIREITA (livre, p/ futuro dashboard NR-17) -->
@@ -398,7 +371,37 @@
 
     </section>
 
-    <!-- ÁREA OCULTA PARA GERAR PDF BONITO -->
+    <!-- TABELA DE AVALIAÇÕES – CARD LARGO EMBAIXO -->
+    <section class="card nr17-table-card">
+      <h3>📋 Avaliações Registradas — NR-17</h3>
+
+      <div class="nr17-filter-row">
+        <input
+          type="text"
+          id="filtroNR17"
+          placeholder="Filtrar por setor, função ou risco..."
+          oninput="filtrarNR17()"
+        >
+      </div>
+
+      <div class="nr17-table-wrapper">
+        <table class="table" id="tabelaNR17">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Setor</th>
+              <th>Função</th>
+              <th>Tipo de Posto</th>
+              <th>Classificação de Risco</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ÁREA OCULTa PARA GERAR PDF BONITO -->
     <div id="areaRelatorioNR17" style="display:none;">
       <div id="conteudoRelatorioNR17" style="padding:20px; font-family:system-ui;"></div>
     </div>
