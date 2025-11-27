@@ -1,9 +1,9 @@
 // ===============================
-// Configuração API (mesma do NR-17)
+// Configuração API
 // ===============================
 const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
-// Mostrar mensagens na tela de login
+// Mensagem embaixo do botão
 function setLoginMessage(text, isError = false) {
   const el = document.getElementById("msg");
   if (!el) return;
@@ -12,7 +12,7 @@ function setLoginMessage(text, isError = false) {
 }
 
 // ===============================
-// Função de login — NOVA VERSÃO
+// Função de login (usando /auth/login)
 // ===============================
 async function login() {
   const email = document.getElementById("email").value.trim();
@@ -32,39 +32,46 @@ async function login() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: email,
+        email: email,        // casa com o modelo do backend
+        username: email,     // se o modelo usar username, também funciona
         password: password,
       }),
     });
 
     if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      console.error("Erro login:", res.status, txt);
+
       if (res.status === 401) {
         setLoginMessage("Usuário ou senha inválidos.", true);
-        return;
+      } else if (res.status === 422) {
+        setLoginMessage("Erro de validação (422) — checar campos esperados no /auth/login.", true);
+      } else if (res.status === 404) {
+        setLoginMessage("Rota /auth/login não encontrada (404).", true);
+      } else {
+        setLoginMessage(`Erro ao fazer login no servidor. Código ${res.status}.`, true);
       }
-      setLoginMessage("Erro ao fazer login no servidor.", true);
-      console.error("Erro login:", await res.text());
       return;
     }
 
     const data = await res.json();
+    console.log("Resposta login:", data);
 
     if (!data.access_token) {
-      setLoginMessage("Erro inesperado ao fazer login.", true);
-      console.error("Resposta da API:", data);
+      setLoginMessage("Login OK, mas resposta inesperada da API (sem access_token).", true);
       return;
     }
 
-    // guarda token para as demais telas
+    // guarda token e redireciona
     localStorage.setItem("authToken", data.access_token);
+    setLoginMessage("Login realizado com sucesso. Redirecionando...");
 
-    setLoginMessage("Login OK! Redirecionando...");
     setTimeout(() => {
       window.location.href = "dashboard.html";
     }, 800);
 
   } catch (err) {
-    console.error("Falha ao conectar API:", err);
+    console.error("Falha de conexão com o servidor:", err);
     setLoginMessage("Erro de conexão com o servidor.", true);
   }
 }
