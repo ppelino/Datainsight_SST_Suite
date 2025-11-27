@@ -10,9 +10,8 @@ function setLoginMessage(text, isError = false) {
   el.textContent = text || "";
   el.style.color = isError ? "#dc2626" : "#16a34a";
 }
-
 // ===============================
-// Função de login
+// Função de login — NOVA VERSÃO
 // ===============================
 async function login() {
   const email = document.getElementById("email").value.trim();
@@ -26,58 +25,50 @@ async function login() {
   setLoginMessage("Conectando...", false);
 
   try {
-    // MESMA ROTA QUE VOCÊ USOU NO SWAGGER: /api/login
-    const res = await fetch(`${API_BASE}/api/login`, {
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
       },
-      body: new URLSearchParams({
-        username: email,
+      body: JSON.stringify({
+        email: email,
         password: password,
-        grant_type: "password",
       }),
     });
 
     if (!res.ok) {
-      // 401 = credenciais inválidas, outros códigos = erro de servidor
       if (res.status === 401) {
         setLoginMessage("Usuário ou senha inválidos.", true);
         return;
       }
-      const txt = await res.text().catch(() => "");
-      console.error("Erro ao fazer login:", res.status, txt);
       setLoginMessage("Erro ao fazer login no servidor.", true);
+      console.error("Erro login:", await res.text());
       return;
     }
 
-    // O backend pode devolver só uma string ou um JSON com access_token
-    let token;
-    let data = null;
+    const data = await res.json();
 
-    try {
-      data = await res.json();
-    } catch {
-      // se não for JSON, tenta como texto simples
-      const txt = await res.text();
-      if (txt && typeof txt === "string") {
-        token = txt;
-      }
-    }
-
-    if (!token && data) {
-      if (typeof data === "string") {
-        token = data;
-      } else if (data.access_token) {
-        token = data.access_token;
-      }
-    }
-
-    if (!token) {
-      console.error("Resposta inesperada do login:", data);
-      setLoginMessage("Login realizado, mas resposta inesperada da API.", true);
+    if (!data.access_token) {
+      setLoginMessage("Erro inesperado ao fazer login.", true);
+      console.error("Resposta da API:", data);
       return;
     }
+
+    // guarda token para as demais telas
+    localStorage.setItem("authToken", data.access_token);
+
+    setLoginMessage("Login OK! Redirecionando...");
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 800);
+
+  } catch (err) {
+    console.error("Falha ao conectar API:", err);
+    setLoginMessage("Erro de conexão com o servidor.", true);
+  }
+}
+
+
 
     // guarda token e redireciona
     localStorage.setItem("authToken", token);
@@ -99,5 +90,6 @@ document.addEventListener("keydown", (ev) => {
     login();
   }
 });
+
 
 
