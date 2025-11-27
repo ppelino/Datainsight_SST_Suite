@@ -36,7 +36,7 @@ def list_nr17_records(db: Session = Depends(get_db)):
 def create_nr17_record(data: dict, db: Session = Depends(get_db)):
     """
     Cria uma nova avaliação NR-17.
-    Espera um JSON com:
+    Espera JSON com:
     empresa, setor, funcao, trabalhador, tipo_posto,
     data_avaliacao, risco, score, observacoes.
     """
