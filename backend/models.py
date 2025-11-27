@@ -186,23 +186,8 @@ from database import Base
 
 # ... seus outros models (Company, Sector, etc.)
 
-class NR17Record(Base):
-    __tablename__ = "nr17_records"
 
-    id = Column(Integer, primary_key=True, index=True)
 
-    empresa = Column(String, nullable=True)
-    setor = Column(String, nullable=False)
-    funcao = Column(String, nullable=False)
-    trabalhador = Column(String, nullable=True)
-
-    tipo_posto = Column(String, nullable=False)
-    data_avaliacao = Column(String, nullable=False)  # formato YYYY-MM-DD
-
-    risco = Column(String, nullable=False)   # Baixo / Médio / Alto
-    score = Column(Integer, nullable=False)  # soma dos fatores
-
-    observacoes = Column(Text, nullable=True)
 
 
 
