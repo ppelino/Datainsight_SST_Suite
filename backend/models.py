@@ -151,6 +151,39 @@ class NR17Record(Base):
     score = Column(Integer)
 
     observacoes = Column(Text)
+from sqlalchemy import Column, Integer, String, Float, Date, Text
+from database import Base  # o mesmo Base usado nos outros models
+
+class LTCATRecord(Base):
+    __tablename__ = "ltcat_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # Campos principais
+    empresa        = Column(String, nullable=False)
+    cnpj           = Column(String, nullable=True)
+    setor          = Column(String, nullable=False)
+    funcao         = Column(String, nullable=False)
+    ghe            = Column(String, nullable=True)
+
+    agente         = Column(String, nullable=False)
+    classificacao  = Column(String, nullable=False)
+
+    fonte          = Column(String, nullable=True)
+    meio           = Column(String, nullable=True)
+    intensidade    = Column(String, nullable=True)
+    unidade        = Column(String, nullable=True)
+
+    jornada        = Column(Float, nullable=True)      # horas/dia
+    dias_semana    = Column(Integer, nullable=True)    # dias/semana
+    tempo_anos     = Column(Float, nullable=True)      # anos de exposição
+
+    epi_eficaz     = Column(String, nullable=False, default="Sim")
+    enquadramento  = Column(String, nullable=False, default="Sem enquadramento")
+
+    data_avaliacao = Column(Date, nullable=True)
+    responsavel    = Column(String, nullable=True)
+    observacoes    = Column(Text, nullable=True)
 
 
 # ============================================================
@@ -229,5 +262,6 @@ class LTCATRecord(Base):
 
     responsavel = Column(String, nullable=True)
     observacoes = Column(Text, nullable=True)
+
 
 
