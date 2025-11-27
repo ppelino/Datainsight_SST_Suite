@@ -3,6 +3,27 @@
 // ===============================
 const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
+// Helper para enviar o token de autenticação em todas as requisições
+function getAuthHeaders(extra = {}) {
+  const token = localStorage.getItem("authToken");
+  const base = { ...extra };
+  if (token) {
+    base["Authorization"] = `Bearer ${token}`;
+  }
+  return base;
+}
+
+// Se der 401, derruba para o login
+function checkUnauthorized(status) {
+  if (status === 401) {
+    alert("Sessão expirada ou não autorizada. Faça login novamente.");
+    localStorage.removeItem("authToken");
+    window.location.href = "index.html";
+    return true;
+  }
+  return false;
+}
+
 // ID da avaliação em edição (null = criando nova)
 let selectedNR17Id = null;
 
