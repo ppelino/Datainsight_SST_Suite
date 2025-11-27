@@ -152,14 +152,14 @@ class NR17Record(Base):
 
     observacoes = Column(Text)
 from sqlalchemy import Column, Integer, String, Float, Date, Text
-from database import Base  # o mesmo Base usado nos outros models
+from database import Base  # o mesmo Base dos outros models
 
 class LTCATRecord(Base):
     __tablename__ = "ltcat_records"
+    __table_args__ = {"extend_existing": True}  # <- evita conflito se já existir no metadata
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # Campos principais
     empresa        = Column(String, nullable=False)
     cnpj           = Column(String, nullable=True)
     setor          = Column(String, nullable=False)
@@ -174,9 +174,9 @@ class LTCATRecord(Base):
     intensidade    = Column(String, nullable=True)
     unidade        = Column(String, nullable=True)
 
-    jornada        = Column(Float, nullable=True)      # horas/dia
-    dias_semana    = Column(Integer, nullable=True)    # dias/semana
-    tempo_anos     = Column(Float, nullable=True)      # anos de exposição
+    jornada        = Column(Float, nullable=True)
+    dias_semana    = Column(Integer, nullable=True)
+    tempo_anos     = Column(Float, nullable=True)
 
     epi_eficaz     = Column(String, nullable=False, default="Sim")
     enquadramento  = Column(String, nullable=False, default="Sem enquadramento")
@@ -262,6 +262,7 @@ class LTCATRecord(Base):
 
     responsavel = Column(String, nullable=True)
     observacoes = Column(Text, nullable=True)
+
 
 
 
