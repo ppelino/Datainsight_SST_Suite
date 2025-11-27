@@ -107,6 +107,7 @@ class Action(Base):
 
     risk = relationship("Risk", back_populates="actions")
 
+
 # ============================================================
 #  MÓDULO PCMSO / ASO
 # ============================================================
@@ -127,6 +128,7 @@ class AsoRecord(Base):
 
     medico = Column(String)
     resultado = Column(String, nullable=False)
+
 
 # ============================================================
 #  MÓDULO NR-17 – Avaliações Ergonômicas
@@ -149,6 +151,7 @@ class NR17Record(Base):
     score = Column(Integer)
 
     observacoes = Column(Text)
+
 
 # ============================================================
 #  MÓDULO PGR / NR-01 – Registros simplificados
@@ -180,18 +183,3 @@ class PGRRecord(Base):
     prazo = Column(Date, nullable=True)          # data limite
     responsavel = Column(String, nullable=True)  # responsável pela ação
     status = Column(String, nullable=True)       # ex: "Pendente", "Em andamento", "Concluído"
-
-from sqlalchemy import Column, Integer, String, Text
-from database import Base
-
-# ... seus outros models (Company, Sector, etc.)
-
-
-
-
-
-
-
-
-
-
