@@ -27,8 +27,14 @@ function checkUnauthorized(status) {
 // ID da avaliação em edição (null = criando nova)
 let selectedNR17Id = null;
 
-// Ao carregar a página, busca registros do servidor
+// Ao carregar a página, garante token e busca registros do servidor
 document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    // se abrir NR-17 sem estar logado, volta para o login
+    window.location.href = "index.html";
+    return;
+  }
   carregarNR17DoServidor();
   attachTabelaNR17Handlers();
 });
@@ -150,9 +156,11 @@ async function salvarNR17() {
 
     const res = await fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(payload)
     });
+
+    if (checkUnauthorized(res.status)) return;
 
     if (!res.ok) {
       const txt = await res.text();
@@ -191,7 +199,12 @@ async function salvarNR17() {
 // ===============================
 async function carregarNR17DoServidor() {
   try {
-    const res = await fetch(`${API_BASE}/nr17/records`);
+    const res = await fetch(`${API_BASE}/nr17/records`, {
+      headers: getAuthHeaders()
+    });
+
+    if (checkUnauthorized(res.status)) return;
+
     if (!res.ok) {
       console.error("Erro ao buscar NR-17:", await res.text());
       return;
@@ -331,7 +344,13 @@ function attachTabelaNR17Handlers() {
       if (!confirm("Excluir esta avaliação NR-17?")) return;
 
       try {
-        const res = await fetch(`${API_BASE}/nr17/records/${id}`, { method: "DELETE" });
+        const res = await fetch(`${API_BASE}/nr17/records/${id}`, {
+          method: "DELETE",
+          headers: getAuthHeaders()
+        });
+
+        if (checkUnauthorized(res.status)) return;
+
         if (!res.ok) {
           const txt = await res.text();
           console.error("Erro ao excluir NR-17:", txt);
