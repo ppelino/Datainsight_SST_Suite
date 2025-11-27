@@ -163,13 +163,18 @@ async function salvarNR17() {
     if (checkUnauthorized(res.status)) return;
 
     if (!res.ok) {
-      const txt = await res.text();
-      console.error("Erro ao salvar/atualizar NR-17:", txt);
-      alert("⚠️ Erro ao salvar no servidor. Veja o console para detalhes.");
+      const txt = await res.text().catch(() => "");
+      console.error("Erro ao salvar/atualizar NR-17:", res.status, txt);
+
+      alert(
+        "⚠️ Erro ao salvar no servidor.\n\n" +
+        "Status: " + res.status + "\n" +
+        (txt ? "Detalhe: " + txt : "Sem corpo de resposta.")
+      );
       return;
     }
 
-    const saved = await res.json();
+    const saved = await res.json().catch(() => null);
 
     // Atualiza lista trazendo tudo do servidor de novo
     await carregarNR17DoServidor();
@@ -189,10 +194,11 @@ async function salvarNR17() {
 
     alert("✅ Avaliação NR-17 salva com sucesso!");
   } catch (err) {
-    console.error(err);
+    console.error("Erro de rede ao salvar NR-17:", err);
     alert("⚠️ Erro de rede ao salvar a avaliação NR-17.");
   }
 }
+
 
 // ===============================
 // Carregar da API e sincronizar localStorage
