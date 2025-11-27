@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS nr17_records (
+    id SERIAL PRIMARY KEY,
+    empresa TEXT,
+    setor TEXT NOT NULL,
+    funcao TEXT NOT NULL,
+    trabalhador TEXT,
+    tipo_posto TEXT NOT NULL,
+    data_avaliacao TEXT NOT NULL,
+    risco TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    observacoes TEXT
+);
