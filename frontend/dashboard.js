@@ -5,7 +5,8 @@ const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
 // Se ainda não existir endpoint de dashboard na API,
 // deixe USE_FAKE_DATA = true para ver tudo funcionando visualmente.
-const USE_FAKE_DATA = true;
+const USE_FAKE_DATA = false;
+
 
 // Helper para enviar o token de autenticação em todas as requisições
 function getAuthHeaders(extra = {}) {
@@ -91,8 +92,10 @@ function initTabs() {
 // ===============================
 async function carregarDashboardGeral() {
   try {
-    const data = await fetchDashboardGeral();
-
+  const res = await fetch(`${API_BASE}/api/dashboard/geral`, {
+  headers: getAuthHeaders()
+});
+  
     // KPIs
     document.getElementById("kpi-total-asos").textContent = data.total_asos ?? 0;
     document.getElementById("kpi-total-nr17").textContent = data.total_nr17 ?? 0;
