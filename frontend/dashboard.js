@@ -4,13 +4,6 @@
 const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
 const USE_FAKE_DATA = false;
 
-
-
-// Se ainda não existir endpoint de dashboard na API,
-// deixe USE_FAKE_DATA = true para ver tudo funcionando visualmente.
-const USE_FAKE_DATA = false;
-
-
 // Helper para enviar o token de autenticação em todas as requisições
 function getAuthHeaders(extra = {}) {
   const token = localStorage.getItem("authToken");
