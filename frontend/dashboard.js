@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   carregarDashboardGeral();
   // carregarDashboardNR17();
-  // carregarDashboardPCMSO();
+  carregarDashboardPCMSO();
   // carregarDashboardPGR();
   // carregarDashboardLTCAT();
 });
@@ -235,3 +235,29 @@ async function fetchDashboardGeral() {
 
   return res.json();
 }
+async function fetchDashboardPCMSO() {
+  if (USE_FAKE_DATA) {
+    return {
+      exames_por_mes: [
+        { mes: "Jan", total: 5 },
+        { mes: "Fev", total: 8 },
+        { mes: "Mar", total: 4 },
+        { mes: "Abr", total: 10 }
+      ],
+      status_asos: { validos: 18, vencidos: 2, a_vencer: 3 }
+    };
+  }
+
+  // API_BASE já tem /api → aqui é só /dashboard/pcmsos
+  const res = await fetch(`${API_BASE}/dashboard/pcmsos`, {
+    headers: getAuthHeaders()
+  });
+
+  if (!res.ok) {
+    if (checkUnauthorized(res.status)) return;
+    throw new Error(`Erro ao buscar /dashboard/pcmsos: ${res.status}`);
+  }
+
+  return res.json();
+}
+
