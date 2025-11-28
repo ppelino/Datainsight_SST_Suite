@@ -6,338 +6,207 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="assets/branding.css">
-
-  <!-- Ajustes específicos para o dashboard -->
-  <style>
-    /* Deixa o container mais enxuto e sem altura exagerada */
-    .container {
-      max-width: 1180px;
-      margin: 24px auto 40px;
-      padding: 0 16px;
-    }
-
-    /* Garante que os cards se organizem bem em várias larguras */
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      align-items: stretch;
-    }
-
-    /* Limita a altura dos gráficos para evitar scroll gigantesco */
-    .card canvas {
-      max-height: 260px;
-      height: 260px;
-    }
-  </style>
-
-  <!-- Chart.js para gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="dashboard.js"></script>
 </head>
 
 <body>
+  <!-- NAVBAR DA SUITE -->
+  <nav class="nav">
+    <div class="wrap">
+      <div class="logo">
+        <img src="assets/datainsight.jpg" alt="Logo">
+        <span>DataInsight SST Suite</span>
+      </div>
 
-<nav class="nav">
-  <div class="wrap">
-    <div class="logo">
-      <img src="assets/datainsight.jpg" alt="Logo">
-      <span>DataInsight SST Suite</span>
+      <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;">
+        <a class="btn active" href="dashboard.html">🏠 Dashboard</a>
+        <a class="btn secondary" href="pgr.html">📝 PGR / NR-01</a>
+        <a class="btn secondary" href="pcmsos.html">⚕️ PCMSO / ASO</a>
+        <a class="btn secondary" href="nr17.html">🪑 NR-17</a>
+        <a class="btn secondary" href="ltcat.html">📄 LTCAT</a>
+        <button class="btn danger" onclick="logout()">Sair</button>
+      </div>
     </div>
+  </nav>
 
-    <div style="margin-left:auto; display:flex; gap:8px;">
-      <a class="btn active" href="dashboard.html">🏠 Dashboard</a>
-      <a class="btn secondary" href="pgr.html">📝 PGR / NR-01</a>
-      <a class="btn secondary" href="pcmso.html">⚕️ PCMSO / ASO</a>
-      <a class="btn secondary" href="nr17.html">🪑 NR-17</a>
-      <a class="btn secondary" href="ltcat.html">📄 LTCAT</a>
-      <button class="btn danger" onclick="logout()">Sair</button>
-    </div>
-  </div>
-</nav>
-
-<div class="container">
-
-  <!-- VISÃO GERAL / KPIs -->
-  <div class="card">
-    <h2>📊 Visão Geral da Suíte</h2>
-    <p class="section-subtitle mt-1">
-      Indicadores consolidados dos módulos PCMSO / ASO, NR-17 e LTCAT com base nos
-      registros armazenados no navegador (localStorage).
-    </p>
-  </div>
-
-  <div class="card-grid mt-3">
-    <div class="card">
-      <h3>Total de ASOs registrados</h3>
-      <p class="kpi-number" id="kpiTotalASO">0</p>
-      <p class="section-subtitle">Registros de exames ocupacionais armazenados.</p>
-    </div>
-
-    <div class="card">
-      <h3>Total de avaliações NR-17</h3>
-      <p class="kpi-number" id="kpiTotalNR17">0</p>
-      <p class="section-subtitle">Postos de trabalho avaliados ergonomicamente.</p>
-    </div>
-
-    <div class="card">
-      <h3>Total de registros LTCAT</h3>
-      <p class="kpi-number" id="kpiTotalLTCAT">0</p>
-      <p class="section-subtitle">Registros de agentes nocivos / enquadramento.</p>
-    </div>
-
-    <div class="card">
-      <h3>Risco médio NR-17</h3>
-      <p class="kpi-number" id="kpiRiscoNR17">–</p>
-      <p class="section-subtitle">Classificação global considerando todas as avaliações.</p>
-    </div>
-  </div>
-
-  <!-- GRÁFICOS -->
-  <div class="card-grid mt-3">
-    <div class="card">
-      <h3>Distribuição de Registros por Módulo</h3>
-      <canvas id="chartModulos"></canvas>
-      <p class="section-subtitle mt-2">
-        Quantidade de registros nos módulos ASO, NR-17 e LTCAT.
+  <main class="container" style="padding-top:24px; padding-bottom:32px;">
+    <!-- CABEÇALHO -->
+    <section class="card">
+      <h2 style="margin-top:0;">📊 Visão Geral da Suite</h2>
+      <p style="margin-bottom:0;">
+        Indicadores consolidados dos módulos PCMSO / ASO, NR-17 e LTCAT com base nos registros armazenados
+        na plataforma (Supabase / API).
       </p>
-    </div>
+    </section>
 
-    <div class="card">
-      <h3>Perfil de Risco — NR-17</h3>
-      <canvas id="chartNR17Risco"></canvas>
-      <p class="section-subtitle mt-2">
-        Quantidade de avaliações classificadas como Baixo, Médio e Alto risco.
-      </p>
-    </div>
-  </div>
+    <!-- KPIs PRINCIPAIS -->
+    <section class="kpi-grid">
+      <div class="card kpi-card">
+        <h3>Total de ASOS registrados</h3>
+        <p class="kpi-value" id="kpi-total-asos">—</p>
+        <p class="kpi-subtitle">Exames ocupacionais armazenados.</p>
+      </div>
 
-  <div class="card-grid mt-3">
-    <div class="card">
-      <h3>Agentes nocivos mais registrados — LTCAT</h3>
-      <canvas id="chartAgentesLTCAT"></canvas>
-      <p class="section-subtitle mt-2">
-        Top 5 agentes com maior número de ocorrências nos registros LTCAT.
-      </p>
-    </div>
+      <div class="card kpi-card">
+        <h3>Total de avaliações NR-17</h3>
+        <p class="kpi-value" id="kpi-total-nr17">—</p>
+        <p class="kpi-subtitle">Avaliações ergonômicas registradas.</p>
+      </div>
 
-    <div class="card">
-      <h3>Últimas atividades</h3>
-      <p class="section-subtitle">
-        Registros recentes em NR-17 e LTCAT (ordenados por data).
-      </p>
-      <ul id="listaAtividades" class="mt-2" style="list-style:none; padding-left:0; font-size:0.9rem;">
-        <!-- preenchido via JS -->
-      </ul>
-    </div>
-  </div>
+      <div class="card kpi-card">
+        <h3>Total de registros LTCAT</h3>
+        <p class="kpi-value" id="kpi-total-ltcat">—</p>
+        <p class="kpi-subtitle">Agentes nocivos / enquadramentos.</p>
+      </div>
 
-</div>
+      <div class="card kpi-card">
+        <h3>Risco médio NR-17</h3>
+        <p class="kpi-value" id="kpi-risco-medio-nr17">—</p>
+        <p class="kpi-subtitle">Score médio global das avaliações.</p>
+      </div>
+    </section>
 
-<script>
-function logout() {
-  localStorage.clear();
-  window.location.href = "index.html";
-}
+    <!-- TABS DOS DASHBOARDS -->
+    <section class="card" style="margin-top:24px;">
+      <div class="dashboard-tabs">
+        <button class="tab-button active" data-tab="geral">🌐 Geral</button>
+        <button class="tab-button" data-tab="nr17">🪑 NR-17</button>
+        <button class="tab-button" data-tab="pcmsos">⚕️ PCMSO / ASO</button>
+        <button class="tab-button" data-tab="pgr">📝 PGR / NR-01</button>
+        <button class="tab-button" data-tab="ltcat">📄 LTCAT</button>
+      </div>
+    </section>
 
-// ===============================
-// Funções utilitárias
-// ===============================
-function getArrayFromLocalStorage(key) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
-    return [];
-  }
-}
+    <!-- PAINEL GERAL (COMPLETO) -->
+    <section id="tab-geral" class="tab-panel active">
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="margin-top:0;">Distribuição de registros por módulo</h3>
+          <canvas id="chart-distribuicao-modulos" height="220"></canvas>
+          <p class="chart-caption">
+            Quantidade de registros consolidados nos módulos ASO, NR-17 e LTCAT.
+          </p>
+        </div>
 
-// tentativa de descobrir ASO em diferentes chaves
-function getASORegistros() {
-  const possibleKeys = ["asos", "registrosASO", "asosRegistrados", "registrosPCMSO"];
-  for (const key of possibleKeys) {
-    const arr = getArrayFromLocalStorage(key);
-    if (arr.length > 0) return arr;
-  }
-  // se nada encontrado, devolve array vazio
-  return [];
-}
+        <div class="card">
+          <h3 style="margin-top:0;">Perfil de risco — NR-17</h3>
+          <canvas id="chart-perfil-risco-nr17" height="220"></canvas>
+          <p class="chart-caption">
+            Quantidade de avaliações classificadas como Baixo, Médio e Alto risco.
+          </p>
+        </div>
+      </div>
 
-// ===============================
-// Carregamento do Dashboard
-// ===============================
-document.addEventListener("DOMContentLoaded", () => {
-  const registrosASO   = getASORegistros();
-  const avaliacoesNR17 = getArrayFromLocalStorage("avaliacoesNR17");
-  const registrosLTCAT = getArrayFromLocalStorage("registrosLTCAT");
+      <div class="grid-2" style="margin-top:16px;">
+        <div class="card">
+          <h3 style="margin-top:0;">Agentes nocivos mais registrados — LTCAT</h3>
+          <canvas id="chart-agentes-top" height="220"></canvas>
+          <p class="chart-caption">
+            Top 5 agentes com maior número de ocorrências nos registros LTCAT.
+          </p>
+        </div>
 
-  // ----- KPIs -----
-  document.getElementById("kpiTotalASO").textContent    = registrosASO.length;
-  document.getElementById("kpiTotalNR17").textContent   = avaliacoesNR17.length;
-  document.getElementById("kpiTotalLTCAT").textContent  = registrosLTCAT.length;
+        <div class="card">
+          <h3 style="margin-top:0;">Últimas atividades</h3>
+          <div id="lista-ultimas-atividades" class="activity-list">
+            <p>Carregando...</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  // risco médio NR-17
-  if (avaliacoesNR17.length > 0) {
-    let somaScore = 0;
-    let baixo = 0, medio = 0, alto = 0;
+    <!-- PAINEL NR-17 -->
+    <section id="tab-nr17" class="tab-panel">
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="margin-top:0;">Distribuição por risco (NR-17)</h3>
+          <canvas id="chart-nr17-risco" height="220"></canvas>
+          <p class="chart-caption">
+            Avaliações classificadas em Baixo, Médio e Alto risco por posto de trabalho.
+          </p>
+        </div>
 
-    avaliacoesNR17.forEach(a => {
-      const score = Number(a.score) || 0;
-      somaScore += score;
+        <div class="card">
+          <h3 style="margin-top:0;">Scores médios por setor / GHE</h3>
+          <canvas id="chart-nr17-setores" height="220"></canvas>
+          <p class="chart-caption">
+            Score médio ergonômico por setor/GHE. Ideal para priorizar intervenções.
+          </p>
+        </div>
+      </div>
+    </section>
 
-      const risco = (a.risco || "").toLowerCase();
-      if (risco === "baixo") baixo++;
-      else if (risco === "médio" || risco === "medio") medio++;
-      else if (risco === "alto") alto++;
-    });
+    <!-- PAINEL PCMSO / ASO -->
+    <section id="tab-pcmsos" class="tab-panel">
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="margin-top:0;">Exames por mês</h3>
+          <canvas id="chart-pcmsos-mensal" height="220"></canvas>
+          <p class="chart-caption">
+            Volume de ASOs (admissionais, periódicos, retorno, mudança de função, demissionais) por mês.
+          </p>
+        </div>
 
-    const media = somaScore / avaliacoesNR17.length;
-    let classificacao = "Baixo";
-    if (media >= 9 && media <= 12) classificacao = "Médio";
-    else if (media > 12) classificacao = "Alto";
+        <div class="card">
+          <h3 style="margin-top:0;">Situação de ASOs</h3>
+          <canvas id="chart-pcmsos-status" height="220"></canvas>
+          <p class="chart-caption">
+            Quantidade de ASOs válidos, vencidos e a vencer em 30 dias.
+          </p>
+        </div>
+      </div>
+    </section>
 
-    const texto = `${classificacao} (score médio: ${media.toFixed(1)})`;
-    const kpi = document.getElementById("kpiRiscoNR17");
-    kpi.textContent = texto;
-  } else {
-    document.getElementById("kpiRiscoNR17").textContent = "Sem dados";
-  }
+    <!-- PAINEL PGR / NR-01 -->
+    <section id="tab-pgr" class="tab-panel">
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="margin-top:0;">Perigos por categoria</h3>
+          <canvas id="chart-pgr-categorias" height="220"></canvas>
+          <p class="chart-caption">
+            Distribuição dos perigos (físicos, químicos, biológicos, ergonômicos, mecânicos, etc.).
+          </p>
+        </div>
 
-  // ----- Gráfico 1: Registros por módulo -----
-  const ctxMod = document.getElementById("chartModulos");
-  if (ctxMod && window.Chart) {
-    new Chart(ctxMod, {
-      type: "bar",
-      data: {
-        labels: ["ASO", "NR-17", "LTCAT"],
-        datasets: [{
-          label: "Quantidade de registros",
-          data: [registrosASO.length, avaliacoesNR17.length, registrosLTCAT.length]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero: true, ticks: { precision:0 } }
-        }
-      }
-    });
-  }
+        <div class="card">
+          <h3 style="margin-top:0;">Status das ações do PGR</h3>
+          <canvas id="chart-pgr-acoes" height="220"></canvas>
+          <p class="chart-caption">
+            Ações planejadas, em andamento e concluídas conforme o cronograma do PGR.
+          </p>
+        </div>
+      </div>
+    </section>
 
-  // ----- Gráfico 2: Perfil de risco NR-17 -----
-  const ctxRisco = document.getElementById("chartNR17Risco");
-  if (ctxRisco && window.Chart) {
-    let baixo = 0, medio = 0, alto = 0;
-    avaliacoesNR17.forEach(a => {
-      const risco = (a.risco || "").toLowerCase();
-      if (risco === "baixo") baixo++;
-      else if (risco === "médio" || risco === "medio") medio++;
-      else if (risco === "alto") alto++;
-    });
+    <!-- PAINEL LTCAT -->
+    <section id="tab-ltcat" class="tab-panel">
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="margin-top:0;">Agentes por setor</h3>
+          <canvas id="chart-ltcat-setor" height="220"></canvas>
+          <p class="chart-caption">
+            Quantidade de agentes nocivos identificados por setor / ambiente.
+          </p>
+        </div>
 
-    new Chart(ctxRisco, {
-      type: "doughnut",
-      data: {
-        labels: ["Baixo", "Médio", "Alto"],
-        datasets: [{
-          label: "Qtd. avaliações",
-          data: [baixo, medio, alto]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
-  }
+        <div class="card">
+          <h3 style="margin-top:0;">Enquadramento por código</h3>
+          <canvas id="chart-ltcat-enquadramento" height="220"></canvas>
+          <p class="chart-caption">
+            Quantidade de enquadramentos por código de aposentadoria especial.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
 
-  // ----- Gráfico 3: Agentes mais registrados no LTCAT -----
-  const ctxAgentes = document.getElementById("chartAgentesLTCAT");
-  if (ctxAgentes && window.Chart) {
-    const freq = {};
-    registrosLTCAT.forEach(r => {
-      const ag = (r.agente || "Não informado").trim();
-      if (!freq[ag]) freq[ag] = 0;
-      freq[ag]++;
-    });
-
-    const agentes = Object.keys(freq);
-    agentes.sort((a,b) => freq[b] - freq[a]);
-    const topAgentes = agentes.slice(0,5);
-    const valores = topAgentes.map(a => freq[a]);
-
-    new Chart(ctxAgentes, {
-      type: "bar",
-      data: {
-        labels: topAgentes,
-        datasets: [{
-          label: "Ocorrências",
-          data: valores
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero: true, ticks: { precision:0 } }
-        }
-      }
-    });
-  }
-
-  // ----- Últimas atividades (NR-17 + LTCAT) -----
-  const atividades = [];
-
-  avaliacoesNR17.forEach(a => {
-    atividades.push({
-      data: a.dataAvaliacao || "",
-      tipo: "NR-17",
-      resumo: `${a.setor || "-"} / ${a.funcao || "-"}`,
-      detalhe: `Risco ${a.risco || "-"} (score ${a.score || "-"})`
-    });
-  });
-
-  registrosLTCAT.forEach(r => {
-    atividades.push({
-      data: r.data || "",
-      tipo: "LTCAT",
-      resumo: `${r.setor || "-"} / ${r.funcao || "-"}`,
-      detalhe: `Agente: ${r.agente || "-"} | Enq.: ${r.enquadramento || "-"}`
-    });
-  });
-
-  // ordenar por data (desc)
-  atividades.sort((a, b) => {
-    const da = a.data || "";
-    const db = b.data || "";
-    if (da < db) return 1;
-    if (da > db) return -1;
-    return 0;
-  });
-
-  const ultimas = atividades.slice(0, 6);
-  const lista = document.getElementById("listaAtividades");
-  if (lista) {
-    lista.innerHTML = "";
-    if (ultimas.length === 0) {
-      lista.innerHTML = "<li>Nenhuma atividade registrada ainda.</li>";
-    } else {
-      ultimas.forEach(item => {
-        const li = document.createElement("li");
-        li.style.marginBottom = "8px";
-        li.innerHTML = `
-          <strong>${item.tipo}</strong> — ${item.data || "sem data"}<br>
-          <span>${item.resumo}</span><br>
-          <span style="color:#6b7280;">${item.detalhe}</span>
-        `;
-        lista.appendChild(li);
-      });
+  <script>
+    // logout simples (mesmo padrão dos outros módulos)
+    function logout() {
+      localStorage.removeItem("authToken");
+      window.location.href = "index.html";
     }
-  }
-});
-</script>
-
+  </script>
 </body>
 </html>
