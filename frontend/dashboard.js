@@ -52,11 +52,12 @@ let chartLtcatEnquadramento;
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   carregarDashboardGeral();
-  carregarDashboardNR17();
-  carregarDashboardPCMSO();
-  carregarDashboardPGR();
-  carregarDashboardLTCAT();
+  // carregarDashboardNR17();
+  // carregarDashboardPCMSO();
+  // carregarDashboardPGR();
+  // carregarDashboardLTCAT();
 });
+
 
 // ===============================
 // Tabs
