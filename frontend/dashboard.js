@@ -87,16 +87,14 @@ function initTabs() {
     });
   });
 }
-
 // ===============================
 // Funções de carregamento — Geral
 // ===============================
 async function carregarDashboardGeral() {
   try {
-  const res = await fetch(`${API_BASE}/api/dashboard/geral`, {
-  headers: getAuthHeaders()
-});
-  
+    // 👉 AGORA usamos SEMPRE a função fetchDashboardGeral()
+    const data = await fetchDashboardGeral();
+
     // KPIs
     document.getElementById("kpi-total-asos").textContent = data.total_asos ?? 0;
     document.getElementById("kpi-total-nr17").textContent = data.total_nr17 ?? 0;
@@ -150,9 +148,7 @@ async function carregarDashboardGeral() {
         options: {
           responsive: true,
           plugins: {
-            legend: {
-              position: "top"
-            }
+            legend: { position: "top" }
           },
           cutout: "60%"
         }
@@ -233,381 +229,20 @@ async function fetchDashboardGeral() {
         { nome: "Vibração", ocorrencias: 4 },
         { nome: "Iluminação", ocorrencias: 3 }
       ],
-      ultimas_atividades: [
-        {
-          modulo: "NR-17",
-          data: "2025-11-27",
-          descricao: "Avaliação de posto de trabalho — caldeiraria / soldador. Risco Médio (score 8)."
-        },
-        {
-          modulo: "LTCAT",
-          data: "2025-11-26",
-          descricao: "Inclusão de agente: ruído — Enq. Especial 20 anos."
-        },
-        {
-          modulo: "PCMSO / ASO",
-          data: "2025-11-25",
-          descricao: "ASO periódico registrado — colaborador João da Silva."
-        }
-      ]
+      ultimas_atividades: []
     };
   }
 
-  const res = await fetch(`${API_BASE}/api/dashboard/geral`, {
+  // 👉 AQUI corrige o caminho: API_BASE JÁ TEM /api
+  const res = await fetch(`${API_BASE}/dashboard/geral`, {
     headers: getAuthHeaders()
   });
 
   if (!res.ok) {
     if (checkUnauthorized(res.status)) return;
-    throw new Error(`Erro ao buscar /api/dashboard/geral: ${res.status}`);
+    throw new Error(`Erro ao buscar /dashboard/geral: ${res.status}`);
   }
 
   return res.json();
 }
 
-// ===============================
-// NR-17
-// ===============================
-async function carregarDashboardNR17() {
-  try {
-    const data = await fetchDashboardNR17();
-
-    const perfil = data.perfil_risco_nr17 || { baixo: 0, medio: 0, alto: 0 };
-    const ctxRisco = document.getElementById("chart-nr17-risco");
-    if (ctxRisco) {
-      if (chartNr17Risco) chartNr17Risco.destroy();
-      chartNr17Risco = new Chart(ctxRisco, {
-        type: "doughnut",
-        data: {
-          labels: ["Baixo", "Médio", "Alto"],
-          datasets: [
-            {
-              data: [perfil.baixo || 0, perfil.medio || 0, perfil.alto || 0]
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: "top" } },
-          cutout: "60%"
-        }
-      });
-    }
-
-    const setores = data.scores_por_setor || [];
-    const ctxSetores = document.getElementById("chart-nr17-setores");
-    if (ctxSetores) {
-      if (chartNr17Setores) chartNr17Setores.destroy();
-      chartNr17Setores = new Chart(ctxSetores, {
-        type: "bar",
-        data: {
-          labels: setores.map(s => s.nome),
-          datasets: [
-            {
-              label: "Score médio",
-              data: setores.map(s => s.score_medio)
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, max: 10 }
-          }
-        }
-      });
-    }
-  } catch (err) {
-    console.error("Erro ao carregar dashboard NR-17:", err);
-  }
-}
-
-async function fetchDashboardNR17() {
-  if (USE_FAKE_DATA) {
-    return {
-      perfil_risco_nr17: { baixo: 4, medio: 3, alto: 1 },
-      scores_por_setor: [
-        { nome: "Caldeiraria", score_medio: 8.5 },
-        { nome: "Solda", score_medio: 7.8 },
-        { nome: "Escritório", score_medio: 3.2 }
-      ]
-    };
-  }
-
-  const res = await fetch(`${API_BASE}/api/dashboard/nr17`, {
-    headers: getAuthHeaders()
-  });
-
-  if (!res.ok) {
-    if (checkUnauthorized(res.status)) return;
-    throw new Error(`Erro ao buscar /api/dashboard/nr17: ${res.status}`);
-  }
-
-  return res.json();
-}
-
-// ===============================
-// PCMSO / ASO
-// ===============================
-async function carregarDashboardPCMSO() {
-  try {
-    const data = await fetchDashboardPCMSO();
-
-    const mensal = data.exames_por_mes || [];
-    const ctxMensal = document.getElementById("chart-pcmsos-mensal");
-    if (ctxMensal) {
-      if (chartPcmsosMensal) chartPcmsosMensal.destroy();
-      chartPcmsosMensal = new Chart(ctxMensal, {
-        type: "line",
-        data: {
-          labels: mensal.map(m => m.mes),
-          datasets: [
-            {
-              label: "Quantidade de ASOs",
-              data: mensal.map(m => m.total),
-              tension: 0.3
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: true } },
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
-
-    const status = data.status_asos || { validos: 0, vencidos: 0, a_vencer: 0 };
-    const ctxStatus = document.getElementById("chart-pcmsos-status");
-    if (ctxStatus) {
-      if (chartPcmsosStatus) chartPcmsosStatus.destroy();
-      chartPcmsosStatus = new Chart(ctxStatus, {
-        type: "bar",
-        data: {
-          labels: ["Válidos", "Vencidos", "A vencer (30d)"],
-          datasets: [
-            {
-              label: "Quantidade",
-              data: [
-                status.validos || 0,
-                status.vencidos || 0,
-                status.a_vencer || 0
-              ]
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
-  } catch (err) {
-    console.error("Erro ao carregar dashboard PCMSO:", err);
-  }
-}
-
-async function fetchDashboardPCMSO() {
-  if (USE_FAKE_DATA) {
-    return {
-      exames_por_mes: [
-        { mes: "Jan", total: 5 },
-        { mes: "Fev", total: 8 },
-        { mes: "Mar", total: 4 },
-        { mes: "Abr", total: 10 }
-      ],
-      status_asos: { validos: 18, vencidos: 2, a_vencer: 3 }
-    };
-  }
-
-  const res = await fetch(`${API_BASE}/api/dashboard/pcmsos`, {
-    headers: getAuthHeaders()
-  });
-
-  if (!res.ok) {
-    if (checkUnauthorized(res.status)) return;
-    throw new Error(`Erro ao buscar /api/dashboard/pcmsos: ${res.status}`);
-  }
-
-  return res.json();
-}
-
-// ===============================
-// PGR / NR-01
-// ===============================
-async function carregarDashboardPGR() {
-  try {
-    const data = await fetchDashboardPGR();
-
-    const categorias = data.perigos_por_categoria || [];
-    const ctxCategorias = document.getElementById("chart-pgr-categorias");
-    if (ctxCategorias) {
-      if (chartPgrCategorias) chartPgrCategorias.destroy();
-      chartPgrCategorias = new Chart(ctxCategorias, {
-        type: "bar",
-        data: {
-          labels: categorias.map(c => c.categoria),
-          datasets: [
-            {
-              label: "Perigos",
-              data: categorias.map(c => c.total)
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
-
-    const acoes = data.status_acoes || {
-      planejadas: 0,
-      em_andamento: 0,
-      concluidas: 0
-    };
-    const ctxAcoes = document.getElementById("chart-pgr-acoes");
-    if (ctxAcoes) {
-      if (chartPgrAcoes) chartPgrAcoes.destroy();
-      chartPgrAcoes = new Chart(ctxAcoes, {
-        type: "bar",
-        data: {
-          labels: ["Planejadas", "Em andamento", "Concluídas"],
-          datasets: [
-            {
-              label: "Ações",
-              data: [
-                acoes.planejadas || 0,
-                acoes.em_andamento || 0,
-                acoes.concluidas || 0
-              ]
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
-  } catch (err) {
-    console.error("Erro ao carregar dashboard PGR:", err);
-  }
-}
-
-async function fetchDashboardPGR() {
-  if (USE_FAKE_DATA) {
-    return {
-      perigos_por_categoria: [
-        { categoria: "Físicos", total: 6 },
-        { categoria: "Químicos", total: 4 },
-        { categoria: "Biológicos", total: 2 },
-        { categoria: "Ergonômicos", total: 5 },
-        { categoria: "Mecânicos", total: 3 }
-      ],
-      status_acoes: { planejadas: 4, em_andamento: 3, concluidas: 6 }
-    };
-  }
-
-  const res = await fetch(`${API_BASE}/api/dashboard/pgr`, {
-    headers: getAuthHeaders()
-  });
-
-  if (!res.ok) {
-    if (checkUnauthorized(res.status)) return;
-    throw new Error(`Erro ao buscar /api/dashboard/pgr: ${res.status}`);
-  }
-
-  return res.json();
-}
-
-// ===============================
-// LTCAT
-// ===============================
-async function carregarDashboardLTCAT() {
-  try {
-    const data = await fetchDashboardLTCAT();
-
-    const setores = data.agentes_por_setor || [];
-    const ctxSetor = document.getElementById("chart-ltcat-setor");
-    if (ctxSetor) {
-      if (chartLtcatSetor) chartLtcatSetor.destroy();
-      chartLtcatSetor = new Chart(ctxSetor, {
-        type: "bar",
-        data: {
-          labels: setores.map(s => s.setor),
-          datasets: [
-            {
-              label: "Agentes",
-              data: setores.map(s => s.total)
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
-
-    const enquadramento = data.enquadramento_por_codigo || [];
-    const ctxEnq = document.getElementById("chart-ltcat-enquadramento");
-    if (ctxEnq) {
-      if (chartLtcatEnquadramento) chartLtcatEnquadramento.destroy();
-      chartLtcatEnquadramento = new Chart(ctxEnq, {
-        type: "bar",
-        data: {
-          labels: enquadramento.map(e => e.codigo),
-          datasets: [
-            {
-              label: "Registros",
-              data: enquadramento.map(e => e.total)
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
-  } catch (err) {
-    console.error("Erro ao carregar dashboard LTCAT:", err);
-  }
-}
-
-async function fetchDashboardLTCAT() {
-  if (USE_FAKE_DATA) {
-    return {
-      agentes_por_setor: [
-        { setor: "Caldeiraria", total: 5 },
-        { setor: "Solda", total: 4 },
-        { setor: "Escritório", total: 1 }
-      ],
-      enquadramento_por_codigo: [
-        { codigo: "20 anos", total: 4 },
-        { codigo: "25 anos", total: 3 },
-        { codigo: "Não enquadra", total: 5 }
-      ]
-    };
-  }
-
-  const res = await fetch(`${API_BASE}/api/dashboard/ltcat`, {
-    headers: getAuthHeaders()
-  });
-
-  if (!res.ok) {
-    if (checkUnauthorized(res.status)) return;
-    throw new Error(`Erro ao buscar /api/dashboard/ltcat: ${res.status}`);
-  }
-
-  return res.json();
-}
