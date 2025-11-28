@@ -3,9 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from datetime import date, timedelta
 
 from database import Base, engine, SessionLocal
-from models import *  # importa User, ASORecord, NR17Record, LTCATRecord etc.
+from models import *  # User, ASORecord, NR17Record, LTCATRecord etc.
 
 # ❌ NÃO rodar create_all no Supabase (tabelas já existem)
 # Base.metadata.create_all(bind=engine)
@@ -50,20 +51,14 @@ app.add_middleware(
 # HELPERS DE BANCO
 # ============================================================
 def get_db() -> Session:
-    """Abre e fecha sessão manualmente (sem depender de Depends aqui)."""
+    """Abre uma sessão. Fechamos manualmente no finally."""
     db = SessionLocal()
-    try:
-        return db
-    finally:
-        # o fechamento é feito na mão nas rotas que usarem get_db()
-        ...
-        # (não usamos context manager aqui para manter simples neste arquivo)
+    return db
 
 
 # ============================================================
 # ROTAS BÁSICAS
 # ============================================================
-
 @app.get("/")
 def home():
     return {"msg": "API funcionando!"}
@@ -77,25 +72,9 @@ def health():
 # ============================================================
 # DASHBOARD GERAL — /api/dashboard/geral
 # ============================================================
-# Esta rota é consumida pelo dashboard.js (fetchDashboardGeral)
-# e retorna:
-# - total_asos
-# - total_nr17
-# - total_ltcat
-# - risco_medio_nr17
-# - distribuicao_modulos
-# - perfil_risco_nr17
-# - agentes_top5
-# - ultimas_atividades
-# ============================================================
-
 @app.get("/api/dashboard/geral")
 def dashboard_geral():
-    """
-    Retorna indicadores consolidados da suíte:
-    ASO / NR-17 / LTCAT.
-    """
-    db = SessionLocal()
+    db = get_db()
     try:
         # ---------- Totais principais ----------
         try:
@@ -122,7 +101,7 @@ def dashboard_geral():
         except Exception:
             risco_medio_nr17 = 0.0
 
-        # ---------- Perfil de risco NR-17 (baixo / médio / alto) ----------
+        # ---------- Perfil de risco NR-17 ----------
         perfil = {"baixo": 0, "medio": 0, "alto": 0}
         try:
             rows = (
@@ -141,7 +120,6 @@ def dashboard_geral():
                 elif "alto" in n:
                     perfil["alto"] += qtde
         except Exception:
-            # se der erro de campo/coluna, mantemos tudo zero
             pass
 
         # ---------- TOP 5 agentes nocivos (LTCAT) ----------
@@ -164,12 +142,9 @@ def dashboard_geral():
         except Exception:
             agentes_top5 = []
 
-        # ---------- Últimas atividades ----------
-        # Por enquanto, deixamos vazio. Depois podemos montar
-        # juntando NR-17 + LTCAT + ASO ordenados por data.
+        # ---------- Últimas atividades (placeholder) ----------
         ultimas_atividades = []
 
-        # ---------- Monta resposta ----------
         return {
             "total_asos": total_asos,
             "total_nr17": total_nr17,
@@ -183,6 +158,98 @@ def dashboard_geral():
             "perfil_risco_nr17": perfil,
             "agentes_top5": agentes_top5,
             "ultimas_atividades": ultimas_atividades,
+        }
+    finally:
+        db.close()
+
+
+# ============================================================
+# DASHBOARD PCMSO / ASO — /api/dashboard/pcmsos
+# ============================================================
+@app.get("/api/dashboard/pcmsos")
+def dashboard_pcmsos():
+    """
+    Retorna indicadores do módulo PCMSO / ASO:
+    - exames_por_mes: [{mes, total}]
+    - status_asos: {validos, vencidos, a_vencer}
+    """
+    db = get_db()
+    try:
+        exames_por_mes = []
+        status_asos = {"validos": 0, "vencidos": 0, "a_vencer": 0}
+
+        # ---------- Exames por mês (últimos 12 meses) ----------
+        try:
+            hoje = date.today()
+            um_ano_atras = hoje.replace(year=hoje.year - 1)
+
+            # Ajuste os nomes de campos se forem diferentes:
+            # ASORecord.exam_date -> data do exame (Date ou DateTime)
+            rows = (
+                db.query(
+                    func.date_trunc("month", ASORecord.exam_date).label("mes"),
+                    func.count(ASORecord.id).label("total"),
+                )
+                .filter(ASORecord.exam_date >= um_ano_atras)
+                .group_by("mes")
+                .order_by("mes")
+                .all()
+            )
+
+            meses_pt = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+                        "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+
+            for mes_dt, total in rows:
+                if hasattr(mes_dt, "month"):
+                    label = f"{meses_pt[mes_dt.month - 1]}/{mes_dt.year}"
+                else:
+                    label = "Mês"
+                exames_por_mes.append(
+                    {"mes": label, "total": int(total)}
+                )
+        except Exception as e:
+            print("Erro ao calcular exames_por_mes:", e)
+            exames_por_mes = []
+
+        # ---------- Status dos ASOs ----------
+        try:
+            hoje = date.today()
+            daqui_30 = hoje + timedelta(days=30)
+
+            # Ajuste o nome do campo de validade se for diferente:
+            # ASORecord.valid_until -> data de vencimento do ASO
+            validos = (
+                db.query(func.count(ASORecord.id))
+                .filter(ASORecord.valid_until >= hoje)
+                .scalar()
+                or 0
+            )
+            vencidos = (
+                db.query(func.count(ASORecord.id))
+                .filter(ASORecord.valid_until < hoje)
+                .scalar()
+                or 0
+            )
+            a_vencer = (
+                db.query(func.count(ASORecord.id))
+                .filter(ASORecord.valid_until >= hoje)
+                .filter(ASORecord.valid_until <= daqui_30)
+                .scalar()
+                or 0
+            )
+
+            status_asos = {
+                "validos": int(validos),
+                "vencidos": int(vencidos),
+                "a_vencer": int(a_vencer),
+            }
+        except Exception as e:
+            print("Erro ao calcular status_asos:", e)
+            status_asos = {"validos": 0, "vencidos": 0, "a_vencer": 0}
+
+        return {
+            "exames_por_mes": exames_por_mes,
+            "status_asos": status_asos,
         }
     finally:
         db.close()
