@@ -308,4 +308,27 @@ textarea:focus {
 .tab-panel.active {
   display: block;
 }
+/* Limita a altura dos gráficos dentro dos cards */
+.tab-panel .card canvas {
+  max-height: 220px;
+}
+
+/* Dá uma apertadinha nas margens verticais dos cards dentro das abas */
+.tab-panel .card {
+  margin-bottom: 12px;
+}
+
+/* Garante 2 colunas lado a lado em telas médias/grandes */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* Deixa o conteúdo das abas mais “encaixado” na altura da tela */
+main.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 16px;
+}
 
