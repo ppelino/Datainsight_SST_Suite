@@ -94,7 +94,7 @@ function initTabs() {
 // ===============================
 async function carregarDashboardGeral() {
   try {
-    // 👉 AGORA usamos SEMPRE a função fetchDashboardGeral()
+    // 👉 Agora pega os dados SEMPRE por aqui
     const data = await fetchDashboardGeral();
 
     // KPIs
@@ -149,9 +149,7 @@ async function carregarDashboardGeral() {
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: { position: "top" }
-          },
+          plugins: { legend: { position: "top" } },
           cutout: "60%"
         }
       });
@@ -175,12 +173,8 @@ async function carregarDashboardGeral() {
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: { beginAtZero: true, precision: 0 }
-          }
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, precision: 0 } }
         }
       });
     }
@@ -235,7 +229,7 @@ async function fetchDashboardGeral() {
     };
   }
 
-  // 👉 AQUI corrige o caminho: API_BASE JÁ TEM /api
+  // 👇 API_BASE já tem /api, então aqui é só /dashboard/geral
   const res = await fetch(`${API_BASE}/dashboard/geral`, {
     headers: getAuthHeaders()
   });
@@ -247,4 +241,3 @@ async function fetchDashboardGeral() {
 
   return res.json();
 }
-
