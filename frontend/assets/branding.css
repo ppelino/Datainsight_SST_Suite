@@ -299,3 +299,13 @@ textarea:focus {
 .icon-btn.delete:hover {
   background: #ffc4c4;
 }
+/* Esconde o conteúdo de todas as abas por padrão */
+.tab-panel {
+  display: none;
+}
+
+/* Só mostra a aba que estiver ativa */
+.tab-panel.active {
+  display: block;
+}
+
