@@ -2,6 +2,8 @@
 // Configuração API
 // ===============================
 const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
+const USE_FAKE_DATA = false;
+
 
 
 // Se ainda não existir endpoint de dashboard na API,
