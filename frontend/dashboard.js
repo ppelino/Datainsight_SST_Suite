@@ -46,49 +46,74 @@ let chartPgrAcoes;
 let chartLtcatSetor;
 let chartLtcatEnquadramento;
 
+
+// ===============================
+// Controle das tabs
+// ===============================
+function setActiveTab(tab) {
+  const buttons = document.querySelectorAll(".tab-button");
+  const panels = document.querySelectorAll(".tab-panel");
+
+  buttons.forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === tab);
+  });
+
+  panels.forEach(p => {
+    p.classList.toggle("active", p.id === `tab-${tab}`);
+  });
+}
+
+function setActiveTabFromHash() {
+  const hash = window.location.hash.replace("#", "");
+  const validTabs = ["geral", "nr17", "pcmsos", "pgr", "ltcat"];
+  const tab = validTabs.includes(hash) ? hash : "geral";
+  setActiveTab(tab);
+}
+
+function initTabs() {
+  const buttons = document.querySelectorAll(".tab-button");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tab = btn.dataset.tab;
+      // atualiza o hash da URL sem recarregar
+      history.replaceState(null, "", `#${tab}`);
+      setActiveTab(tab);
+    });
+  });
+
+  // ao carregar a página, usa o hash (#pcmsos, #pgr etc.)
+  setActiveTabFromHash();
+}
+
+// quando trocar só o hash (clicando no menu de cima), atualiza as tabs também
+window.addEventListener("hashchange", setActiveTabFromHash);
+
+
 // ===============================
 // Inicialização
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
+
+  // Geral sempre
   carregarDashboardGeral();
-  // carregarDashboardNR17();
+
+  // PCMSO já ligado
   carregarDashboardPCMSO();
+
+  // Depois a gente liga os demais se quiser
+  // carregarDashboardNR17();
   // carregarDashboardPGR();
   // carregarDashboardLTCAT();
 });
 
 
 // ===============================
-// Tabs
-// ===============================
-function initTabs() {
-  const buttons = document.querySelectorAll(".tab-button");
-  const panels = document.querySelectorAll(".tab-panel");
-
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const tab = btn.dataset.tab;
-
-      buttons.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      panels.forEach(p => {
-        if (p.id === `tab-${tab}`) {
-          p.classList.add("active");
-        } else {
-          p.classList.remove("active");
-        }
-      });
-    });
-  });
-}
-// ===============================
 // Funções de carregamento — Geral
 // ===============================
 async function carregarDashboardGeral() {
   try {
-    // 👉 Agora pega os dados SEMPRE por aqui
     const data = await fetchDashboardGeral();
 
     // KPIs
@@ -223,7 +248,6 @@ async function fetchDashboardGeral() {
     };
   }
 
-  // 👇 API_BASE já tem /api, então aqui é só /dashboard/geral
   const res = await fetch(`${API_BASE}/dashboard/geral`, {
     headers: getAuthHeaders()
   });
@@ -235,6 +259,72 @@ async function fetchDashboardGeral() {
 
   return res.json();
 }
+
+
+// ===============================
+// PCMSO / ASO
+// ===============================
+async function carregarDashboardPCMSO() {
+  try {
+    const data = await fetchDashboardPCMSO();
+
+    const mensal = data.exames_por_mes || [];
+    const ctxMensal = document.getElementById("chart-pcmsos-mensal");
+    if (ctxMensal) {
+      if (chartPcmsosMensal) chartPcmsosMensal.destroy();
+      chartPcmsosMensal = new Chart(ctxMensal, {
+        type: "line",
+        data: {
+          labels: mensal.map(m => m.mes),
+          datasets: [
+            {
+              label: "Quantidade de ASOs",
+              data: mensal.map(m => m.total),
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: true } },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    const status = data.status_asos || { validos: 0, vencidos: 0, a_vencer: 0 };
+    const ctxStatus = document.getElementById("chart-pcmsos-status");
+    if (ctxStatus) {
+      if (chartPcmsosStatus) chartPcmsosStatus.destroy();
+      chartPcmsosStatus = new Chart(ctxStatus, {
+        type: "bar",
+        data: {
+          labels: ["Válidos", "Vencidos", "A vencer (30d)"],
+          datasets: [
+            {
+              label: "Quantidade",
+              data: [
+                status.validos || 0,
+                status.vencidos || 0,
+                status.a_vencer || 0
+              ]
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Erro ao carregar dashboard PCMSO:", err);
+  }
+}
+
 async function fetchDashboardPCMSO() {
   if (USE_FAKE_DATA) {
     return {
@@ -248,7 +338,6 @@ async function fetchDashboardPCMSO() {
     };
   }
 
-  // API_BASE já tem /api → aqui é só /dashboard/pcmsos
   const res = await fetch(`${API_BASE}/dashboard/pcmsos`, {
     headers: getAuthHeaders()
   });
