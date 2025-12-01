@@ -4,6 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy import func  # 👈 NOVO: para agregações no dashboard
 
 from database import get_db
 from models import AsoRecord
@@ -91,3 +92,51 @@ def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
         db.rollback()
         print("Erro ao excluir ASO:", e)
         raise HTTPException(status_code=500, detail="Erro ao excluir registro no banco.")
+
+
+# ============================================================
+#  DASHBOARD PCMSO / ASO
+# ============================================================
+
+@router.get("/dashboard/pcmsos")
+def dashboard_pcmsos(db: Session = Depends(get_db)):
+    """
+    Dados agregados para o dashboard de PCMSO / ASO.
+
+    Caminho completo na API:
+      /api/aso/dashboard/pcmsos
+    (API_BASE já tem /api)
+    """
+
+    # 1) Exames por mês (YYYY-MM)
+    exames_rows = (
+        db.query(
+            func.to_char(AsoRecord.data_exame, "YYYY-MM").label("mes"),
+            func.count(AsoRecord.id).label("total"),
+        )
+        .group_by(func.to_char(AsoRecord.data_exame, "YYYY-MM"))
+        .order_by(func.to_char(AsoRecord.data_exame, "YYYY-MM"))
+        .all()
+    )
+
+    exames_por_mes = [
+        {"mes": row.mes, "total": row.total}
+        for row in exames_rows
+    ]
+
+    # 2) Status dos ASOs
+    # Por enquanto, lógica simples:
+    # - todos vão como "válidos"
+    # Depois podemos refinar usando resultado, data_exame, etc.
+    total_asos = db.query(func.count(AsoRecord.id)).scalar() or 0
+
+    status_asos = {
+        "validos": total_asos,
+        "vencidos": 0,
+        "a_vencer": 0,
+    }
+
+    return {
+        "exames_por_mes": exames_por_mes,
+        "status_asos": status_asos,
+    }
