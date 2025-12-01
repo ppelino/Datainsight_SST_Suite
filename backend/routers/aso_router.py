@@ -10,7 +10,7 @@ from database import get_db
 from models import AsoRecord
 
 router = APIRouter(
-    prefix="/aso",
+    prefix="/api/aso",
     tags=["aso"],
 )
 
