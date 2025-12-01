@@ -77,13 +77,20 @@ async function carregarASO() {
       console.error("Erro ao carregar ASO:", res.status, msg);
       tbody.innerHTML =
         "<tr><td colspan='7'>Erro ao carregar registros.</td></tr>";
+
+      // se der erro, zera contador visual
+      atualizarTotalASO(0);
       return;
     }
 
     const lista = await res.json();
 
+    // cache + localStorage
     _asoCache = lista;
     localStorage.setItem("registrosASO", JSON.stringify(lista));
+
+    // ATUALIZA TOTAL (contador na página + localStorage)
+    atualizarTotalASO(lista.length);
 
     if (!lista.length) {
       tbody.innerHTML =
@@ -121,6 +128,19 @@ async function carregarASO() {
     console.error("Erro de rede ao carregar ASO:", err);
     tbody.innerHTML =
       "<tr><td colspan='7'>Erro de comunicação com o servidor.</td></tr>";
+    atualizarTotalASO(0);
+  }
+}
+
+// Atualiza contador de total de ASOs
+function atualizarTotalASO(total) {
+  // guarda no localStorage (se quiser usar em outros lugares)
+  localStorage.setItem("totalASOS", String(total));
+
+  // atualiza contador na página, se existir
+  const el = document.getElementById("total-asos-pagina");
+  if (el) {
+    el.textContent = total;
   }
 }
 
