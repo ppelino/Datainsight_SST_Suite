@@ -92,7 +92,6 @@ def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
         print("Erro ao excluir ASO:", e)
         raise HTTPException(status_code=500, detail="Erro ao excluir registro no banco.")
 
-
 # ============================================================
 #  DASHBOARD PCMSO / ASO
 # ============================================================
@@ -104,18 +103,26 @@ def dashboard_pcmsos(db: Session = Depends(get_db)):
 
     Caminho completo na API:
       /api/aso/dashboard/pcmsos
-    (API_BASE já tem /api)
     """
 
-    # 1) Exames por mês (MM/YYYY)
-    #    Ex.: "11/2025", "12/2025", etc.
-    exames_rows = (
+    # 1) EXAMES POR MÊS
+    #    - inner query agrupa por mês (date_trunc)
+    #    - outer query formata para "MM/YYYY"
+    subq = (
         db.query(
-            func.to_char(AsoRecord.data_exame, "MM/YYYY").label("mes"),
+            func.date_trunc("month", AsoRecord.data_exame).label("mes_dt"),
             func.count(AsoRecord.id).label("total"),
         )
-        .group_by(func.to_char(AsoRecord.data_exame, "MM/YYYY"))
-        .order_by(func.to_char(AsoRecord.data_exame, "MM/YYYY"))
+        .group_by("mes_dt")
+        .subquery()
+    )
+
+    exames_rows = (
+        db.query(
+            func.to_char(subq.c.mes_dt, "MM/YYYY").label("mes"),
+            subq.c.total,
+        )
+        .order_by(subq.c.mes_dt)
         .all()
     )
 
@@ -124,9 +131,7 @@ def dashboard_pcmsos(db: Session = Depends(get_db)):
         for row in exames_rows
     ]
 
-    # 2) Status dos ASOs
-    # Por enquanto, lógica simples:
-    # - todos vão como "válidos"
+    # 2) STATUS dos ASOs (versão simples: tudo como "válido" por enquanto)
     total_asos = db.query(func.count(AsoRecord.id)).scalar() or 0
 
     status_asos = {
@@ -139,3 +144,4 @@ def dashboard_pcmsos(db: Session = Depends(get_db)):
         "exames_por_mes": exames_por_mes,
         "status_asos": status_asos,
     }
+
