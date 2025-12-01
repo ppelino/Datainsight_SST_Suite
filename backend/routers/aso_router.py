@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy import func  # 👈 NOVO: para agregações no dashboard
+from sqlalchemy import func  # para agregações no dashboard
 
 from database import get_db
 from models import AsoRecord
@@ -86,7 +86,6 @@ def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
               .delete(synchronize_session=False)
         )
         db.commit()
-
         return {"msg": f"Registros afetados: {linhas}"}
     except Exception as e:
         db.rollback()
@@ -108,14 +107,15 @@ def dashboard_pcmsos(db: Session = Depends(get_db)):
     (API_BASE já tem /api)
     """
 
-    # 1) Exames por mês (YYYY-MM)
+    # 1) Exames por mês (MM/YYYY)
+    #    Ex.: "11/2025", "12/2025", etc.
     exames_rows = (
         db.query(
-            func.to_char(AsoRecord.data_exame, "YYYY-MM").label("mes"),
+            func.to_char(AsoRecord.data_exame, "MM/YYYY").label("mes"),
             func.count(AsoRecord.id).label("total"),
         )
-        .group_by(func.to_char(AsoRecord.data_exame, "YYYY-MM"))
-        .order_by(func.to_char(AsoRecord.data_exame, "YYYY-MM"))
+        .group_by(func.to_char(AsoRecord.data_exame, "MM/YYYY"))
+        .order_by(func.to_char(AsoRecord.data_exame, "MM/YYYY"))
         .all()
     )
 
@@ -127,7 +127,6 @@ def dashboard_pcmsos(db: Session = Depends(get_db)):
     # 2) Status dos ASOs
     # Por enquanto, lógica simples:
     # - todos vão como "válidos"
-    # Depois podemos refinar usando resultado, data_exame, etc.
     total_asos = db.query(func.count(AsoRecord.id)).scalar() or 0
 
     status_asos = {
