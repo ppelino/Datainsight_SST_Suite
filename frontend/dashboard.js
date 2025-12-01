@@ -324,8 +324,9 @@ async function carregarDashboardPCMSO() {
     console.error("Erro ao carregar dashboard PCMSO:", err);
   }
 }
+const USE_FAKE_DATA = false;
 
-async function fetchDashboardPCMSO() {
+async function fetchDashboardPCMSO() {   // <-- CORREÇÃO AQUI
   if (USE_FAKE_DATA) {
     return {
       exames_por_mes: [
@@ -338,7 +339,7 @@ async function fetchDashboardPCMSO() {
     };
   }
 
-  const res = await fetch(`${API_BASE}/dashboard/pcmsos`, {
+  const res = await fetch(`${API_BASE}/aso/dashboard/pcmsos`, {
     headers: getAuthHeaders()
   });
 
@@ -349,3 +350,4 @@ async function fetchDashboardPCMSO() {
 
   return res.json();
 }
+
