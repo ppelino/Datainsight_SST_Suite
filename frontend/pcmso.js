@@ -2,7 +2,7 @@
 // PCMSO / ASO – Integração com API
 // =========================
 
-const API_BASE = "https://datainsight-sst-suite.onrender.com";
+const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
 
 // cache em memória para usar na lupa / impressão por ID
 let _asoCache = [];
@@ -53,7 +53,7 @@ async function salvarASO() {
       return;
     }
 
-    await res.json(); // não precisamos do retorno agora
+    await res.json();
 
     await carregarASO();
     limparFormulario();
@@ -82,7 +82,6 @@ async function carregarASO() {
 
     const lista = await res.json();
 
-    // guarda no cache em memória e no localStorage (para o dashboard)
     _asoCache = lista;
     localStorage.setItem("registrosASO", JSON.stringify(lista));
 
@@ -151,7 +150,6 @@ async function deletarASO(id) {
   }
 }
 
-
 // --------- LIMPAR FORM ---------
 function limparFormulario() {
   document.getElementById("nome").value = "";
@@ -168,7 +166,6 @@ function limparFormulario() {
 // Funções extras – visualização / impressão
 // =========================
 
-// Monta HTML padrão do ASO (reaproveitado pela lupa e pela impressão)
 function montarHTMLASO(reg) {
   return `
     <div style="font-family: system-ui; padding: 20px;">
@@ -195,7 +192,6 @@ function montarHTMLASO(reg) {
   `;
 }
 
-// Lupa: abre o registro selecionado em uma nova aba para visualizar/imprimir
 function visualizarASO(id) {
   const reg = _asoCache.find((r) => r.id === id);
   if (!reg) {
@@ -224,17 +220,14 @@ function visualizarASO(id) {
 // Funções extras dos botões
 // =========================
 
-// Busca o último registro direto da API
 async function obterUltimoASO() {
   const res = await fetch(`${API_BASE}/aso/records`);
   if (!res.ok) return null;
   const lista = await res.json();
   if (!lista.length) return null;
-  // assumindo ordenação desc no backend: primeiro = mais recente
   return lista[0];
 }
 
-// Imprimir a última avaliação registrada
 async function imprimirUltimoASO() {
   const ultimo = await obterUltimoASO();
   if (!ultimo) {
@@ -262,7 +255,6 @@ async function imprimirUltimoASO() {
   printWindow.focus();
 }
 
-// "Exportar PDF" – por enquanto só placeholder
 async function exportarPDF_ASO() {
   const ultimo = await obterUltimoASO();
   if (!ultimo) {
