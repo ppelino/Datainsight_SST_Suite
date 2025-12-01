@@ -235,14 +235,14 @@ async function fetchDashboardGeral() {
         { nome: "Calor", ocorrencias: 7 },
         { nome: "Agente químico X", ocorrencias: 5 },
         { nome: "Vibração", ocorrencias: 4 },
-        { nome: "Iluminação", ocorrencias: 3 },
+        { nome: "Iluminação", ocorrencias: 3 }
       ],
-      ultimas_atividades: [],
+      ultimas_atividades: []
     };
   }
 
   const res = await fetch(`${API_BASE}/dashboard/geral`, {
-    headers: getAuthHeaders(),
+    headers: getAuthHeaders()
   });
 
   if (!res.ok) {
@@ -273,24 +273,24 @@ async function carregarDashboardPCMSO() {
             {
               label: "Quantidade de ASOs",
               data: mensal.map((m) => m.total),
-              tension: 0.3,
-            },
-          ],
+              tension: 0.3
+            }
+          ]
         },
         options: {
           responsive: true,
           plugins: { legend: { display: true } },
           scales: {
-            y: { beginAtZero: true },
-          },
-        },
+            y: { beginAtZero: true }
+          }
+        }
       });
     }
 
     const status = data.status_asos || {
       validos: 0,
       vencidos: 0,
-      a_vencer: 0,
+      a_vencer: 0
     };
     const ctxStatus = document.getElementById("chart-pcmsos-status");
     if (ctxStatus) {
@@ -305,16 +305,16 @@ async function carregarDashboardPCMSO() {
               data: [
                 status.validos || 0,
                 status.vencidos || 0,
-                status.a_vencer || 0,
-              ],
-            },
-          ],
+                status.a_vencer || 0
+              ]
+            }
+          ]
         },
         options: {
           responsive: true,
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } },
-        },
+          scales: { y: { beginAtZero: true } }
+        }
       });
     }
   } catch (err) {
@@ -329,19 +329,19 @@ async function fetchDashboardPCMSO() {
         { mes: "01/2025", total: 5 },
         { mes: "02/2025", total: 8 },
         { mes: "03/2025", total: 4 },
-        { mes: "04/2025", total: 10 },
+        { mes: "04/2025", total: 10 }
       ],
-      status_asos: { validos: 18, vencidos: 2, a_vencer: 3 },
+      status_asos: { validos: 18, vencidos: 2, a_vencer: 3 }
     };
   }
 
   const res = await fetch(`${API_BASE}/aso/dashboard/pcmsos`, {
-    headers: getAuthHeaders(),
+    headers: getAuthHeaders()
   });
 
   if (!res.ok) {
     if (checkUnauthorized(res.status)) return;
-    throw new Error(`Erro ao buscar /dashboard/pcmsos: ${res.status}`);
+    throw new Error(`Erro ao buscar /aso/dashboard/pcmsos: ${res.status}`);
   }
 
   return res.json();
