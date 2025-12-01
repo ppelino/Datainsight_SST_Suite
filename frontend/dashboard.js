@@ -2,7 +2,7 @@
 // Configuração API
 // ===============================
 const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
-const USE_FAKE_DATA = true;
+const USE_FAKE_DATA = false
 
 // Helper para enviar o token de autenticação em todas as requisições
 function getAuthHeaders(extra = {}) {
