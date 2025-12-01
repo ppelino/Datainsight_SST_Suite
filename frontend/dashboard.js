@@ -2,7 +2,7 @@
 // Configuração API
 // ===============================
 const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
-const USE_FAKE_DATA = false
+const USE_FAKE_DATA = false;
 
 // Helper para enviar o token de autenticação em todas as requisições
 function getAuthHeaders(extra = {}) {
@@ -46,7 +46,6 @@ let chartPgrAcoes;
 let chartLtcatSetor;
 let chartLtcatEnquadramento;
 
-
 // ===============================
 // Controle das tabs
 // ===============================
@@ -54,11 +53,11 @@ function setActiveTab(tab) {
   const buttons = document.querySelectorAll(".tab-button");
   const panels = document.querySelectorAll(".tab-panel");
 
-  buttons.forEach(btn => {
+  buttons.forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.tab === tab);
   });
 
-  panels.forEach(p => {
+  panels.forEach((p) => {
     p.classList.toggle("active", p.id === `tab-${tab}`);
   });
 }
@@ -73,22 +72,18 @@ function setActiveTabFromHash() {
 function initTabs() {
   const buttons = document.querySelectorAll(".tab-button");
 
-  buttons.forEach(btn => {
+  buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const tab = btn.dataset.tab;
-      // atualiza o hash da URL sem recarregar
       history.replaceState(null, "", `#${tab}`);
       setActiveTab(tab);
     });
   });
 
-  // ao carregar a página, usa o hash (#pcmsos, #pgr etc.)
   setActiveTabFromHash();
 }
 
-// quando trocar só o hash (clicando no menu de cima), atualiza as tabs também
 window.addEventListener("hashchange", setActiveTabFromHash);
-
 
 // ===============================
 // Inicialização
@@ -99,15 +94,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Geral sempre
   carregarDashboardGeral();
 
-  // PCMSO já ligado
+  // PCMSO / ASO
   carregarDashboardPCMSO();
-
-  // Depois a gente liga os demais se quiser
-  // carregarDashboardNR17();
-  // carregarDashboardPGR();
-  // carregarDashboardLTCAT();
 });
-
 
 // ===============================
 // Funções de carregamento — Geral
@@ -117,11 +106,16 @@ async function carregarDashboardGeral() {
     const data = await fetchDashboardGeral();
 
     // KPIs
-    document.getElementById("kpi-total-asos").textContent = data.total_asos ?? 0;
-    document.getElementById("kpi-total-nr17").textContent = data.total_nr17 ?? 0;
-    document.getElementById("kpi-total-ltcat").textContent = data.total_ltcat ?? 0;
+    document.getElementById("kpi-total-asos").textContent =
+      data.total_asos ?? 0;
+    document.getElementById("kpi-total-nr17").textContent =
+      data.total_nr17 ?? 0;
+    document.getElementById("kpi-total-ltcat").textContent =
+      data.total_ltcat ?? 0;
     document.getElementById("kpi-risco-medio-nr17").textContent =
-      data.risco_medio_nr17 != null ? data.risco_medio_nr17.toFixed(1) : "—";
+      data.risco_medio_nr17 != null
+        ? data.risco_medio_nr17.toFixed(1)
+        : "—";
 
     // Gráfico: distribuição por módulo
     const dist = data.distribuicao_modulos || { aso: 0, nr17: 0, ltcat: 0 };
@@ -135,19 +129,19 @@ async function carregarDashboardGeral() {
           datasets: [
             {
               label: "Quantidade de registros",
-              data: [dist.aso || 0, dist.nr17 || 0, dist.ltcat || 0]
-            }
-          ]
+              data: [dist.aso || 0, dist.nr17 || 0, dist.ltcat || 0],
+            },
+          ],
         },
         options: {
           responsive: true,
           plugins: {
-            legend: { display: false }
+            legend: { display: false },
           },
           scales: {
-            y: { beginAtZero: true, precision: 0 }
-          }
-        }
+            y: { beginAtZero: true, precision: 0 },
+          },
+        },
       });
     }
 
@@ -162,15 +156,15 @@ async function carregarDashboardGeral() {
           labels: ["Baixo", "Médio", "Alto"],
           datasets: [
             {
-              data: [perfil.baixo || 0, perfil.medio || 0, perfil.alto || 0]
-            }
-          ]
+              data: [perfil.baixo || 0, perfil.medio || 0, perfil.alto || 0],
+            },
+          ],
         },
         options: {
           responsive: true,
           plugins: { legend: { position: "top" } },
-          cutout: "60%"
-        }
+          cutout: "60%",
+        },
       });
     }
 
@@ -182,19 +176,19 @@ async function carregarDashboardGeral() {
       chartAgentesTop = new Chart(ctxAgentes, {
         type: "bar",
         data: {
-          labels: agentes.map(a => a.nome),
+          labels: agentes.map((a) => a.nome),
           datasets: [
             {
               label: "Ocorrências",
-              data: agentes.map(a => a.ocorrencias)
-            }
-          ]
+              data: agentes.map((a) => a.ocorrencias),
+            },
+          ],
         },
         options: {
           responsive: true,
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, precision: 0 } }
-        }
+          scales: { y: { beginAtZero: true, precision: 0 } },
+        },
       });
     }
 
@@ -206,7 +200,7 @@ async function carregarDashboardGeral() {
       if (!atividades.length) {
         lista.innerHTML = "<p>Nenhuma atividade recente.</p>";
       } else {
-        atividades.forEach(item => {
+        atividades.forEach((item) => {
           const div = document.createElement("div");
           div.className = "activity-item";
           div.innerHTML = `
@@ -229,7 +223,6 @@ async function carregarDashboardGeral() {
 
 async function fetchDashboardGeral() {
   if (USE_FAKE_DATA) {
-    // DADOS FAKE — SÓ PARA VOCÊ VER O VISUAL
     return {
       total_asos: 12,
       total_nr17: 8,
@@ -242,14 +235,14 @@ async function fetchDashboardGeral() {
         { nome: "Calor", ocorrencias: 7 },
         { nome: "Agente químico X", ocorrencias: 5 },
         { nome: "Vibração", ocorrencias: 4 },
-        { nome: "Iluminação", ocorrencias: 3 }
+        { nome: "Iluminação", ocorrencias: 3 },
       ],
-      ultimas_atividades: []
+      ultimas_atividades: [],
     };
   }
 
   const res = await fetch(`${API_BASE}/dashboard/geral`, {
-    headers: getAuthHeaders()
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) {
@@ -259,12 +252,14 @@ async function fetchDashboardGeral() {
 
   return res.json();
 }
+
 // ===============================
 // PCMSO / ASO
 // ===============================
 async function carregarDashboardPCMSO() {
   try {
     const data = await fetchDashboardPCMSO();
+    console.log("PCMSO dashboard data:", data);
 
     const mensal = data.exames_por_mes || [];
     const ctxMensal = document.getElementById("chart-pcmsos-mensal");
@@ -273,26 +268,30 @@ async function carregarDashboardPCMSO() {
       chartPcmsosMensal = new Chart(ctxMensal, {
         type: "line",
         data: {
-          labels: mensal.map(m => m.mes),
+          labels: mensal.map((m) => m.mes),
           datasets: [
             {
               label: "Quantidade de ASOs",
-              data: mensal.map(m => m.total),
-              tension: 0.3
-            }
-          ]
+              data: mensal.map((m) => m.total),
+              tension: 0.3,
+            },
+          ],
         },
         options: {
           responsive: true,
           plugins: { legend: { display: true } },
           scales: {
-            y: { beginAtZero: true }
-          }
-        }
+            y: { beginAtZero: true },
+          },
+        },
       });
     }
 
-    const status = data.status_asos || { validos: 0, vencidos: 0, a_vencer: 0 };
+    const status = data.status_asos || {
+      validos: 0,
+      vencidos: 0,
+      a_vencer: 0,
+    };
     const ctxStatus = document.getElementById("chart-pcmsos-status");
     if (ctxStatus) {
       if (chartPcmsosStatus) chartPcmsosStatus.destroy();
@@ -306,16 +305,16 @@ async function carregarDashboardPCMSO() {
               data: [
                 status.validos || 0,
                 status.vencidos || 0,
-                status.a_vencer || 0
-              ]
-            }
-          ]
+                status.a_vencer || 0,
+              ],
+            },
+          ],
         },
         options: {
           responsive: true,
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
+          scales: { y: { beginAtZero: true } },
+        },
       });
     }
   } catch (err) {
@@ -327,17 +326,17 @@ async function fetchDashboardPCMSO() {
   if (USE_FAKE_DATA) {
     return {
       exames_por_mes: [
-        { mes: "Jan", total: 5 },
-        { mes: "Fev", total: 8 },
-        { mes: "Mar", total: 4 },
-        { mes: "Abr", total: 10 }
+        { mes: "01/2025", total: 5 },
+        { mes: "02/2025", total: 8 },
+        { mes: "03/2025", total: 4 },
+        { mes: "04/2025", total: 10 },
       ],
-      status_asos: { validos: 18, vencidos: 2, a_vencer: 3 }
+      status_asos: { validos: 18, vencidos: 2, a_vencer: 3 },
     };
   }
 
   const res = await fetch(`${API_BASE}/aso/dashboard/pcmsos`, {
-    headers: getAuthHeaders()
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) {
@@ -347,4 +346,3 @@ async function fetchDashboardPCMSO() {
 
   return res.json();
 }
-
