@@ -259,8 +259,6 @@ async function fetchDashboardGeral() {
 
   return res.json();
 }
-
-
 // ===============================
 // PCMSO / ASO
 // ===============================
@@ -324,9 +322,8 @@ async function carregarDashboardPCMSO() {
     console.error("Erro ao carregar dashboard PCMSO:", err);
   }
 }
-const USE_FAKE_DATA = false;
 
-async function fetchDashboardPCMSO() {   // <-- CORREÇÃO AQUI
+async function fetchDashboardPCMSO() {
   if (USE_FAKE_DATA) {
     return {
       exames_por_mes: [
