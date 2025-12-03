@@ -405,16 +405,12 @@ function buildLTCACharts(ltcat) {
 // ========================================
 function buildNR17TabCharts(nr17) {
   if (!Array.isArray(nr17) || !nr17.length) {
-    // se não tiver dados, não tenta plotar
-    return;
+    return; // sem dados, não plota nada
   }
 
   // --- Distribuição por risco (Baixo / Médio / Alto) ---
-  const ctxDist =
-    document.getElementById("chart-nr17-distribuicao-risco") ||
-    document.getElementById("chart-nr17-distribuicao");
-
-  if (ctxDist) {
+  const ctxRisco = document.getElementById("chart-nr17-risco");
+  if (ctxRisco) {
     let baixo = 0;
     let medio = 0;
     let alto = 0;
@@ -426,7 +422,7 @@ function buildNR17TabCharts(nr17) {
       else alto++;
     });
 
-    new Chart(ctxDist, {
+    new Chart(ctxRisco, {
       type: "bar",
       data: {
         labels: ["Baixo", "Médio", "Alto"],
@@ -448,11 +444,8 @@ function buildNR17TabCharts(nr17) {
   }
 
   // --- Scores médios por setor / GHE ---
-  const ctxSetor =
-    document.getElementById("chart-nr17-score-por-setor") ||
-    document.getElementById("chart-nr17-scores-setor");
-
-  if (ctxSetor) {
+  const ctxSetores = document.getElementById("chart-nr17-setores");
+  if (ctxSetores) {
     const grupos = {}; // { setor: { soma, qtd } }
 
     nr17.forEach((item) => {
@@ -470,7 +463,7 @@ function buildNR17TabCharts(nr17) {
       (setor) => grupos[setor].soma / grupos[setor].qtd
     );
 
-    new Chart(ctxSetor, {
+    new Chart(ctxSetores, {
       type: "bar",
       data: {
         labels,
