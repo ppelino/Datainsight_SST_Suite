@@ -53,6 +53,21 @@ async function handleResponse(res, method, path) {
 }
 
 async function apiGet(path) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res, "GET", path);
+}
+
+// Normaliza retorno (garante array)
+function asList(data) {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.items)) return data.items;
+  if (data && Array.isArray(data.results)) return data.results;
+  return [];
+}
+
 // Tenta múltiplas rotas possíveis para listar ASOs
 async function fetchASORecords() {
   const candidates = [
@@ -75,11 +90,9 @@ async function fetchASORecords() {
     }
   }
 
-  // Se nenhuma rota der certo, devolve array vazio
   console.warn("Nenhuma rota de ASO retornou dados; usando lista vazia.");
   return [];
 }
- 
 
 // ========================================
 // CONTROLE DE ABAS
@@ -114,10 +127,28 @@ async function loadKPIsAndCharts() {
       apiGet(ENDPOINT_LTCAT).catch(() => []),
     ]);
 
-    // NR-17 e LTCAT normalizados
     const nr17  = asList(rawNr17);
     const ltcat = asList(rawLtcat);
 
+    // ---------- KPIs ----------
+    const elASO   = document.querySelector("#kpi-total-asos");
+    const elNR17  = document.querySelector("#kpi-total-nr17");
+    const elLTCAT = document.querySelector("#kpi-total-ltcat");
+    const elRisco = document.querySelector("#kpi-risco-medio-nr17");
+
+    if (elASO)   elASO.textContent   = asos.length.toString();
+    if (elNR17)  elNR17.textContent  = nr17.length.toString();
+    if (elLTCAT) elLTCAT.textContent = ltcat.length.toString();
+
+    let riscoMedio = "—";
+    if (nr17.length > 0) {
+      const soma = nr17.reduce(
+        (acc, item) => acc + (Number(item.score) || 0),
+        0
+      );
+      riscoMedio = (soma / nr17.length).toFixed(1);
+    }
+    if (elRisco) elRisco.textContent = riscoMedio;
 
     // ---------- Gráficos painel GERAL ----------
     buildChartDistribuicaoModulos(asos, nr17, ltcat);
@@ -349,22 +380,22 @@ function buildPCMSOCharts(asos) {
 // ========================================
 function buildLTCACharts(ltcat) {
   const ctxSetor = document.getElementById("chart-ltcat-setor");
-  const ctxEnq = document.getElementById("chart-ltcat-enquadramento");
+  const ctxEnq   = document.getElementById("chart-ltcat-enquadramento");
   if (!ctxSetor && !ctxEnq) return;
 
   const porSetor = {};
-  const porEnq = {};
+  const porEnq   = {};
 
   ltcat.forEach((l) => {
     const setor = l.setor || "Não informado";
-    const enq = l.enquadramento || "Sem enquadramento";
+    const enq   = l.enquadramento || "Sem enquadramento";
     porSetor[setor] = (porSetor[setor] || 0) + 1;
-    porEnq[enq] = (porEnq[enq] || 0) + 1;
+    porEnq[enq]     = (porEnq[enq]   || 0) + 1;
   });
 
   if (ctxSetor) {
     const labels = Object.keys(porSetor);
-    const data = labels.map((k) => porSetor[k]);
+    const data   = labels.map((k) => porSetor[k]);
 
     new Chart(ctxSetor, {
       type: "bar",
@@ -384,7 +415,7 @@ function buildLTCACharts(ltcat) {
 
   if (ctxEnq) {
     const labels = Object.keys(porEnq);
-    const data = labels.map((k) => porEnq[k]);
+    const data   = labels.map((k) => porEnq[k]);
 
     new Chart(ctxEnq, {
       type: "pie",
@@ -408,7 +439,7 @@ function buildNR17TabCharts(nr17) {
   if (ctxRisco) {
     let baixo = 0;
     let medio = 0;
-    let alto = 0;
+    let alto  = 0;
 
     nr17.forEach((item) => {
       const s = Number(item.score) || 0;
@@ -445,16 +476,16 @@ function buildNR17TabCharts(nr17) {
 
     nr17.forEach((item) => {
       const setor = item.setor || "Não informado";
-      const s = Number(item.score) || 0;
+      const s     = Number(item.score) || 0;
       if (!grupos[setor]) {
         grupos[setor] = { soma: 0, qtd: 0 };
       }
       grupos[setor].soma += s;
-      grupos[setor].qtd += 1;
+      grupos[setor].qtd  += 1;
     });
 
     const labels = Object.keys(grupos);
-    const data = labels.map(
+    const data   = labels.map(
       (setor) => grupos[setor].soma / grupos[setor].qtd
     );
 
@@ -487,7 +518,7 @@ async function carregarArvorePGR() {
   const companies = await apiGet("/pgr/companies").catch(() => []);
   const allSectors = [];
   const allHazards = [];
-  const allRisks = [];
+  const allRisks   = [];
   const allActions = [];
 
   for (const c of companies || []) {
@@ -603,7 +634,7 @@ function montarChartPGRCategorias(hazards) {
   });
 
   const labels = Object.keys(cont);
-  const data = labels.map((k) => cont[k]);
+  const data   = labels.map((k) => cont[k]);
 
   new Chart(ctx, {
     type: "radar",
