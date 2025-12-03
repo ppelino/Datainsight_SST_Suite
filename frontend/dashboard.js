@@ -85,48 +85,13 @@ function setupTabs() {
 // ========================================
 // CARREGAMENTO GERAL (KPIs + GRÁFICOS)
 // ========================================
-
-// helper só pra consolidar a origem dos ASOs:
-// 1º tenta API  /aso/records
-// 2º se falhar, usa localStorage "registrosASO" (do módulo PCMSO)
-async function obterListaASO() {
-  let asosApi = [];
-  try {
-    const res = await apiGet(ENDPOINT_ASOS);
-    if (Array.isArray(res)) {
-      asosApi = res;
-    }
-  } catch (err) {
-    console.warn("Falha ao buscar ASO pela API, tentando localStorage…", err);
-  }
-
-  if (Array.isArray(asosApi) && asosApi.length > 0) {
-    return asosApi;
-  }
-
-  // fallback: localStorage preenchido pelo pcmso.js
-  try {
-    const cache = localStorage.getItem("registrosASO");
-    if (!cache) return [];
-    const parsed = JSON.parse(cache);
-    if (Array.isArray(parsed)) return parsed;
-  } catch (err) {
-    console.warn("Erro ao ler registrosASO do localStorage:", err);
-  }
-
-  return [];
-}
-
 async function loadKPIsAndCharts() {
   try {
-    // ---------- ASO (API + fallback localStorage) ----------
-    const asosPromise = obterListaASO();
-
-    // ---------- NR-17 / LTCAT direto na API ----------
-    const [nr17, ltcat, asos] = await Promise.all([
+    // Busca direta na API (ASO / NR17 / LTCAT)
+    const [asos, nr17, ltcat] = await Promise.all([
+      apiGet(ENDPOINT_ASOS).catch(() => []),
       apiGet(ENDPOINT_NR17).catch(() => []),
       apiGet(ENDPOINT_LTCAT).catch(() => []),
-      asosPromise,
     ]);
 
     // ---------- KPIs ----------
@@ -160,6 +125,9 @@ async function loadKPIsAndCharts() {
 
     // ---------- Gráficos LTCAT ----------
     buildLTCACharts(ltcat);
+
+    // ---------- Gráficos específicos da aba NR-17 ----------
+    buildNR17TabCharts(nr17);
 
     // ---------- PGR / NR-01 (busca própria, árvore completa) ----------
     await loadPGRCharts();
@@ -428,6 +396,98 @@ function buildLTCACharts(ltcat) {
         datasets: [{ data }],
       },
       options: { responsive: true },
+    });
+  }
+}
+
+// ========================================
+// GRÁFICOS – ABA NR-17 ESPECÍFICA
+// ========================================
+function buildNR17TabCharts(nr17) {
+  if (!Array.isArray(nr17) || !nr17.length) {
+    // se não tiver dados, não tenta plotar
+    return;
+  }
+
+  // --- Distribuição por risco (Baixo / Médio / Alto) ---
+  const ctxDist =
+    document.getElementById("chart-nr17-distribuicao-risco") ||
+    document.getElementById("chart-nr17-distribuicao");
+
+  if (ctxDist) {
+    let baixo = 0;
+    let medio = 0;
+    let alto = 0;
+
+    nr17.forEach((item) => {
+      const s = Number(item.score) || 0;
+      if (s <= 3) baixo++;
+      else if (s <= 6) medio++;
+      else alto++;
+    });
+
+    new Chart(ctxDist, {
+      type: "bar",
+      data: {
+        labels: ["Baixo", "Médio", "Alto"],
+        datasets: [
+          {
+            label: "Avaliações",
+            data: [baixo, medio, alto],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 } },
+        },
+      },
+    });
+  }
+
+  // --- Scores médios por setor / GHE ---
+  const ctxSetor =
+    document.getElementById("chart-nr17-score-por-setor") ||
+    document.getElementById("chart-nr17-scores-setor");
+
+  if (ctxSetor) {
+    const grupos = {}; // { setor: { soma, qtd } }
+
+    nr17.forEach((item) => {
+      const setor = item.setor || "Não informado";
+      const s = Number(item.score) || 0;
+      if (!grupos[setor]) {
+        grupos[setor] = { soma: 0, qtd: 0 };
+      }
+      grupos[setor].soma += s;
+      grupos[setor].qtd += 1;
+    });
+
+    const labels = Object.keys(grupos);
+    const data = labels.map(
+      (setor) => grupos[setor].soma / grupos[setor].qtd
+    );
+
+    new Chart(ctxSetor, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Score médio",
+            data,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true },
+        },
+      },
     });
   }
 }
