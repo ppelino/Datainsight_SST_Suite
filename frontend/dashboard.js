@@ -1,7 +1,8 @@
 // ========================================
 // DataInsight SST Suite — DASHBOARD GERAL
 // ========================================
-const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
+const API_BASE = "https://datainsight-sst-suite.onrender.com";
+
 
 // Endpoints principais (AJUSTE AQUI se mudar algo no backend)
 const ENDPOINT_ASOS = "/asos/records";   // 👈 AGORA bate com o Swagger
