@@ -4,9 +4,10 @@
 const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
 
 // Endpoints principais (AJUSTE AQUI se mudar algo no backend)
-const ENDPOINT_ASOS = "/asos";
+const ENDPOINT_ASOS = "/asos/records";   // 👈 AGORA bate com o Swagger
 const ENDPOINT_NR17 = "/nr17/records";
 const ENDPOINT_LTCAT = "/ltcat/records";
+
 
 // --------- Auth helper (mesmo padrão da suíte) ----------
 function getAuthHeaders(extra = {}) {
