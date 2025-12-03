@@ -53,21 +53,33 @@ async function handleResponse(res, method, path) {
 }
 
 async function apiGet(path) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "GET",
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(res, "GET", path);
-}
+// Tenta múltiplas rotas possíveis para listar ASOs
+async function fetchASORecords() {
+  const candidates = [
+    "/aso/records",
+    "/aso/records/",
+    "/aso",
+    "/asos/records",
+  ];
 
-// ---------- Normalizador de lista ----------
-// Garante um array mesmo que a API devolva {items:[...]}, {results:[...]}, etc.
-function asList(data) {
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.items)) return data.items;
-  if (data && Array.isArray(data.results)) return data.results;
+  for (const path of candidates) {
+    try {
+      const data = await apiGet(path);
+      const list = asList(data);
+      if (list.length > 0) {
+        console.log("ASO carregado pela rota:", path);
+        return list;
+      }
+    } catch (err) {
+      console.warn("Falha ao tentar rota ASO:", path, err);
+    }
+  }
+
+  // Se nenhuma rota der certo, devolve array vazio
+  console.warn("Nenhuma rota de ASO retornou dados; usando lista vazia.");
   return [];
 }
+ 
 
 // ========================================
 // CONTROLE DE ABAS
@@ -95,31 +107,17 @@ function setupTabs() {
 // ========================================
 async function loadKPIsAndCharts() {
   try {
-    const [rawAsos, rawNr17, rawLtcat] = await Promise.all([
-      apiGet(ENDPOINT_ASOS).catch(() => []),
+    // ASO tem lógica própria (tenta várias rotas)
+    const [asos, rawNr17, rawLtcat] = await Promise.all([
+      fetchASORecords(),
       apiGet(ENDPOINT_NR17).catch(() => []),
       apiGet(ENDPOINT_LTCAT).catch(() => []),
     ]);
 
-    // NORMALIZA TUDO PARA ARRAY
-    const asos  = asList(rawAsos);
+    // NR-17 e LTCAT normalizados
     const nr17  = asList(rawNr17);
     const ltcat = asList(rawLtcat);
 
-    // ---------- KPIs ----------
-    document.querySelector("#kpi-total-asos").textContent = asos.length.toString();
-    document.querySelector("#kpi-total-nr17").textContent = nr17.length.toString();
-    document.querySelector("#kpi-total-ltcat").textContent = ltcat.length.toString();
-
-    let riscoMedio = "—";
-    if (nr17.length > 0) {
-      const soma = nr17.reduce(
-        (acc, item) => acc + (Number(item.score) || 0),
-        0
-      );
-      riscoMedio = (soma / nr17.length).toFixed(1);
-    }
-    document.querySelector("#kpi-risco-medio-nr17").textContent = riscoMedio;
 
     // ---------- Gráficos painel GERAL ----------
     buildChartDistribuicaoModulos(asos, nr17, ltcat);
