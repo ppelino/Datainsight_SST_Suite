@@ -85,13 +85,48 @@ function setupTabs() {
 // ========================================
 // CARREGAMENTO GERAL (KPIs + GRÁFICOS)
 // ========================================
+
+// helper só pra consolidar a origem dos ASOs:
+// 1º tenta API  /aso/records
+// 2º se falhar, usa localStorage "registrosASO" (do módulo PCMSO)
+async function obterListaASO() {
+  let asosApi = [];
+  try {
+    const res = await apiGet(ENDPOINT_ASOS);
+    if (Array.isArray(res)) {
+      asosApi = res;
+    }
+  } catch (err) {
+    console.warn("Falha ao buscar ASO pela API, tentando localStorage…", err);
+  }
+
+  if (Array.isArray(asosApi) && asosApi.length > 0) {
+    return asosApi;
+  }
+
+  // fallback: localStorage preenchido pelo pcmso.js
+  try {
+    const cache = localStorage.getItem("registrosASO");
+    if (!cache) return [];
+    const parsed = JSON.parse(cache);
+    if (Array.isArray(parsed)) return parsed;
+  } catch (err) {
+    console.warn("Erro ao ler registrosASO do localStorage:", err);
+  }
+
+  return [];
+}
+
 async function loadKPIsAndCharts() {
   try {
-    // Busca direta na API (ASO / NR17 / LTCAT)
-    const [asos, nr17, ltcat] = await Promise.all([
-      apiGet(ENDPOINT_ASOS).catch(() => []),
+    // ---------- ASO (API + fallback localStorage) ----------
+    const asosPromise = obterListaASO();
+
+    // ---------- NR-17 / LTCAT direto na API ----------
+    const [nr17, ltcat, asos] = await Promise.all([
       apiGet(ENDPOINT_NR17).catch(() => []),
       apiGet(ENDPOINT_LTCAT).catch(() => []),
+      asosPromise,
     ]);
 
     // ---------- KPIs ----------
@@ -144,7 +179,7 @@ function buildChartDistribuicaoModulos(asos, nr17, ltcat) {
     type: "bar",
     data: {
       labels: ["PCMSO / ASO", "NR-17", "LTCAT"],
-    datasets: [
+      datasets: [
         {
           label: "Registros",
           data: [
