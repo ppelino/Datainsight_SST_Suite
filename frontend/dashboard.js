@@ -1,10 +1,9 @@
-// ===============================
-// Configuração API
-// ===============================
+// ========================================
+// DataInsight SST Suite — DASHBOARD GERAL
+// ========================================
 const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
-const USE_FAKE_DATA = false;
 
-// Helper para enviar o token de autenticação em todas as requisições
+// --------- Auth helper (mesmo padrão da suíte) ----------
 function getAuthHeaders(extra = {}) {
   const token = localStorage.getItem("authToken");
   const base = { ...extra };
@@ -14,335 +13,568 @@ function getAuthHeaders(extra = {}) {
   return base;
 }
 
-// Se der 401, derruba para o login
-function checkUnauthorized(status) {
-  if (status === 401) {
-    alert("Sessão expirada ou não autorizada. Faça login novamente.");
-    localStorage.removeItem("authToken");
-    window.location.href = "index.html";
-    return true;
+// --------- Helpers de requisição ----------
+async function handleResponse(res, method, path) {
+  if (!res.ok) {
+    let text = "";
+    try {
+      text = await res.text();
+    } catch {
+      text = "";
+    }
+    throw new Error(`HTTP ${res.status} ${method} ${path} → ${text}`);
   }
-  return false;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
 
-// Charts (guardamos para poder atualizar depois se quiser filtros)
-let chartDistribuicaoModulos;
-let chartPerfilRiscoGeral;
-let chartAgentesTop;
+async function apiGet(path) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res, "GET", path);
+}
 
-// NR-17
-let chartNr17Risco;
-let chartNr17Setores;
-
-// PCMSO
-let chartPcmsosMensal;
-let chartPcmsosStatus;
-
-// PGR
-let chartPgrCategorias;
-let chartPgrAcoes;
-
-// LTCAT
-let chartLtcatSetor;
-let chartLtcatEnquadramento;
-
-// ===============================
-// Controle das tabs
-// ===============================
-function setActiveTab(tab) {
+// ========================================
+// CONTROLE DE ABAS
+// ========================================
+function setupTabs() {
   const buttons = document.querySelectorAll(".tab-button");
   const panels = document.querySelectorAll(".tab-panel");
 
   buttons.forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.tab === tab);
-  });
-
-  panels.forEach((p) => {
-    p.classList.toggle("active", p.id === `tab-${tab}`);
-  });
-}
-
-function setActiveTabFromHash() {
-  const hash = window.location.hash.replace("#", "");
-  const validTabs = ["geral", "nr17", "pcmsos", "pgr", "ltcat"];
-  const tab = validTabs.includes(hash) ? hash : "geral";
-  setActiveTab(tab);
-}
-
-function initTabs() {
-  const buttons = document.querySelectorAll(".tab-button");
-
-  buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      const tab = btn.dataset.tab;
-      history.replaceState(null, "", `#${tab}`);
-      setActiveTab(tab);
+      const target = btn.dataset.tab;
+
+      buttons.forEach((b) => b.classList.remove("active"));
+      panels.forEach((p) => p.classList.remove("active"));
+
+      btn.classList.add("active");
+      const panel = document.querySelector(`#tab-${target}`);
+      if (panel) panel.classList.add("active");
+    });
+  });
+}
+
+// ========================================
+// CARREGAMENTO GERAL (KPIs + GRÁFICOS)
+// ========================================
+async function loadKPIsAndCharts() {
+  try {
+    // ⚠️ Ajuste os caminhos se seus endpoints tiverem outro nome
+    const [asos, nr17, ltcat] = await Promise.all([
+      apiGet("/asos").catch(() => []),           // AsoRecord[]
+      apiGet("/nr17/records").catch(() => []),   // NR17Record[]
+      apiGet("/ltcat/records").catch(() => []),  // LTCATRecord[]
+    ]);
+
+    // ---------- KPIs ----------
+    document.querySelector("#kpi-total-asos").textContent = Array.isArray(asos)
+      ? asos.length
+      : "0";
+
+    document.querySelector("#kpi-total-nr17").textContent = Array.isArray(nr17)
+      ? nr17.length
+      : "0";
+
+    document.querySelector("#kpi-total-ltcat").textContent = Array.isArray(ltcat)
+      ? ltcat.length
+      : "0";
+
+    let riscoMedio = "—";
+    if (Array.isArray(nr17) && nr17.length > 0) {
+      const soma = nr17.reduce(
+        (acc, item) => acc + (Number(item.score) || 0),
+        0
+      );
+      riscoMedio = (soma / nr17.length).toFixed(1);
+    }
+    document.querySelector("#kpi-risco-medio-nr17").textContent = riscoMedio;
+
+    // ---------- Gráficos do painel GERAL ----------
+    buildChartDistribuicaoModulos(asos, nr17, ltcat);
+    buildChartPerfilRiscoNR17(nr17);
+    buildChartAgentesTopLTCAT(ltcat);
+    buildUltimasAtividades(asos, nr17, ltcat);
+
+    // ---------- Gráficos PCMSO / ASO ----------
+    buildPCMSOCharts(asos);
+
+    // ---------- Gráficos LTCAT ----------
+    buildLTCACharts(ltcat);
+
+    // ---------- PGR / NR-01 (busca própria) ----------
+    await loadPGRCharts();
+  } catch (err) {
+    console.error("Erro ao carregar KPIs / gráficos gerais:", err);
+  }
+}
+
+// ========================================
+// GRÁFICOS – PAINEL GERAL
+// ========================================
+function buildChartDistribuicaoModulos(asos, nr17, ltcat) {
+  const ctx = document.getElementById("chart-distribuicao-modulos");
+  if (!ctx) return;
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["PCMSO / ASO", "NR-17", "LTCAT"],
+      datasets: [
+        {
+          label: "Registros",
+          data: [
+            Array.isArray(asos) ? asos.length : 0,
+            Array.isArray(nr17) ? nr17.length : 0,
+            Array.isArray(ltcat) ? ltcat.length : 0,
+          ],
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 } },
+      },
+    },
+  });
+}
+
+function buildChartPerfilRiscoNR17(nr17) {
+  const ctx = document.getElementById("chart-perfil-risco-nr17");
+  if (!ctx) return;
+
+  let baixo = 0;
+  let medio = 0;
+  let alto = 0;
+
+  if (Array.isArray(nr17)) {
+    nr17.forEach((item) => {
+      const s = Number(item.score) || 0;
+      if (s <= 3) baixo++;
+      else if (s <= 6) medio++;
+      else alto++;
+    });
+  }
+
+  new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: ["Baixo", "Médio", "Alto"],
+      datasets: [
+        {
+          data: [baixo, medio, alto],
+        },
+      ],
+    },
+    options: { responsive: true },
+  });
+}
+
+function buildChartAgentesTopLTCAT(ltcat) {
+  const ctx = document.getElementById("chart-agentes-top");
+  if (!ctx) return;
+
+  const cont = {};
+  if (Array.isArray(ltcat)) {
+    ltcat.forEach((reg) => {
+      const agente = reg.agente || "Não informado";
+      cont[agente] = (cont[agente] || 0) + 1;
+    });
+  }
+
+  const entries = Object.entries(cont)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  const labels = entries.map((e) => e[0]);
+  const data = entries.map((e) => e[1]);
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{ data, label: "Ocorrências" }],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 } },
+      },
+    },
+  });
+}
+
+function buildUltimasAtividades(asos, nr17, ltcat) {
+  const container = document.getElementById("lista-ultimas-atividades");
+  if (!container) return;
+
+  const eventos = [];
+
+  (asos || []).forEach((a) => {
+    eventos.push({
+      tipo: "ASO",
+      data: a.data_exame || a.created_at || null,
+      desc: `Exame de ${a.nome || "Trabalhador"}`,
     });
   });
 
-  setActiveTabFromHash();
+  (nr17 || []).forEach((n) => {
+    eventos.push({
+      tipo: "NR-17",
+      data: n.data_avaliacao || n.created_at || null,
+      desc: `Avaliação de ${n.funcao || "posto"} / ${n.setor || ""}`,
+    });
+  });
+
+  (ltcat || []).forEach((l) => {
+    eventos.push({
+      tipo: "LTCAT",
+      data: l.data_avaliacao || null,
+      desc: `Agente ${l.agente || ""} em ${l.setor || "Setor"}`,
+    });
+  });
+
+  eventos.sort((a, b) => {
+    const da = a.data ? new Date(a.data) : 0;
+    const db = b.data ? new Date(b.data) : 0;
+    return db - da;
+  });
+
+  const ultimos = eventos.slice(0, 7);
+
+  if (!ultimos.length) {
+    container.innerHTML = "<p>Sem atividades registradas ainda.</p>";
+    return;
+  }
+
+  container.innerHTML = "";
+  ultimos.forEach((ev) => {
+    const p = document.createElement("p");
+    const d = ev.data
+      ? new Date(ev.data).toLocaleDateString("pt-BR")
+      : "—";
+    p.innerHTML = `<strong>[${ev.tipo}]</strong> ${ev.desc} <span style="color:#6b7280;">(${d})</span>`;
+    container.appendChild(p);
+  });
 }
 
-window.addEventListener("hashchange", setActiveTabFromHash);
+// ========================================
+// GRÁFICOS – PCMSO / ASO
+// ========================================
+function buildPCMSOCharts(asos) {
+  const ctxMensal = document.getElementById("chart-pcmsos-mensal");
+  const ctxStatus = document.getElementById("chart-pcmsos-status");
+  if (!ctxMensal && !ctxStatus) return;
 
-// ===============================
-// Inicialização
-// ===============================
-document.addEventListener("DOMContentLoaded", () => {
-  initTabs();
+  const porMes = {};
+  const porStatus = {};
 
-  // Geral sempre
-  carregarDashboardGeral();
+  (asos || []).forEach((a) => {
+    const data = a.data_exame || a.created_at;
+    const status = a.resultado || "Sem informação";
 
-  // PCMSO / ASO
-  carregarDashboardPCMSO();
-});
-
-// ===============================
-// Funções de carregamento — Geral
-// ===============================
-async function carregarDashboardGeral() {
-  try {
-    const data = await fetchDashboardGeral();
-
-    // KPIs
-    document.getElementById("kpi-total-asos").textContent =
-      data.total_asos ?? 0;
-    document.getElementById("kpi-total-nr17").textContent =
-      data.total_nr17 ?? 0;
-    document.getElementById("kpi-total-ltcat").textContent =
-      data.total_ltcat ?? 0;
-    document.getElementById("kpi-risco-medio-nr17").textContent =
-      data.risco_medio_nr17 != null
-        ? data.risco_medio_nr17.toFixed(1)
-        : "—";
-
-    // Gráfico: distribuição por módulo
-    const dist = data.distribuicao_modulos || { aso: 0, nr17: 0, ltcat: 0 };
-    const ctxDist = document.getElementById("chart-distribuicao-modulos");
-    if (ctxDist) {
-      if (chartDistribuicaoModulos) chartDistribuicaoModulos.destroy();
-      chartDistribuicaoModulos = new Chart(ctxDist, {
-        type: "bar",
-        data: {
-          labels: ["ASO", "NR-17", "LTCAT"],
-          datasets: [
-            {
-              label: "Quantidade de registros",
-              data: [dist.aso || 0, dist.nr17 || 0, dist.ltcat || 0],
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-          },
-          scales: {
-            y: { beginAtZero: true, precision: 0 },
-          },
-        },
-      });
+    if (data) {
+      const d = new Date(data);
+      const chave = `${d.getFullYear()}-${(d.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}`;
+      porMes[chave] = (porMes[chave] || 0) + 1;
     }
 
-    // Gráfico: perfil de risco NR-17
-    const perfil = data.perfil_risco_nr17 || { baixo: 0, medio: 0, alto: 0 };
-    const ctxPerfil = document.getElementById("chart-perfil-risco-nr17");
-    if (ctxPerfil) {
-      if (chartPerfilRiscoGeral) chartPerfilRiscoGeral.destroy();
-      chartPerfilRiscoGeral = new Chart(ctxPerfil, {
-        type: "doughnut",
-        data: {
-          labels: ["Baixo", "Médio", "Alto"],
-          datasets: [
-            {
-              data: [perfil.baixo || 0, perfil.medio || 0, perfil.alto || 0],
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: "top" } },
-          cutout: "60%",
-        },
-      });
-    }
+    porStatus[status] = (porStatus[status] || 0) + 1;
+  });
 
-    // Gráfico: agentes nocivos top 5
-    const agentes = data.agentes_top5 || [];
-    const ctxAgentes = document.getElementById("chart-agentes-top");
-    if (ctxAgentes) {
-      if (chartAgentesTop) chartAgentesTop.destroy();
-      chartAgentesTop = new Chart(ctxAgentes, {
-        type: "bar",
-        data: {
-          labels: agentes.map((a) => a.nome),
-          datasets: [
-            {
-              label: "Ocorrências",
-              data: agentes.map((a) => a.ocorrencias),
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, precision: 0 } },
-        },
-      });
-    }
+  if (ctxMensal) {
+    const labels = Object.keys(porMes).sort();
+    const data = labels.map((k) => porMes[k]);
 
-    // Últimas atividades
-    const lista = document.getElementById("lista-ultimas-atividades");
-    if (lista) {
-      lista.innerHTML = "";
-      const atividades = data.ultimas_atividades || [];
-      if (!atividades.length) {
-        lista.innerHTML = "<p>Nenhuma atividade recente.</p>";
-      } else {
-        atividades.forEach((item) => {
-          const div = document.createElement("div");
-          div.className = "activity-item";
-          div.innerHTML = `
-            <div class="activity-header">
-              <strong>${item.modulo || "Módulo"}</strong>
-              <span class="activity-date">${item.data || ""}</span>
-            </div>
-            <div class="activity-body">
-              ${item.descricao || ""}
-            </div>
-          `;
-          lista.appendChild(div);
-        });
+    new Chart(ctxMensal, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{ data, label: "Exames" }],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 } },
+        },
+      },
+    });
+  }
+
+  if (ctxStatus) {
+    const labels = Object.keys(porStatus);
+    const data = labels.map((k) => porStatus[k]);
+
+    new Chart(ctxStatus, {
+      type: "doughnut",
+      data: {
+        labels,
+        datasets: [{ data }],
+      },
+      options: { responsive: true },
+    });
+  }
+}
+
+// ========================================
+// GRÁFICOS – LTCAT
+// ========================================
+function buildLTCACharts(ltcat) {
+  const ctxSetor = document.getElementById("chart-ltcat-setor");
+  const ctxEnq = document.getElementById("chart-ltcat-enquadramento");
+  if (!ctxSetor && !ctxEnq) return;
+
+  const porSetor = {};
+  const porEnq = {};
+
+  (ltcat || []).forEach((l) => {
+    const setor = l.setor || "Não informado";
+    const enq = l.enquadramento || "Sem enquadramento";
+    porSetor[setor] = (porSetor[setor] || 0) + 1;
+    porEnq[enq] = (porEnq[enq] || 0) + 1;
+  });
+
+  if (ctxSetor) {
+    const labels = Object.keys(porSetor);
+    const data = labels.map((k) => porSetor[k]);
+
+    new Chart(ctxSetor, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{ data, label: "Agentes" }],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 } },
+        },
+      },
+    });
+  }
+
+  if (ctxEnq) {
+    const labels = Object.keys(porEnq);
+    const data = labels.map((k) => porEnq[k]);
+
+    new Chart(ctxEnq, {
+      type: "pie",
+      data: {
+        labels,
+        datasets: [{ data }],
+      },
+      options: { responsive: true },
+    });
+  }
+}
+
+// ========================================
+// PGR / NR-01 – ARVORE + GRÁFICOS
+// ========================================
+async function carregarArvorePGR() {
+  const companies = await apiGet("/pgr/companies").catch(() => []);
+  const allSectors = [];
+  const allHazards = [];
+  const allRisks = [];
+  const allActions = [];
+
+  for (const c of companies || []) {
+    const sectors = await apiGet(`/pgr/sectors/by-company/${c.id}`).catch(
+      () => []
+    );
+    sectors.forEach((s) => allSectors.push({ ...s, company_id: c.id }));
+
+    for (const s of sectors || []) {
+      const hazards = await apiGet(`/pgr/hazards/by-sector/${s.id}`).catch(
+        () => []
+      );
+      hazards.forEach((h) => allHazards.push({ ...h, sector_id: s.id }));
+
+      for (const h of hazards || []) {
+        const risks = await apiGet(`/pgr/risks/by-hazard/${h.id}`).catch(
+          () => []
+        );
+        risks.forEach((r) => allRisks.push({ ...r, hazard_id: h.id }));
+
+        for (const r of risks || []) {
+          const actions = await apiGet(`/pgr/actions/by-risk/${r.id}`).catch(
+            () => []
+          );
+          actions.forEach((a) =>
+            allActions.push({ ...a, risk_id: r.id, hazard_id: h.id })
+          );
+        }
       }
     }
-  } catch (err) {
-    console.error("Erro ao carregar dashboard geral:", err);
   }
+
+  return { companies, sectors: allSectors, hazards: allHazards, risks: allRisks, actions: allActions };
 }
 
-async function fetchDashboardGeral() {
-  if (USE_FAKE_DATA) {
-    return {
-      total_asos: 12,
-      total_nr17: 8,
-      total_ltcat: 5,
-      risco_medio_nr17: 8.0,
-      distribuicao_modulos: { aso: 12, nr17: 8, ltcat: 5 },
-      perfil_risco_nr17: { baixo: 4, medio: 3, alto: 1 },
-      agentes_top5: [
-        { nome: "Ruído", ocorrencias: 10 },
-        { nome: "Calor", ocorrencias: 7 },
-        { nome: "Agente químico X", ocorrencias: 5 },
-        { nome: "Vibração", ocorrencias: 4 },
-        { nome: "Iluminação", ocorrencias: 3 }
-      ],
-      ultimas_atividades: []
-    };
-  }
+function classificarPerigo(hazard) {
+  const texto =
+    `${hazard.nome || ""} ${hazard.agente || ""} ${hazard.fonte || ""} ${
+      hazard.descricao || ""
+    }`.toLowerCase();
 
-  const res = await fetch(`${API_BASE}/dashboard/geral`, {
-    headers: getAuthHeaders()
+  if (
+    texto.includes("ruído") ||
+    texto.includes("calor") ||
+    texto.includes("frio") ||
+    texto.includes("vibração") ||
+    texto.includes("iluminação") ||
+    texto.includes("pressão")
+  ) {
+    return "Físicos";
+  }
+  if (
+    texto.includes("poeira") ||
+    texto.includes("solvente") ||
+    texto.includes("ácido") ||
+    texto.includes("fum") ||
+    texto.includes("gás") ||
+    texto.includes("vap")
+  ) {
+    return "Químicos";
+  }
+  if (
+    texto.includes("vírus") ||
+    texto.includes("bactéria") ||
+    texto.includes("fungo") ||
+    texto.includes("biológico")
+  ) {
+    return "Biológicos";
+  }
+  if (
+    texto.includes("postura") ||
+    texto.includes("ergonôm") ||
+    texto.includes("repetitiv") ||
+    texto.includes("peso") ||
+    texto.includes("carga")
+  ) {
+    return "Ergonômicos";
+  }
+  if (
+    texto.includes("máquina") ||
+    texto.includes("equipamento") ||
+    texto.includes("queda") ||
+    texto.includes("atrito") ||
+    texto.includes("impacto")
+  ) {
+    return "Mecânicos";
+  }
+  return "Outros";
+}
+
+function montarChartPGRCategorias(hazards) {
+  const ctx = document.getElementById("chart-pgr-categorias");
+  if (!ctx) return;
+
+  const cont = {
+    Físicos: 0,
+    Químicos: 0,
+    Biológicos: 0,
+    Ergonômicos: 0,
+    Mecânicos: 0,
+    Outros: 0,
+  };
+
+  (hazards || []).forEach((h) => {
+    const cat = classificarPerigo(h);
+    cont[cat] = (cont[cat] || 0) + 1;
   });
 
-  if (!res.ok) {
-    if (checkUnauthorized(res.status)) return;
-    throw new Error(`Erro ao buscar /dashboard/geral: ${res.status}`);
-  }
+  const labels = Object.keys(cont);
+  const data = labels.map((k) => cont[k]);
 
-  return res.json();
+  new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Perigos",
+          data,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 },
+        },
+      },
+    },
+  });
 }
 
-// ===============================
-// PCMSO / ASO
-// ===============================
-async function carregarDashboardPCMSO() {
+function montarChartPGRAcoes(actions) {
+  const ctx = document.getElementById("chart-pgr-acoes");
+  if (!ctx) return;
+
+  const cont = { Pendente: 0, "Em andamento": 0, Concluído: 0 };
+
+  (actions || []).forEach((a) => {
+    const s = (a.status || "").toLowerCase();
+    if (s.includes("andamento")) cont["Em andamento"]++;
+    else if (s.includes("concl")) cont["Concluído"]++;
+    else cont["Pendente"]++;
+  });
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Pendente", "Em andamento", "Concluído"],
+      datasets: [
+        {
+          label: "Ações",
+          data: [
+            cont["Pendente"],
+            cont["Em andamento"],
+            cont["Concluído"],
+          ],
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 } },
+      },
+    },
+  });
+}
+
+async function loadPGRCharts() {
   try {
-    const data = await fetchDashboardPCMSO();
-    console.log("PCMSO dashboard data:", data);
-
-    const mensal = data.exames_por_mes || [];
-    const ctxMensal = document.getElementById("chart-pcmsos-mensal");
-    if (ctxMensal) {
-      if (chartPcmsosMensal) chartPcmsosMensal.destroy();
-      chartPcmsosMensal = new Chart(ctxMensal, {
-        type: "line",
-        data: {
-          labels: mensal.map((m) => m.mes),
-          datasets: [
-            {
-              label: "Quantidade de ASOs",
-              data: mensal.map((m) => m.total),
-              tension: 0.3
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: true } },
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
-
-    const status = data.status_asos || {
-      validos: 0,
-      vencidos: 0,
-      a_vencer: 0
-    };
-    const ctxStatus = document.getElementById("chart-pcmsos-status");
-    if (ctxStatus) {
-      if (chartPcmsosStatus) chartPcmsosStatus.destroy();
-      chartPcmsosStatus = new Chart(ctxStatus, {
-        type: "bar",
-        data: {
-          labels: ["Válidos", "Vencidos", "A vencer (30d)"],
-          datasets: [
-            {
-              label: "Quantidade",
-              data: [
-                status.validos || 0,
-                status.vencidos || 0,
-                status.a_vencer || 0
-              ]
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
+    const pgr = await carregarArvorePGR();
+    montarChartPGRCategorias(pgr.hazards);
+    montarChartPGRAcoes(pgr.actions);
   } catch (err) {
-    console.error("Erro ao carregar dashboard PCMSO:", err);
+    console.error("Erro ao carregar dados do PGR:", err);
   }
 }
 
-async function fetchDashboardPCMSO() {
-  if (USE_FAKE_DATA) {
-    return {
-      exames_por_mes: [
-        { mes: "01/2025", total: 5 },
-        { mes: "02/2025", total: 8 },
-        { mes: "03/2025", total: 4 },
-        { mes: "04/2025", total: 10 }
-      ],
-      status_asos: { validos: 18, vencidos: 2, a_vencer: 3 }
-    };
-  }
-
-  const res = await fetch(`${API_BASE}/aso/dashboard/pcmsos`, {
-    headers: getAuthHeaders()
-  });
-
-  if (!res.ok) {
-    if (checkUnauthorized(res.status)) return;
-    throw new Error(`Erro ao buscar /aso/dashboard/pcmsos: ${res.status}`);
-  }
-
-  return res.json();
-}
+// ========================================
+// START
+// ========================================
+document.addEventListener("DOMContentLoaded", async () => {
+  setupTabs();
+  await loadKPIsAndCharts();
+});
