@@ -5,12 +5,12 @@
 // Base igual aos módulos (sem /api)
 const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
-// Endpoints corretos da API (ver Swagger)
+// Endpoints da API
 const ENDPOINT_ASOS  = "/aso/records";
 const ENDPOINT_NR17  = "/nr17/records";
 const ENDPOINT_LTCAT = "/ltcat/records";
 
-// --------- Auth helpers (mesmo padrão da suíte) ----------
+// ---------- Helpers de auth ----------
 function getAuthHeaders(extra = {}) {
   const token = localStorage.getItem("authToken");
   const base = { ...extra };
@@ -30,13 +30,12 @@ function checkUnauthorized(status) {
   return false;
 }
 
-// --------- Helpers de requisição ----------
+// ---------- Helpers de requisição ----------
 async function handleResponse(res, method, path) {
   if (!res.ok) {
     if (checkUnauthorized(res.status)) {
       throw new Error(`HTTP 401 ${method} ${path}`);
     }
-
     let text = "";
     try {
       text = await res.text();
@@ -59,6 +58,15 @@ async function apiGet(path) {
     headers: getAuthHeaders(),
   });
   return handleResponse(res, "GET", path);
+}
+
+// ---------- Normalizador de lista ----------
+// Garante um array mesmo que a API devolva {items:[...]}, {results:[...]}, etc.
+function asList(data) {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.items)) return data.items;
+  if (data && Array.isArray(data.results)) return data.results;
+  return [];
 }
 
 // ========================================
@@ -87,25 +95,24 @@ function setupTabs() {
 // ========================================
 async function loadKPIsAndCharts() {
   try {
-    // Busca direta na API (ASO / NR17 / LTCAT)
-    const [asos, nr17, ltcat] = await Promise.all([
+    const [rawAsos, rawNr17, rawLtcat] = await Promise.all([
       apiGet(ENDPOINT_ASOS).catch(() => []),
       apiGet(ENDPOINT_NR17).catch(() => []),
       apiGet(ENDPOINT_LTCAT).catch(() => []),
     ]);
 
+    // NORMALIZA TUDO PARA ARRAY
+    const asos  = asList(rawAsos);
+    const nr17  = asList(rawNr17);
+    const ltcat = asList(rawLtcat);
+
     // ---------- KPIs ----------
-    document.querySelector("#kpi-total-asos").textContent =
-      Array.isArray(asos) ? asos.length : "0";
-
-    document.querySelector("#kpi-total-nr17").textContent =
-      Array.isArray(nr17) ? nr17.length : "0";
-
-    document.querySelector("#kpi-total-ltcat").textContent =
-      Array.isArray(ltcat) ? ltcat.length : "0";
+    document.querySelector("#kpi-total-asos").textContent = asos.length.toString();
+    document.querySelector("#kpi-total-nr17").textContent = nr17.length.toString();
+    document.querySelector("#kpi-total-ltcat").textContent = ltcat.length.toString();
 
     let riscoMedio = "—";
-    if (Array.isArray(nr17) && nr17.length > 0) {
+    if (nr17.length > 0) {
       const soma = nr17.reduce(
         (acc, item) => acc + (Number(item.score) || 0),
         0
@@ -114,22 +121,22 @@ async function loadKPIsAndCharts() {
     }
     document.querySelector("#kpi-risco-medio-nr17").textContent = riscoMedio;
 
-    // ---------- Gráficos do painel GERAL ----------
+    // ---------- Gráficos painel GERAL ----------
     buildChartDistribuicaoModulos(asos, nr17, ltcat);
     buildChartPerfilRiscoNR17(nr17);
     buildChartAgentesTopLTCAT(ltcat);
     buildUltimasAtividades(asos, nr17, ltcat);
 
-    // ---------- Gráficos PCMSO / ASO ----------
+    // ---------- PCMSO / ASO ----------
     buildPCMSOCharts(asos);
 
-    // ---------- Gráficos LTCAT ----------
+    // ---------- LTCAT ----------
     buildLTCACharts(ltcat);
 
-    // ---------- Gráficos específicos da aba NR-17 ----------
+    // ---------- NR-17 (aba específica) ----------
     buildNR17TabCharts(nr17);
 
-    // ---------- PGR / NR-01 (busca própria, árvore completa) ----------
+    // ---------- PGR / NR-01 ----------
     await loadPGRCharts();
   } catch (err) {
     console.error("Erro ao carregar KPIs / gráficos gerais:", err);
@@ -150,11 +157,7 @@ function buildChartDistribuicaoModulos(asos, nr17, ltcat) {
       datasets: [
         {
           label: "Registros",
-          data: [
-            Array.isArray(asos) ? asos.length : 0,
-            Array.isArray(nr17) ? nr17.length : 0,
-            Array.isArray(ltcat) ? ltcat.length : 0,
-          ],
+          data: [asos.length, nr17.length, ltcat.length],
         },
       ],
     },
@@ -176,14 +179,12 @@ function buildChartPerfilRiscoNR17(nr17) {
   let medio = 0;
   let alto = 0;
 
-  if (Array.isArray(nr17)) {
-    nr17.forEach((item) => {
-      const s = Number(item.score) || 0;
-      if (s <= 3) baixo++;
-      else if (s <= 6) medio++;
-      else alto++;
-    });
-  }
+  nr17.forEach((item) => {
+    const s = Number(item.score) || 0;
+    if (s <= 3) baixo++;
+    else if (s <= 6) medio++;
+    else alto++;
+  });
 
   new Chart(ctx, {
     type: "pie",
@@ -204,12 +205,10 @@ function buildChartAgentesTopLTCAT(ltcat) {
   if (!ctx) return;
 
   const cont = {};
-  if (Array.isArray(ltcat)) {
-    ltcat.forEach((reg) => {
-      const agente = reg.agente || "Não informado";
-      cont[agente] = (cont[agente] || 0) + 1;
-    });
-  }
+  ltcat.forEach((reg) => {
+    const agente = reg.agente || "Não informado";
+    cont[agente] = (cont[agente] || 0) + 1;
+  });
 
   const entries = Object.entries(cont)
     .sort((a, b) => b[1] - a[1])
@@ -240,7 +239,7 @@ function buildUltimasAtividades(asos, nr17, ltcat) {
 
   const eventos = [];
 
-  (asos || []).forEach((a) => {
+  asos.forEach((a) => {
     eventos.push({
       tipo: "ASO",
       data: a.data_exame || a.created_at || null,
@@ -248,7 +247,7 @@ function buildUltimasAtividades(asos, nr17, ltcat) {
     });
   });
 
-  (nr17 || []).forEach((n) => {
+  nr17.forEach((n) => {
     eventos.push({
       tipo: "NR-17",
       data: n.data_avaliacao || n.created_at || null,
@@ -256,7 +255,7 @@ function buildUltimasAtividades(asos, nr17, ltcat) {
     });
   });
 
-  (ltcat || []).forEach((l) => {
+  ltcat.forEach((l) => {
     eventos.push({
       tipo: "LTCAT",
       data: l.data_avaliacao || null,
@@ -297,7 +296,7 @@ function buildPCMSOCharts(asos) {
   const porMes = {};
   const porStatus = {};
 
-  (asos || []).forEach((a) => {
+  asos.forEach((a) => {
     const data = a.data_exame || a.created_at;
     const status = a.resultado || "Sem informação";
 
@@ -358,7 +357,7 @@ function buildLTCACharts(ltcat) {
   const porSetor = {};
   const porEnq = {};
 
-  (ltcat || []).forEach((l) => {
+  ltcat.forEach((l) => {
     const setor = l.setor || "Não informado";
     const enq = l.enquadramento || "Sem enquadramento";
     porSetor[setor] = (porSetor[setor] || 0) + 1;
@@ -404,11 +403,9 @@ function buildLTCACharts(ltcat) {
 // GRÁFICOS – ABA NR-17 ESPECÍFICA
 // ========================================
 function buildNR17TabCharts(nr17) {
-  if (!Array.isArray(nr17) || !nr17.length) {
-    return; // sem dados, não plota nada
-  }
+  if (!nr17.length) return;
 
-  // --- Distribuição por risco (Baixo / Médio / Alto) ---
+  // Distribuição por risco (Baixo / Médio / Alto)
   const ctxRisco = document.getElementById("chart-nr17-risco");
   if (ctxRisco) {
     let baixo = 0;
@@ -443,7 +440,7 @@ function buildNR17TabCharts(nr17) {
     });
   }
 
-  // --- Scores médios por setor / GHE ---
+  // Scores médios por setor / GHE
   const ctxSetores = document.getElementById("chart-nr17-setores");
   if (ctxSetores) {
     const grupos = {}; // { setor: { soma, qtd } }
