@@ -5,8 +5,8 @@
 // Base igual aos módulos (sem /api)
 const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
-// Endpoints da API
-const ENDPOINT_ASOS  = "/aso/records";
+// Endpoints da API (NR-17 / LTCAT fixos)
+const ENDPOINT_ASOS  = "/aso/records";   // rota principal que vamos tentar primeiro
 const ENDPOINT_NR17  = "/nr17/records";
 const ENDPOINT_LTCAT = "/ltcat/records";
 
@@ -60,6 +60,42 @@ async function apiGet(path) {
   return handleResponse(res, "GET", path);
 }
 
+// Normaliza retorno em lista
+function asList(data) {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.items)) return data.items;
+  if (data && Array.isArray(data.results)) return data.results;
+  return [];
+}
+
+// ---------- ASO: tenta múltiplas rotas até achar dados ----------
+async function fetchASORecords() {
+  const candidates = [
+    ENDPOINT_ASOS,        // "/aso/records"
+    "/aso/records/",
+    "/aso",
+    "/asos",
+    "/pcmsos/records",
+    "/pcmso/records",
+  ];
+
+  for (const path of candidates) {
+    try {
+      const data = await apiGet(path);
+      const list = asList(data);
+      if (list.length > 0) {
+        console.log("ASO carregado pela rota:", path);
+        return list;
+      }
+    } catch (err) {
+      console.warn("Falha ao tentar rota ASO:", path, err);
+    }
+  }
+
+  console.warn("Nenhuma rota de ASO retornou dados; usando lista vazia.");
+  return [];
+}
+
 // ========================================
 // CONTROLE DE ABAS
 // ========================================
@@ -86,15 +122,16 @@ function setupTabs() {
 // ========================================
 async function loadKPIsAndCharts() {
   try {
-    const [asos, nr17, ltcat] = await Promise.all([
-      apiGet(ENDPOINT_ASOS).catch(() => []),
+    // ASO: usa o buscador especial
+    const [asos, nr17Raw, ltcatRaw] = await Promise.all([
+      fetchASORecords(),
       apiGet(ENDPOINT_NR17).catch(() => []),
       apiGet(ENDPOINT_LTCAT).catch(() => []),
     ]);
 
-    const listaASO   = Array.isArray(asos) ? asos : [];
-    const listaNR17  = Array.isArray(nr17) ? nr17 : [];
-    const listaLTCAT = Array.isArray(ltcat) ? ltcat : [];
+    const listaASO   = asList(asos);
+    const listaNR17  = asList(nr17Raw);
+    const listaLTCAT = asList(ltcatRaw);
 
     // ---------- KPIs ----------
     document.querySelector("#kpi-total-asos").textContent  = listaASO.length;
@@ -519,51 +556,6 @@ async function carregarArvorePGR() {
   };
 }
 
-function montarChartPGRCategorias(hazards) {
-  const ctx = document.getElementById("chart-pgr-categorias");
-  if (!ctx) return;
-
-  const cont = {
-    Físicos: 0,
-    Químicos: 0,
-    Biológicos: 0,
-    Ergonômicos: 0,
-    Mecânicos: 0,
-    Outros: 0,
-  };
-
-  (hazards || []).forEach((h) => {
-    const cat = classificarPerigo(h);
-    cont[cat] = (cont[cat] || 0) + 1;
-  });
-
-  const labels = Object.keys(cont);
-  const data = labels.map((k) => cont[k]);
-
-  new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Perigos",
-          data,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        r: {
-          beginAtZero: true,
-          ticks: { stepSize: 1 },
-        },
-      },
-    },
-  });
-}
-
 function classificarPerigo(hazard) {
   const texto =
     `${hazard.nome || ""} ${hazard.agente || ""} ${hazard.fonte || ""} ${
@@ -617,6 +609,51 @@ function classificarPerigo(hazard) {
     return "Mecânicos";
   }
   return "Outros";
+}
+
+function montarChartPGRCategorias(hazards) {
+  const ctx = document.getElementById("chart-pgr-categorias");
+  if (!ctx) return;
+
+  const cont = {
+    Físicos: 0,
+    Químicos: 0,
+    Biológicos: 0,
+    Ergonômicos: 0,
+    Mecânicos: 0,
+    Outros: 0,
+  };
+
+  (hazards || []).forEach((h) => {
+    const cat = classificarPerigo(h);
+    cont[cat] = (cont[cat] || 0) + 1;
+  });
+
+  const labels = Object.keys(cont);
+  const data = labels.map((k) => cont[k]);
+
+  new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Perigos",
+          data,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 },
+        },
+      },
+    },
+  });
 }
 
 function montarChartPGRAcoes(actions) {
