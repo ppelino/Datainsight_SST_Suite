@@ -137,6 +137,11 @@ body {
   gap: 8px;
 }
 
+.card h3 {
+  font-size: 0.98rem;
+  margin-bottom: 6px;
+}
+
 .card p {
   color: var(--text-soft);
   font-size: 0.9rem;
@@ -246,24 +251,8 @@ textarea:focus {
   flex-wrap: wrap;
 }
 
-/* responsivo */
-@media (max-width: 768px) {
-  .wrap {
-    flex-wrap: wrap;
-  }
+/* ================== AÇÕES DA TABELA ================== */
 
-  .logo span {
-    font-size: 1rem;
-  }
-
-  .card-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
 .actions-cell {
   display: flex;
   gap: 4px;
@@ -286,19 +275,74 @@ textarea:focus {
   transform: translateY(-1px);
 }
 
-.icon-btn.view { /* lupa */
-}
-
-.icon-btn.edit { /* lápis */
-}
-
-.icon-btn.delete { /* lixeira */
+.icon-btn.delete {
   background: #ffe1e1;
 }
 
 .icon-btn.delete:hover {
   background: #ffc4c4;
 }
+
+/* ================== DASHBOARD – KPIs ================== */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.kpi-card {
+  padding: 14px 16px;
+}
+
+.kpi-card h3 {
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.kpi-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.kpi-subtitle {
+  font-size: 0.8rem;
+}
+
+/* ================== DASHBOARD – ABAS ================== */
+
+.dashboard-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tab-button {
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: #f9fafb;
+  padding: 6px 12px;
+  font-size: 0.86rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-soft);
+  transition: all 0.15s ease;
+}
+
+.tab-button:hover {
+  background: #eef2ff;
+}
+
+.tab-button.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
 /* Esconde o conteúdo de todas as abas por padrão */
 .tab-panel {
   display: none;
@@ -308,21 +352,35 @@ textarea:focus {
 .tab-panel.active {
   display: block;
 }
-/* Limita a altura dos gráficos dentro dos cards */
-.tab-panel .card canvas {
-  max-height: 220px;
-}
 
-/* Dá uma apertadinha nas margens verticais dos cards dentro das abas */
-.tab-panel .card {
-  margin-bottom: 12px;
-}
-
-/* Garante 2 colunas lado a lado em telas médias/grandes */
+/* grid de 2 colunas dentro das abas */
 .grid-2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+/* Limita a altura dos gráficos dentro dos cards */
+.tab-panel .card canvas {
+  max-height: 210px;
+}
+
+/* Dá uma apertadinha nas margens verticais dos cards dentro das abas */
+.tab-panel .card {
+  margin-bottom: 10px;
+}
+
+/* textos embaixo dos gráficos */
+.chart-caption {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+
+/* lista de atividades recentes */
+.activity-list p {
+  font-size: 0.82rem;
+  margin-bottom: 4px;
 }
 
 /* Deixa o conteúdo das abas mais “encaixado” na altura da tela */
@@ -332,3 +390,36 @@ main.container {
   padding-bottom: 16px;
 }
 
+/* =============== RESPONSIVO =============== */
+
+@media (max-width: 900px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .wrap {
+    flex-wrap: wrap;
+  }
+
+  .logo span {
+    font-size: 1rem;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
