@@ -3,6 +3,11 @@
 // ========================================
 const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
 
+// Endpoints principais (AJUSTE AQUI se mudar algo no backend)
+const ENDPOINT_ASOS = "/asos";
+const ENDPOINT_NR17 = "/nr17/records";
+const ENDPOINT_LTCAT = "/ltcat/records";
+
 // --------- Auth helper (mesmo padrão da suíte) ----------
 function getAuthHeaders(extra = {}) {
   const token = localStorage.getItem("authToken");
@@ -65,11 +70,10 @@ function setupTabs() {
 // ========================================
 async function loadKPIsAndCharts() {
   try {
-    // ⚠️ Ajuste os caminhos se seus endpoints tiverem outro nome
     const [asos, nr17, ltcat] = await Promise.all([
-      apiGet("/asos").catch(() => []),           // AsoRecord[]
-      apiGet("/nr17/records").catch(() => []),   // NR17Record[]
-      apiGet("/ltcat/records").catch(() => []),  // LTCATRecord[]
+      apiGet(ENDPOINT_ASOS).catch(() => []),
+      apiGet(ENDPOINT_NR17).catch(() => []),
+      apiGet(ENDPOINT_LTCAT).catch(() => []),
     ]);
 
     // ---------- KPIs ----------
