@@ -1,8 +1,24 @@
 // =========================
 // PCMSO / ASO – Integração com API
 // =========================
+const API_BASE = "https://datainsight-sst-suite.onrender.com";
+async function loadKPIsAndCharts() {
+  try {
+    const [asos, nr17, ltcat] = await Promise.all([
+      apiGet(ENDPOINT_ASOS).catch(() => []),
+      apiGet(ENDPOINT_NR17).catch(() => []),
+      apiGet(ENDPOINT_LTCAT).catch(() => []),
+    ]);
 
-const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
+    // ... KPIs + gráficos ...
+    buildPCMSOCharts(asos);
+    buildChartDistribuicaoModulos(asos, nr17, ltcat);
+    // etc...
+  } catch (err) {
+    console.error("Erro ao carregar KPIs / gráficos gerais:", err);
+  }
+}
+
 
 // cache em memória para usar na lupa / impressão por ID
 let _asoCache = [];
