@@ -5,8 +5,7 @@
 // Base igual aos módulos (sem /api)
 const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
-// Endpoints da API (NR-17 / LTCAT fixos)
-const ENDPOINT_ASOS  = "/aso/records";   // rota principal que vamos tentar primeiro
+// Endpoints “principais”
 const ENDPOINT_NR17  = "/nr17/records";
 const ENDPOINT_LTCAT = "/ltcat/records";
 
@@ -71,12 +70,13 @@ function asList(data) {
 // ---------- ASO: tenta múltiplas rotas até achar dados ----------
 async function fetchASORecords() {
   const candidates = [
-    ENDPOINT_ASOS,        // "/aso/records"
+    "/aso/records",
     "/aso/records/",
     "/aso",
     "/asos",
-    "/pcmsos/records",
     "/pcmso/records",
+    "/pcmsos/records",
+    "/api/aso/records",
   ];
 
   for (const path of candidates) {
@@ -84,7 +84,7 @@ async function fetchASORecords() {
       const data = await apiGet(path);
       const list = asList(data);
       if (list.length > 0) {
-        console.log("ASO carregado pela rota:", path);
+        console.log("✅ ASO carregado pela rota:", path, "qtd:", list.length);
         return list;
       }
     } catch (err) {
@@ -92,7 +92,7 @@ async function fetchASORecords() {
     }
   }
 
-  console.warn("Nenhuma rota de ASO retornou dados; usando lista vazia.");
+  console.warn("⚠️ Nenhuma rota de ASO retornou dados; usando lista vazia.");
   return [];
 }
 
@@ -122,7 +122,7 @@ function setupTabs() {
 // ========================================
 async function loadKPIsAndCharts() {
   try {
-    // ASO: usa o buscador especial
+    // ASO usa o buscador especial
     const [asos, nr17Raw, ltcatRaw] = await Promise.all([
       fetchASORecords(),
       apiGet(ENDPOINT_NR17).catch(() => []),
@@ -556,6 +556,51 @@ async function carregarArvorePGR() {
   };
 }
 
+function montarChartPGRCategorias(hazards) {
+  const ctx = document.getElementById("chart-pgr-categorias");
+  if (!ctx) return;
+
+  const cont = {
+    Físicos: 0,
+    Químicos: 0,
+    Biológicos: 0,
+    Ergonômicos: 0,
+    Mecânicos: 0,
+    Outros: 0,
+  };
+
+  (hazards || []).forEach((h) => {
+    const cat = classificarPerigo(h);
+    cont[cat] = (cont[cat] || 0) + 1;
+  });
+
+  const labels = Object.keys(cont);
+  const data = labels.map((k) => cont[k]);
+
+  new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Perigos",
+          data,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 },
+        },
+      },
+    },
+  });
+}
+
 function classificarPerigo(hazard) {
   const texto =
     `${hazard.nome || ""} ${hazard.agente || ""} ${hazard.fonte || ""} ${
@@ -609,51 +654,6 @@ function classificarPerigo(hazard) {
     return "Mecânicos";
   }
   return "Outros";
-}
-
-function montarChartPGRCategorias(hazards) {
-  const ctx = document.getElementById("chart-pgr-categorias");
-  if (!ctx) return;
-
-  const cont = {
-    Físicos: 0,
-    Químicos: 0,
-    Biológicos: 0,
-    Ergonômicos: 0,
-    Mecânicos: 0,
-    Outros: 0,
-  };
-
-  (hazards || []).forEach((h) => {
-    const cat = classificarPerigo(h);
-    cont[cat] = (cont[cat] || 0) + 1;
-  });
-
-  const labels = Object.keys(cont);
-  const data = labels.map((k) => cont[k]);
-
-  new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Perigos",
-          data,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        r: {
-          beginAtZero: true,
-          ticks: { stepSize: 1 },
-        },
-      },
-    },
-  });
 }
 
 function montarChartPGRAcoes(actions) {
