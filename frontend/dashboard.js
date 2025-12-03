@@ -1,16 +1,16 @@
 // ========================================
 // DataInsight SST Suite — DASHBOARD GERAL
 // ========================================
+
+// Base igual aos módulos (sem /api)
 const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
-
-// Endpoints principais (AJUSTE AQUI se mudar algo no backend)
-const ENDPOINT_ASOS = "/asos/records";   // 👈 AGORA bate com o Swagger
-const ENDPOINT_NR17 = "/nr17/records";
+// Endpoints corretos da API (ver Swagger)
+const ENDPOINT_ASOS  = "/aso/records";
+const ENDPOINT_NR17  = "/nr17/records";
 const ENDPOINT_LTCAT = "/ltcat/records";
 
-
-// --------- Auth helper (mesmo padrão da suíte) ----------
+// --------- Auth helpers (mesmo padrão da suíte) ----------
 function getAuthHeaders(extra = {}) {
   const token = localStorage.getItem("authToken");
   const base = { ...extra };
@@ -20,9 +20,23 @@ function getAuthHeaders(extra = {}) {
   return base;
 }
 
+function checkUnauthorized(status) {
+  if (status === 401) {
+    alert("Sessão expirada ou não autorizada. Faça login novamente.");
+    localStorage.removeItem("authToken");
+    window.location.href = "index.html";
+    return true;
+  }
+  return false;
+}
+
 // --------- Helpers de requisição ----------
 async function handleResponse(res, method, path) {
   if (!res.ok) {
+    if (checkUnauthorized(res.status)) {
+      throw new Error(`HTTP 401 ${method} ${path}`);
+    }
+
     let text = "";
     try {
       text = await res.text();
@@ -31,6 +45,7 @@ async function handleResponse(res, method, path) {
     }
     throw new Error(`HTTP ${res.status} ${method} ${path} → ${text}`);
   }
+
   try {
     return await res.json();
   } catch {
@@ -72,6 +87,7 @@ function setupTabs() {
 // ========================================
 async function loadKPIsAndCharts() {
   try {
+    // Busca direta na API (ASO / NR17 / LTCAT)
     const [asos, nr17, ltcat] = await Promise.all([
       apiGet(ENDPOINT_ASOS).catch(() => []),
       apiGet(ENDPOINT_NR17).catch(() => []),
@@ -79,17 +95,14 @@ async function loadKPIsAndCharts() {
     ]);
 
     // ---------- KPIs ----------
-    document.querySelector("#kpi-total-asos").textContent = Array.isArray(asos)
-      ? asos.length
-      : "0";
+    document.querySelector("#kpi-total-asos").textContent =
+      Array.isArray(asos) ? asos.length : "0";
 
-    document.querySelector("#kpi-total-nr17").textContent = Array.isArray(nr17)
-      ? nr17.length
-      : "0";
+    document.querySelector("#kpi-total-nr17").textContent =
+      Array.isArray(nr17) ? nr17.length : "0";
 
-    document.querySelector("#kpi-total-ltcat").textContent = Array.isArray(ltcat)
-      ? ltcat.length
-      : "0";
+    document.querySelector("#kpi-total-ltcat").textContent =
+      Array.isArray(ltcat) ? ltcat.length : "0";
 
     let riscoMedio = "—";
     if (Array.isArray(nr17) && nr17.length > 0) {
@@ -113,7 +126,7 @@ async function loadKPIsAndCharts() {
     // ---------- Gráficos LTCAT ----------
     buildLTCACharts(ltcat);
 
-    // ---------- PGR / NR-01 (busca própria) ----------
+    // ---------- PGR / NR-01 (busca própria, árvore completa) ----------
     await loadPGRCharts();
   } catch (err) {
     console.error("Erro ao carregar KPIs / gráficos gerais:", err);
@@ -131,7 +144,7 @@ function buildChartDistribuicaoModulos(asos, nr17, ltcat) {
     type: "bar",
     data: {
       labels: ["PCMSO / ASO", "NR-17", "LTCAT"],
-      datasets: [
+    datasets: [
         {
           label: "Registros",
           data: [
@@ -263,10 +276,8 @@ function buildUltimasAtividades(asos, nr17, ltcat) {
 
   container.innerHTML = "";
   ultimos.forEach((ev) => {
+    const d = ev.data ? new Date(ev.data).toLocaleDateString("pt-BR") : "—";
     const p = document.createElement("p");
-    const d = ev.data
-      ? new Date(ev.data).toLocaleDateString("pt-BR")
-      : "—";
     p.innerHTML = `<strong>[${ev.tipo}]</strong> ${ev.desc} <span style="color:#6b7280;">(${d})</span>`;
     container.appendChild(p);
   });
@@ -387,7 +398,7 @@ function buildLTCACharts(ltcat) {
 }
 
 // ========================================
-// PGR / NR-01 – ARVORE + GRÁFICOS
+// PGR / NR-01 – ÁRVORE + GRÁFICOS
 // ========================================
 async function carregarArvorePGR() {
   const companies = await apiGet("/pgr/companies").catch(() => []);
@@ -426,7 +437,13 @@ async function carregarArvorePGR() {
     }
   }
 
-  return { companies, sectors: allSectors, hazards: allHazards, risks: allRisks, actions: allActions };
+  return {
+    companies,
+    sectors: allSectors,
+    hazards: allHazards,
+    risks: allRisks,
+    actions: allActions,
+  };
 }
 
 function classificarPerigo(hazard) {
