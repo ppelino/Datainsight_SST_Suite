@@ -1,7 +1,7 @@
 // =========================
 // PCMSO / ASO – Integração com API
 // =========================
-const API_BASE = "https://datainsight-sst-suite.onrender.com";
+const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
     // ... KPIs + gráficos ...
     buildPCMSOCharts(asos);
     buildChartDistribuicaoModulos(asos, nr17, ltcat);
