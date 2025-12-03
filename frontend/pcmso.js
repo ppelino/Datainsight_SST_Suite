@@ -2,25 +2,89 @@
 // PCMSO / ASO – Integração com API
 // =========================
 const API_BASE = "https://datainsight-sst-suite.onrender.com/api";
-    // ... KPIs + gráficos ...
-    buildPCMSOCharts(asos);
-    buildChartDistribuicaoModulos(asos, nr17, ltcat);
-    // etc...
-  } catch (err) {
-    console.error("Erro ao carregar KPIs / gráficos gerais:", err);
-  }
-}
-
+const ASO_ENDPOINT = "/aso/records";
 
 // cache em memória para usar na lupa / impressão por ID
 let _asoCache = [];
 
+// ------------------------
+// Helpers de auth + fetch
+// ------------------------
+function getAuthHeaders(extra = {}) {
+  const token = localStorage.getItem("authToken");
+  const base = { ...extra };
+  if (token) {
+    base["Authorization"] = `Bearer ${token}`;
+  }
+  return base;
+}
+
+function checkUnauthorized(status) {
+  if (status === 401) {
+    alert("Sessão expirada ou não autorizada. Faça login novamente.");
+    localStorage.removeItem("authToken");
+    window.location.href = "index.html";
+    return true;
+  }
+  return false;
+}
+
+async function handleResponse(res, method, path) {
+  if (!res.ok) {
+    if (checkUnauthorized(res.status)) {
+      throw new Error(`HTTP 401 ${method} ${path}`);
+    }
+    let text = "";
+    try {
+      text = await res.text();
+    } catch {
+      text = "";
+    }
+    throw new Error(`HTTP ${res.status} ${method} ${path} → ${text}`);
+  }
+
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function apiGet(path) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res, "GET", path);
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: getAuthHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(body),
+  });
+  return handleResponse(res, "POST", path);
+}
+
+async function apiDelete(path) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res, "DELETE", path);
+}
+
+// ------------------------
 // Carrega automaticamente os registros ao abrir a página
+// ------------------------
 document.addEventListener("DOMContentLoaded", () => {
   carregarASO();
 });
 
-// --------- SALVAR ---------
+// ------------------------
+// SALVAR
+// ------------------------
 async function salvarASO() {
   const nome = document.getElementById("nome").value.trim();
   const cpf = document.getElementById("cpf").value.trim();
@@ -48,56 +112,29 @@ async function salvarASO() {
   };
 
   try {
-    const res = await fetch(`${API_BASE}/aso/records`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const msg = await res.text();
-      console.error("Erro ao salvar ASO:", res.status, msg);
-      alert("❌ Erro ao salvar no servidor. Veja o console para detalhes.");
-      return;
-    }
-
-    await res.json();
-
+    await apiPost(ASO_ENDPOINT, payload);
     await carregarASO();
     limparFormulario();
-
     alert("✅ Registro salvo com sucesso!");
   } catch (err) {
-    console.error("Erro de rede ao salvar ASO:", err);
-    alert("❌ Erro de comunicação com o servidor.");
+    console.error("Erro ao salvar ASO:", err);
+    alert("❌ Erro ao salvar no servidor. Veja o console para detalhes.");
   }
 }
 
-// --------- CARREGAR TABELA ---------
+// ------------------------
+// CARREGAR TABELA
+// ------------------------
 async function carregarASO() {
   const tbody = document.querySelector("#tabelaASO tbody");
   tbody.innerHTML = "<tr><td colspan='7'>Carregando...</td></tr>";
 
   try {
-    const res = await fetch(`${API_BASE}/aso/records`);
-    if (!res.ok) {
-      const msg = await res.text();
-      console.error("Erro ao carregar ASO:", res.status, msg);
-      tbody.innerHTML =
-        "<tr><td colspan='7'>Erro ao carregar registros.</td></tr>";
+    const lista = (await apiGet(ASO_ENDPOINT)) || [];
 
-      // se der erro, zera contador visual
-      atualizarTotalASO(0);
-      return;
-    }
-
-    const lista = await res.json();
-
-    // cache + localStorage
     _asoCache = lista;
     localStorage.setItem("registrosASO", JSON.stringify(lista));
 
-    // ATUALIZA TOTAL (contador na página + localStorage)
     atualizarTotalASO(lista.length);
 
     if (!lista.length) {
@@ -133,52 +170,41 @@ async function carregarASO() {
       tbody.insertAdjacentHTML("beforeend", linha);
     });
   } catch (err) {
-    console.error("Erro de rede ao carregar ASO:", err);
+    console.error("Erro ao carregar ASO:", err);
     tbody.innerHTML =
-      "<tr><td colspan='7'>Erro de comunicação com o servidor.</td></tr>";
+      "<tr><td colspan='7'>Erro ao carregar registros.</td></tr>";
     atualizarTotalASO(0);
   }
 }
 
-// Atualiza contador de total de ASOs
+// Atualiza contador de total de ASOs (rodapé da tabela)
 function atualizarTotalASO(total) {
-  // guarda no localStorage (se quiser usar em outros lugares)
   localStorage.setItem("totalASOS", String(total));
-
-  // atualiza contador na página, se existir
   const el = document.getElementById("total-asos-pagina");
-  if (el) {
-    el.textContent = total;
-  }
+  if (el) el.textContent = total;
 }
 
-// --------- DELETAR REGISTRO ---------
+// ------------------------
+// DELETAR REGISTRO
+// ------------------------
 async function deletarASO(id) {
   if (!confirm("❓ Deseja realmente excluir este registro de ASO?")) {
     return;
   }
 
   try {
-    const res = await fetch(`${API_BASE}/aso/records/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!res.ok) {
-      const msg = await res.text();
-      console.error("Erro ao excluir ASO:", res.status, msg);
-      alert(`❌ Erro ao excluir o registro (status ${res.status}).`);
-      return;
-    }
-
+    await apiDelete(`${ASO_ENDPOINT}/${id}`);
     await carregarASO();
     alert("🗑 Registro excluído com sucesso!");
   } catch (err) {
-    console.error("Erro de rede ao excluir ASO:", err);
-    alert("❌ Erro de comunicação com o servidor ao excluir.");
+    console.error("Erro ao excluir ASO:", err);
+    alert("❌ Erro ao excluir o registro.");
   }
 }
 
-// --------- LIMPAR FORM ---------
+// ------------------------
+// LIMPAR FORM
+// ------------------------
 function limparFormulario() {
   document.getElementById("nome").value = "";
   document.getElementById("cpf").value = "";
@@ -193,7 +219,6 @@ function limparFormulario() {
 // =========================
 // Funções extras – visualização / impressão
 // =========================
-
 function montarHTMLASO(reg) {
   return `
     <div style="font-family: system-ui; padding: 20px;">
@@ -247,13 +272,11 @@ function visualizarASO(id) {
 // =========================
 // Funções extras dos botões
 // =========================
-
 async function obterUltimoASO() {
-  const res = await fetch(`${API_BASE}/aso/records`);
-  if (!res.ok) return null;
-  const lista = await res.json();
+  const lista = (await apiGet(ASO_ENDPOINT)) || [];
   if (!lista.length) return null;
-  return lista[0];
+  // se quiser o mais recente “por último”
+  return lista[lista.length - 1];
 }
 
 async function imprimirUltimoASO() {
