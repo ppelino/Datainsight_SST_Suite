@@ -60,40 +60,6 @@ async function apiGet(path) {
   return handleResponse(res, "GET", path);
 }
 
-// Normaliza retorno (garante array)
-function asList(data) {
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.items)) return data.items;
-  if (data && Array.isArray(data.results)) return data.results;
-  return [];
-}
-
-// Tenta múltiplas rotas possíveis para listar ASOs
-async function fetchASORecords() {
-  const candidates = [
-    "/aso/records",
-    "/aso/records/",
-    "/aso",
-    "/asos/records",
-  ];
-
-  for (const path of candidates) {
-    try {
-      const data = await apiGet(path);
-      const list = asList(data);
-      if (list.length > 0) {
-        console.log("ASO carregado pela rota:", path);
-        return list;
-      }
-    } catch (err) {
-      console.warn("Falha ao tentar rota ASO:", path, err);
-    }
-  }
-
-  console.warn("Nenhuma rota de ASO retornou dados; usando lista vazia.");
-  return [];
-}
-
 // ========================================
 // CONTROLE DE ABAS
 // ========================================
@@ -120,50 +86,45 @@ function setupTabs() {
 // ========================================
 async function loadKPIsAndCharts() {
   try {
-    // ASO tem lógica própria (tenta várias rotas)
-    const [asos, rawNr17, rawLtcat] = await Promise.all([
-      fetchASORecords(),
+    const [asos, nr17, ltcat] = await Promise.all([
+      apiGet(ENDPOINT_ASOS).catch(() => []),
       apiGet(ENDPOINT_NR17).catch(() => []),
       apiGet(ENDPOINT_LTCAT).catch(() => []),
     ]);
 
-    const nr17  = asList(rawNr17);
-    const ltcat = asList(rawLtcat);
+    const listaASO   = Array.isArray(asos) ? asos : [];
+    const listaNR17  = Array.isArray(nr17) ? nr17 : [];
+    const listaLTCAT = Array.isArray(ltcat) ? ltcat : [];
 
     // ---------- KPIs ----------
-    const elASO   = document.querySelector("#kpi-total-asos");
-    const elNR17  = document.querySelector("#kpi-total-nr17");
-    const elLTCAT = document.querySelector("#kpi-total-ltcat");
-    const elRisco = document.querySelector("#kpi-risco-medio-nr17");
-
-    if (elASO)   elASO.textContent   = asos.length.toString();
-    if (elNR17)  elNR17.textContent  = nr17.length.toString();
-    if (elLTCAT) elLTCAT.textContent = ltcat.length.toString();
+    document.querySelector("#kpi-total-asos").textContent  = listaASO.length;
+    document.querySelector("#kpi-total-nr17").textContent  = listaNR17.length;
+    document.querySelector("#kpi-total-ltcat").textContent = listaLTCAT.length;
 
     let riscoMedio = "—";
-    if (nr17.length > 0) {
-      const soma = nr17.reduce(
+    if (listaNR17.length > 0) {
+      const soma = listaNR17.reduce(
         (acc, item) => acc + (Number(item.score) || 0),
         0
       );
-      riscoMedio = (soma / nr17.length).toFixed(1);
+      riscoMedio = (soma / listaNR17.length).toFixed(1);
     }
-    if (elRisco) elRisco.textContent = riscoMedio;
+    document.querySelector("#kpi-risco-medio-nr17").textContent = riscoMedio;
 
-    // ---------- Gráficos painel GERAL ----------
-    buildChartDistribuicaoModulos(asos, nr17, ltcat);
-    buildChartPerfilRiscoNR17(nr17);
-    buildChartAgentesTopLTCAT(ltcat);
-    buildUltimasAtividades(asos, nr17, ltcat);
+    // ---------- GERAL ----------
+    buildChartDistribuicaoModulos(listaASO, listaNR17, listaLTCAT);
+    buildChartPerfilRiscoNR17(listaNR17);
+    buildChartAgentesTopLTCAT(listaLTCAT);
+    buildUltimasAtividades(listaASO, listaNR17, listaLTCAT);
 
     // ---------- PCMSO / ASO ----------
-    buildPCMSOCharts(asos);
+    buildPCMSOCharts(listaASO);
 
     // ---------- LTCAT ----------
-    buildLTCACharts(ltcat);
+    buildLTCACharts(listaLTCAT);
 
     // ---------- NR-17 (aba específica) ----------
-    buildNR17TabCharts(nr17);
+    buildNR17TabCharts(listaNR17);
 
     // ---------- PGR / NR-01 ----------
     await loadPGRCharts();
@@ -380,22 +341,22 @@ function buildPCMSOCharts(asos) {
 // ========================================
 function buildLTCACharts(ltcat) {
   const ctxSetor = document.getElementById("chart-ltcat-setor");
-  const ctxEnq   = document.getElementById("chart-ltcat-enquadramento");
+  const ctxEnq = document.getElementById("chart-ltcat-enquadramento");
   if (!ctxSetor && !ctxEnq) return;
 
   const porSetor = {};
-  const porEnq   = {};
+  const porEnq = {};
 
   ltcat.forEach((l) => {
     const setor = l.setor || "Não informado";
-    const enq   = l.enquadramento || "Sem enquadramento";
+    const enq = l.enquadramento || "Sem enquadramento";
     porSetor[setor] = (porSetor[setor] || 0) + 1;
-    porEnq[enq]     = (porEnq[enq]   || 0) + 1;
+    porEnq[enq] = (porEnq[enq] || 0) + 1;
   });
 
   if (ctxSetor) {
     const labels = Object.keys(porSetor);
-    const data   = labels.map((k) => porSetor[k]);
+    const data = labels.map((k) => porSetor[k]);
 
     new Chart(ctxSetor, {
       type: "bar",
@@ -415,7 +376,7 @@ function buildLTCACharts(ltcat) {
 
   if (ctxEnq) {
     const labels = Object.keys(porEnq);
-    const data   = labels.map((k) => porEnq[k]);
+    const data = labels.map((k) => porEnq[k]);
 
     new Chart(ctxEnq, {
       type: "pie",
@@ -434,12 +395,11 @@ function buildLTCACharts(ltcat) {
 function buildNR17TabCharts(nr17) {
   if (!nr17.length) return;
 
-  // Distribuição por risco (Baixo / Médio / Alto)
   const ctxRisco = document.getElementById("chart-nr17-risco");
   if (ctxRisco) {
     let baixo = 0;
     let medio = 0;
-    let alto  = 0;
+    let alto = 0;
 
     nr17.forEach((item) => {
       const s = Number(item.score) || 0;
@@ -469,23 +429,22 @@ function buildNR17TabCharts(nr17) {
     });
   }
 
-  // Scores médios por setor / GHE
   const ctxSetores = document.getElementById("chart-nr17-setores");
   if (ctxSetores) {
-    const grupos = {}; // { setor: { soma, qtd } }
+    const grupos = {};
 
     nr17.forEach((item) => {
       const setor = item.setor || "Não informado";
-      const s     = Number(item.score) || 0;
+      const s = Number(item.score) || 0;
       if (!grupos[setor]) {
         grupos[setor] = { soma: 0, qtd: 0 };
       }
       grupos[setor].soma += s;
-      grupos[setor].qtd  += 1;
+      grupos[setor].qtd += 1;
     });
 
     const labels = Object.keys(grupos);
-    const data   = labels.map(
+    const data = labels.map(
       (setor) => grupos[setor].soma / grupos[setor].qtd
     );
 
@@ -518,7 +477,7 @@ async function carregarArvorePGR() {
   const companies = await apiGet("/pgr/companies").catch(() => []);
   const allSectors = [];
   const allHazards = [];
-  const allRisks   = [];
+  const allRisks = [];
   const allActions = [];
 
   for (const c of companies || []) {
@@ -540,9 +499,9 @@ async function carregarArvorePGR() {
         risks.forEach((r) => allRisks.push({ ...r, hazard_id: h.id }));
 
         for (const r of risks || []) {
-          const actions = await apiGet(`/pgr/actions/by-risk/${r.id}`).catch(
-            () => []
-          );
+          const actions = await apiGet(
+            `/pgr/actions/by-risk/${r.id}`
+          ).catch(() => []);
           actions.forEach((a) =>
             allActions.push({ ...a, risk_id: r.id, hazard_id: h.id })
           );
@@ -558,6 +517,51 @@ async function carregarArvorePGR() {
     risks: allRisks,
     actions: allActions,
   };
+}
+
+function montarChartPGRCategorias(hazards) {
+  const ctx = document.getElementById("chart-pgr-categorias");
+  if (!ctx) return;
+
+  const cont = {
+    Físicos: 0,
+    Químicos: 0,
+    Biológicos: 0,
+    Ergonômicos: 0,
+    Mecânicos: 0,
+    Outros: 0,
+  };
+
+  (hazards || []).forEach((h) => {
+    const cat = classificarPerigo(h);
+    cont[cat] = (cont[cat] || 0) + 1;
+  });
+
+  const labels = Object.keys(cont);
+  const data = labels.map((k) => cont[k]);
+
+  new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Perigos",
+          data,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 },
+        },
+      },
+    },
+  });
 }
 
 function classificarPerigo(hazard) {
@@ -613,51 +617,6 @@ function classificarPerigo(hazard) {
     return "Mecânicos";
   }
   return "Outros";
-}
-
-function montarChartPGRCategorias(hazards) {
-  const ctx = document.getElementById("chart-pgr-categorias");
-  if (!ctx) return;
-
-  const cont = {
-    Físicos: 0,
-    Químicos: 0,
-    Biológicos: 0,
-    Ergonômicos: 0,
-    Mecânicos: 0,
-    Outros: 0,
-  };
-
-  (hazards || []).forEach((h) => {
-    const cat = classificarPerigo(h);
-    cont[cat] = (cont[cat] || 0) + 1;
-  });
-
-  const labels = Object.keys(cont);
-  const data   = labels.map((k) => cont[k]);
-
-  new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Perigos",
-          data,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        r: {
-          beginAtZero: true,
-          ticks: { stepSize: 1 },
-        },
-      },
-    },
-  });
 }
 
 function montarChartPGRAcoes(actions) {
