@@ -1,15 +1,9 @@
 // ===============================
-// Supabase Auth (Email + Senha)
+// Configuração API
 // ===============================
+const API_BASE = "https://datainsight-sst-suite.onrender.com";
 
-// 1) Cole aqui os dados do seu projeto Supabase:
-// Supabase -> Settings -> API -> Project URL / anon public key
-const SUPABASE_URL = "https://jnavgyqenrhnuknahdns.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
-
-// ===============================
 // Mensagem embaixo do botão
-// ===============================
 function setLoginMessage(text, isError = false) {
   const el = document.getElementById("msg");
   if (!el) return;
@@ -18,37 +12,11 @@ function setLoginMessage(text, isError = false) {
 }
 
 // ===============================
-// Carrega Supabase JS via CDN (sem precisar mexer no build)
-// ===============================
-async function getSupabaseClient() {
-  // UMD disponível em window.supabase
-  if (!window.supabase) {
-    await new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-      s.onload = resolve;
-      s.onerror = () => reject(new Error("Falha ao carregar supabase-js"));
-      document.head.appendChild(s);
-    });
-  }
-  return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
-
-// ===============================
-// Limpa hashes antigos do tipo #error=otp_expired (para não travar a página)
-// ===============================
-(function clearHashErrors() {
-  if (location.hash && location.hash.includes("error=")) {
-    history.replaceState(null, "", location.pathname + location.search);
-  }
-})();
-
-// ===============================
-// Função de login (Supabase)
+// Função de login (usando /auth/login)
 // ===============================
 async function login() {
   const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
+  const password = document.getElementById("password").value.trim();
 
   if (!email || !password) {
     setLoginMessage("Informe e-mail e senha.", true);
@@ -58,42 +26,52 @@ async function login() {
   setLoginMessage("Conectando...", false);
 
   try {
-    const supabase = await getSupabaseClient();
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,        // casa com o modelo do backend
+        username: email,     // se o modelo usar username, também funciona
+        password: password,
+      }),
     });
 
-    if (error) {
-      const msg = (error.message || "").toLowerCase();
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      console.error("Erro login:", res.status, txt);
 
-      if (msg.includes("invalid login credentials")) {
+      if (res.status === 401) {
         setLoginMessage("Usuário ou senha inválidos.", true);
-      } else if (msg.includes("email not confirmed")) {
-        setLoginMessage("E-mail não confirmado. Fale com o administrador.", true);
-      } else if (msg.includes("captcha")) {
-        setLoginMessage("Bloqueado por segurança (captcha/rate limit). Tente mais tarde.", true);
+      } else if (res.status === 422) {
+        setLoginMessage("Erro de validação (422) — checar campos esperados no /auth/login.", true);
+      } else if (res.status === 404) {
+        setLoginMessage("Rota /auth/login não encontrada (404).", true);
       } else {
-        setLoginMessage(`Erro ao fazer login: ${error.message}`, true);
+        setLoginMessage(`Erro ao fazer login no servidor. Código ${res.status}.`, true);
       }
       return;
     }
 
-    // Guarda token (se você ainda quiser usar token no resto do app)
-    // OBS: no Supabase, o ideal é usar supabase.auth.getSession(), mas manteremos simples.
-    const accessToken = data?.session?.access_token;
-    if (accessToken) {
-      localStorage.setItem("authToken", accessToken);
+    const data = await res.json();
+    console.log("Resposta login:", data);
+
+    if (!data.access_token) {
+      setLoginMessage("Login OK, mas resposta inesperada da API (sem access_token).", true);
+      return;
     }
 
+    // guarda token e redireciona
+    localStorage.setItem("authToken", data.access_token);
     setLoginMessage("Login realizado com sucesso. Redirecionando...");
 
     setTimeout(() => {
       window.location.href = "dashboard.html";
     }, 800);
+
   } catch (err) {
-    console.error("Falha de conexão/auth:", err);
+    console.error("Falha de conexão com o servidor:", err);
     setLoginMessage("Erro de conexão com o servidor.", true);
   }
 }
@@ -106,9 +84,3 @@ document.addEventListener("keydown", (ev) => {
     login();
   }
 });
-
-// Expõe login para o onclick do botão no HTML
-window.login = login;
-
-
-
