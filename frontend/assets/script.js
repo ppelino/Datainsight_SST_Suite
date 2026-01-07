@@ -4,10 +4,8 @@
 
 // 1) Cole aqui os dados do seu projeto Supabase:
 // Supabase -> Settings -> API -> Project URL / anon public key
-const SUPABASE_URL = "https://abcd1234efgh5678.supabase.co";
+const SUPABASE_URL = "https://jnavgyqenrhnuknahdns.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
-
-
 
 // ===============================
 // Mensagem embaixo do botão
@@ -111,5 +109,6 @@ document.addEventListener("keydown", (ev) => {
 
 // Expõe login para o onclick do botão no HTML
 window.login = login;
+
 
 
