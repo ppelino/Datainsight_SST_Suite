@@ -18,7 +18,7 @@
       <span>PCMSO / ASO</span>
     </div>
 
-    <div style="margin-left:auto; display:flex; gap:8px;">
+    <div class="module-menu">
       <a class="btn secondary" href="dashboard.html">🏠 Dashboard</a>
       <a class="btn secondary" href="pgr.html">📝 PGR / NR-01</a>
       <a class="btn active" href="pcmso.html">⚕️ PCMSO / ASO</a>
@@ -29,33 +29,51 @@
   </div>
 </nav>
 
-<div class="container">
+<main class="module-page">
 
-  <div class="card">
-    <h2>⚕️ PCMSO / ASO — Registro de Exames</h2>
-    <p class="section-subtitle">
-      Preencha os dados abaixo para registrar um exame ocupacional.
-    </p>
+  <section class="module-header">
+    <div>
+      <h1>PCMSO / ASO</h1>
+      <p>Registro, acompanhamento e emissão de exames ocupacionais.</p>
+    </div>
 
-    <div class="form-grid mt-3">
+    <div class="module-badge">
+      Gestão Ocupacional
+    </div>
+  </section>
 
-      <label>Nome do Trabalhador
+  <section class="module-card">
+    <div class="module-card-header">
+      <div>
+        <h2>⚕️ Registro de Exames</h2>
+        <p>Preencha os dados abaixo para registrar um exame ocupacional.</p>
+      </div>
+    </div>
+
+    <div class="premium-form-grid">
+
+      <div class="form-group">
+        <label>Nome do Trabalhador</label>
         <input type="text" id="nome" placeholder="Ex: João Silva">
-      </label>
+      </div>
 
-      <label>CPF
+      <div class="form-group">
+        <label>CPF</label>
         <input type="text" id="cpf" placeholder="000.000.000-00">
-      </label>
+      </div>
 
-      <label>Função
+      <div class="form-group">
+        <label>Função</label>
         <input type="text" id="funcao" placeholder="Ex: Operador de Máquina">
-      </label>
+      </div>
 
-      <label>Setor
+      <div class="form-group">
+        <label>Setor</label>
         <input type="text" id="setor" placeholder="Ex: Produção">
-      </label>
+      </div>
 
-      <label>Tipo de Exame
+      <div class="form-group">
+        <label>Tipo de Exame</label>
         <select id="tipoExame">
           <option value="Admissional">Admissional</option>
           <option value="Periódico">Periódico</option>
@@ -63,55 +81,64 @@
           <option value="Mudança de Função">Mudança de Função</option>
           <option value="Demissional">Demissional</option>
         </select>
-      </label>
+      </div>
 
-      <label>Data do Exame
+      <div class="form-group">
+        <label>Data do Exame</label>
         <input type="date" id="dataExame">
-      </label>
+      </div>
 
-      <label>Médico Responsável
+      <div class="form-group">
+        <label>Médico Responsável</label>
         <input type="text" id="medico" placeholder="CRM / Nome">
-      </label>
+      </div>
 
-      <label>Resultado
+      <div class="form-group">
+        <label>Resultado</label>
         <select id="resultado">
           <option value="Apto">Apto</option>
           <option value="Apto com restrições">Apto com restrições</option>
           <option value="Inapto">Inapto</option>
         </select>
-      </label>
+      </div>
 
     </div>
 
-    <!-- Barra de ações -->
-    <div class="actions-row" style="display:flex; gap:10px; margin-top:20px;">
+    <div class="module-actions">
       <button class="btn primary" onclick="salvarASO()">💾 Salvar Registro</button>
       <button class="btn secondary" onclick="limparFormulario()">🧹 Limpar</button>
       <button class="btn secondary" onclick="imprimirUltimoASO()">🖨️ Imprimir última avaliação</button>
-      <button class="btn secondary" onclick="exportarPDF_ASO()">📄 Exportar PDF (última)</button>
+      <button class="btn secondary" onclick="exportarPDF_ASO()">📄 Exportar PDF</button>
+    </div>
+  </section>
+
+  <section class="module-card">
+    <div class="module-card-header">
+      <div>
+        <h2>📑 Registros de ASO</h2>
+        <p>Total de registros: <strong id="total-asos-pagina">0</strong></p>
+      </div>
     </div>
 
-  </div>
+    <div class="table-wrapper">
+      <table class="premium-table" id="tabelaASO">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>CPF</th>
+            <th>Função</th>
+            <th>Tipo de Exame</th>
+            <th>Data</th>
+            <th>Resultado</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 
-  <div class="card">
-    <h2>📑 Registros de ASO</h2>
-    <table class="table" id="tabelaASO">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>CPF</th>
-          <th>Função</th>
-          <th>Tipo de Exame</th>
-          <th>Data</th>
-          <th>Resultado</th>
-          <th>Ações</th> <!-- ✅ nova coluna -->
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-</div>
+</main>
 
 <script>
 function logout() {
@@ -122,8 +149,3 @@ function logout() {
 
 </body>
 </html>
-<h3>
-  Registros de ASO 
-  <small>(Total: <span id="total-asos-pagina">0</span>)</small>
-</h3>
-
