@@ -5,46 +5,9 @@
   <title>DataInsight SST – LTCAT / Laudo Técnico</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Estilo padrão da suíte -->
   <link rel="stylesheet" href="assets/branding.css">
 
-  <!-- Estilos dos botões de ação da tabela -->
-  <style>
-    .actions-cell {
-      display: flex;
-      gap: 4px;
-      justify-content: center;
-    }
-
-    .icon-btn {
-      border: none;
-      background: #e5f0ff;
-      border-radius: 6px;
-      padding: 2px 6px;
-      cursor: pointer;
-      font-size: 12px;
-      line-height: 1;
-      transition: background 0.15s, transform 0.05s;
-    }
-
-    .icon-btn:hover {
-      background: #d0e3ff;
-      transform: translateY(-1px);
-    }
-
-    .icon-btn.delete {
-      background: #ffe4e1;
-    }
-
-    .icon-btn.delete:hover {
-      background: #ffc9c4;
-    }
-  </style>
-
-  <!-- Biblioteca para gerar PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
-
-  <!-- Lógica da tela LTCAT (salvar, listar, editar, excluir, PDF) -->
   <script src="ltcat.js" defer></script>
 </head>
 
@@ -54,10 +17,10 @@
   <div class="wrap">
     <div class="logo">
       <img src="assets/datainsight.jpg" alt="Logo">
-      <span>LTCAT — Laudo Técnico de Condições Ambientais</span>
+      <span>LTCAT</span>
     </div>
 
-    <div style="margin-left:auto; display:flex; gap:8px;">
+    <div class="module-menu">
       <a class="btn secondary" href="dashboard.html">🏠 Dashboard</a>
       <a class="btn secondary" href="pgr.html">📝 PGR / NR-01</a>
       <a class="btn secondary" href="pcmso.html">⚕️ PCMSO / ASO</a>
@@ -68,160 +31,196 @@
   </div>
 </nav>
 
-<div class="container">
+<main class="module-page">
 
-  <!-- FORMULÁRIO LTCAT -->
-  <div class="card">
-    <h2>📄 Registro de Informações para LTCAT</h2>
-    <p class="section-subtitle">
-      Estruture as informações essenciais para elaboração do LTCAT: agente nocivo, exposição e enquadramento previdenciário.
-    </p>
+  <section class="module-header">
+    <div>
+      <h1>LTCAT</h1>
+      <p>Laudo Técnico de Condições Ambientais com registro de exposição, agente nocivo e enquadramento.</p>
+    </div>
 
-    <div class="form-grid mt-3">
+    <div class="module-badge">
+      Laudo Técnico
+    </div>
+  </section>
 
-      <label>Empresa
+  <section class="module-card">
+    <div class="module-card-header">
+      <div>
+        <h2>📄 Registro de Informações para LTCAT</h2>
+        <p>Estruture as informações essenciais para elaboração do LTCAT.</p>
+      </div>
+    </div>
+
+    <div class="premium-form-grid">
+
+      <div class="form-group">
+        <label>Empresa</label>
         <input type="text" id="empresa" placeholder="Ex: Metalúrgica Alfa LTDA">
-      </label>
+      </div>
 
-      <label>CNPJ
+      <div class="form-group">
+        <label>CNPJ</label>
         <input type="text" id="cnpj" placeholder="00.000.000/0000-00">
-      </label>
+      </div>
 
-      <label>Setor
+      <div class="form-group">
+        <label>Setor</label>
         <input type="text" id="setor" placeholder="Ex: Caldeiraria / Oficina / Escritório">
-      </label>
+      </div>
 
-      <label>Função
+      <div class="form-group">
+        <label>Função</label>
         <input type="text" id="funcao" placeholder="Ex: Soldador / Operador de Prensa">
-      </label>
+      </div>
 
-      <label>GHE (opcional)
+      <div class="form-group">
+        <label>GHE (opcional)</label>
         <input type="text" id="ghe" placeholder="Ex: GHE 01 – Soldagem">
-      </label>
+      </div>
 
-      <label>Agente Nocivo
+      <div class="form-group">
+        <label>Agente Nocivo</label>
         <input type="text" id="agente" placeholder="Ex: Ruído, Benzeno, Calor, Sílica...">
-      </label>
+      </div>
 
-      <label>Classificação do Agente
+      <div class="form-group">
+        <label>Classificação do Agente</label>
         <select id="classificacao">
           <option value="Físico">Físico</option>
           <option value="Químico">Químico</option>
           <option value="Biológico">Biológico</option>
           <option value="Misto">Misto</option>
         </select>
-      </label>
+      </div>
 
-      <label>Fonte Geradora
+      <div class="form-group">
+        <label>Fonte Geradora</label>
         <input type="text" id="fonte" placeholder="Ex: Prensa hidráulica, forno, produto químico...">
-      </label>
+      </div>
 
-      <label>Meio de Propagação
+      <div class="form-group">
+        <label>Meio de Propagação</label>
         <input type="text" id="meio" placeholder="Ex: Ar, contato direto, superfícies...">
-      </label>
+      </div>
 
-      <label>Intensidade / Concentração
+      <div class="form-group">
+        <label>Intensidade / Concentração</label>
         <input type="text" id="intensidade" placeholder="Ex: 92 dB(A), 15 ppm, 28 ºC IBUTG">
-      </label>
+      </div>
 
-      <label>Unidade
+      <div class="form-group">
+        <label>Unidade</label>
         <input type="text" id="unidade" placeholder="Ex: dB(A), ppm, ºC, mg/m³">
-      </label>
+      </div>
 
-      <label>Jornada diária (h)
+      <div class="form-group">
+        <label>Jornada diária (h)</label>
         <input type="number" id="jornada" min="0" step="0.25" placeholder="Ex: 8">
-      </label>
+      </div>
 
-      <label>Dias por semana
+      <div class="form-group">
+        <label>Dias por semana</label>
         <input type="number" id="diasSemana" min="1" max="7" placeholder="Ex: 5">
-      </label>
+      </div>
 
-      <label>Tempo de exposição (anos)
+      <div class="form-group">
+        <label>Tempo de exposição (anos)</label>
         <input type="number" id="tempoAnos" min="0" step="0.5" placeholder="Ex: 12">
-      </label>
+      </div>
 
-      <label>EPC / EPI eficaz?
+      <div class="form-group">
+        <label>EPC / EPI eficaz?</label>
         <select id="epiEficaz">
           <option value="Sim">Sim</option>
           <option value="Não">Não</option>
           <option value="Parcial">Parcial</option>
         </select>
-      </label>
+      </div>
 
-      <label>Enquadramento Previdenciário
+      <div class="form-group">
+        <label>Enquadramento Previdenciário</label>
         <select id="enquadramento">
           <option value="Sem enquadramento">Sem enquadramento</option>
           <option value="Especial – 15 anos">Especial – 15 anos</option>
           <option value="Especial – 20 anos">Especial – 20 anos</option>
           <option value="Especial – 25 anos">Especial – 25 anos</option>
         </select>
-      </label>
+      </div>
 
-      <label>Data da Avaliação / Medição
+      <div class="form-group">
+        <label>Data da Avaliação / Medição</label>
         <input type="date" id="data">
-      </label>
+      </div>
 
-      <label>Responsável Técnico
+      <div class="form-group">
+        <label>Responsável Técnico</label>
         <input type="text" id="responsavel" placeholder="Nome / Registro profissional">
-      </label>
+      </div>
 
-      <label style="grid-column: 1 / -1;">Observações (opcional)
+      <div class="form-group" style="grid-column:1 / -1;">
+        <label>Observações (opcional)</label>
         <textarea id="observacoes" rows="3" placeholder="Descrever metodologia utilizada, normas técnicas, condições atípicas, recomendações..."></textarea>
-      </label>
+      </div>
 
     </div>
 
-    <div class="actions-row">
+    <div class="module-actions">
       <button id="btn-salvar-ltcat" class="btn primary" onclick="salvarLTCAT()">💾 Salvar Registro</button>
       <button class="btn secondary" onclick="limparLTCAT()">🧹 Limpar</button>
       <button class="btn secondary" onclick="imprimirUltimoLTCAT()">🖨️ Imprimir último</button>
-      <button class="btn secondary" onclick="exportarPDFUltimoLTCAT()">📄 Exportar PDF (último)</button>
+      <button class="btn secondary" onclick="exportarPDFUltimoLTCAT()">📄 Exportar PDF</button>
     </div>
-  </div>
+  </section>
 
-  <!-- LISTA DE REGISTROS -->
-  <div class="card">
-    <h2>📚 Registros para LTCAT</h2>
+  <section class="module-card">
+    <div class="module-card-header">
+      <div>
+        <h2>📚 Registros para LTCAT</h2>
+        <p>Consulte, filtre, visualize, edite ou exclua registros técnicos.</p>
+      </div>
+    </div>
 
-    <div class="actions-row">
+    <div class="module-actions">
       <input
         type="text"
         id="filtroLTCAT"
         placeholder="Filtrar por empresa, setor, função ou agente..."
         oninput="filtrarLTCAT()"
-        style="flex:1; max-width:360px;"
+        style="flex:1; min-width:260px; max-width:460px;"
       >
     </div>
 
-    <table class="table" id="tabelaLTCAT">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Empresa</th>
-          <th>Setor</th>
-          <th>Função</th>
-          <th>Agente</th>
-          <th>Classificação</th>
-          <th>Enquadramento</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+    <div class="table-wrapper">
+      <table class="premium-table" id="tabelaLTCAT">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Empresa</th>
+            <th>Setor</th>
+            <th>Função</th>
+            <th>Agente</th>
+            <th>Classificação</th>
+            <th>Enquadramento</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 
-  <!-- ÁREA OCULTA PARA RELATÓRIO PDF -->
   <div id="areaRelatorioLTCAT" style="display:none;">
     <div id="conteudoRelatorioLTCAT" style="padding:20px; font-family:system-ui;"></div>
   </div>
 
-</div>
+</main>
 
 <script>
-  function logout() {
-    localStorage.clear();
-    window.location.href = "index.html";
-  }
+function logout() {
+  localStorage.clear();
+  window.location.href = "index.html";
+}
 </script>
 
 </body>
