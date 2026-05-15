@@ -10,7 +10,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 
   <style>
-
     .nr17-page {
       width: 100%;
       max-width: 1450px;
@@ -22,8 +21,14 @@
       box-sizing: border-box;
     }
 
-    .nr17-header-card {
+    .nr17-header-card,
+    .nr17-form-card,
+    .nr17-table-card {
       padding: 24px;
+      border-radius: 22px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
     }
 
     .nr17-header-top {
@@ -72,6 +77,7 @@
     }
 
     .nr17-main-grid {
+      width: 100%;
       max-width: 1400px;
       margin: 0 auto;
       display: flex;
@@ -86,13 +92,8 @@
       gap: 18px;
     }
 
-    .nr17-form-card,
-    .nr17-table-card,
-    .nr17-header-card {
-      padding: 24px;
-    }
-
-    .nr17-form-card h3 {
+    .nr17-form-card h3,
+    .nr17-table-card h3 {
       margin-top: 0;
       margin-bottom: 10px;
       font-size: 22px;
@@ -154,20 +155,6 @@
       min-height: 100px;
     }
 
-    .card {
-      border-radius: 22px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-      border: 1px solid #e5e7eb;
-      background: #ffffff;
-    }
-
-    .nr17-table-card h3 {
-      margin-top: 0;
-      margin-bottom: 14px;
-      font-size: 20px;
-      color: #0f172a;
-    }
-
     .nr17-filter-row {
       display: flex;
       gap: 8px;
@@ -187,7 +174,7 @@
     .nr17-table-wrapper {
       border-radius: 14px;
       overflow: auto;
-      max-height: 320px;
+      max-height: 340px;
     }
 
     .table {
@@ -209,12 +196,14 @@
       font-weight: 700;
       color: #0f172a;
       text-align: left;
+      white-space: nowrap;
     }
 
     .table td {
       padding: 10px 12px;
       border-bottom: 1px solid #e5e7eb;
       color: #475569;
+      white-space: nowrap;
     }
 
     .table tr:hover {
@@ -251,13 +240,16 @@
     }
 
     @media (max-width: 900px) {
-
       .nr17-page {
         padding: 14px;
       }
 
       .nr17-header-top {
         flex-direction: column;
+      }
+
+      .nr17-title-block h2 {
+        font-size: 24px;
       }
 
       .nr17-actions {
@@ -271,22 +263,18 @@
       .table {
         min-width: 850px;
       }
-
     }
-
   </style>
 
   <script src="nr17.js" defer></script>
-
 </head>
 
 <body>
 
 <nav class="nav">
   <div class="wrap">
-
     <div class="logo">
-      <img src="assets/datainsight.jpg" alt="Logo">
+      <img src="assets/datainsight.jpg" alt="Logo DataInsight SST">
       <span>DataInsight SST Suite</span>
     </div>
 
@@ -298,59 +286,165 @@
       <a class="btn secondary" href="ltcat.html">📄 LTCAT</a>
       <button onclick="logout()" class="btn danger">Sair</button>
     </div>
-
   </div>
 </nav>
 
 <main>
-
   <div class="nr17-page">
 
-    <section class="card nr17-header-card">
-
+    <section class="nr17-header-card">
       <div class="nr17-header-top">
-
         <div class="nr17-title-block">
           <h2>NR-17 — Avaliação Ergonômica de Posto de Trabalho</h2>
-          <p>
-            Registre as condições ergonômicas do posto e obtenha uma classificação simples de risco.
-          </p>
+          <p>Registre as condições ergonômicas do posto e obtenha uma classificação simples de risco.</p>
         </div>
 
         <div class="nr17-actions">
-          <button class="btn primary" onclick="salvarNR17()">💾 Salvar Avaliação</button>
+          <button id="btn-salvar-nr17" class="btn primary" onclick="salvarNR17()">💾 Salvar Avaliação</button>
           <button class="btn secondary" onclick="limparNR17()">🧹 Limpar</button>
           <button class="btn secondary" onclick="imprimirUltimaNR17()">🖨️ Imprimir última avaliação</button>
           <button class="btn secondary" onclick="exportarPDFUltimaNR17()">📄 Exportar PDF (última)</button>
         </div>
-
       </div>
 
       <div class="nr17-index-row">
         Índice global de risco:
         <strong id="resultadoRisco">–</strong>
       </div>
-
     </section>
 
     <section class="nr17-main-grid">
-
       <div class="nr17-left-col">
 
-        <!-- FORMULÁRIO -->
+        <section class="nr17-form-card">
+          <h3>Dados da Avaliação de Posto de Trabalho</h3>
+          <p class="section-subtitle">
+            Preencha as informações básicas do posto e os fatores ergonômicos que compõem o índice NR-17.
+          </p>
 
-        <!-- MANTÉM TODO O SEU FORMULÁRIO AQUI -->
+          <div class="nr17-form-grid">
 
-        <!-- TABELA -->
+            <label>Empresa (opcional)
+              <input type="text" id="empresa" placeholder="Ex: Metalúrgica Alfa LTDA">
+            </label>
 
-        <!-- MANTÉM SUA TABELA AQUI -->
+            <label>Setor
+              <input type="text" id="setor" placeholder="Ex: Administrativo / Produção">
+            </label>
+
+            <label>Função Avaliada
+              <input type="text" id="funcao" placeholder="Ex: Operador de Máquina / Digitador">
+            </label>
+
+            <label>Trabalhador (opcional)
+              <input type="text" id="trabalhador" placeholder="Nome ou código">
+            </label>
+
+            <label>Tipo de Posto
+              <select id="tipoPosto">
+                <option value="Administrativo">Administrativo</option>
+                <option value="Produção">Produção</option>
+                <option value="Atendimento">Atendimento</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </label>
+
+            <label>Data da Avaliação
+              <input type="date" id="dataAvaliacao">
+            </label>
+
+            <label>Mobiliário / Ajustes
+              <select id="mobiliario" onchange="calcularIndiceNR17()">
+                <option value="1">Adequado (ajustes suficientes)</option>
+                <option value="2">Parcialmente adequado</option>
+                <option value="3">Inadequado / sem ajustes</option>
+              </select>
+            </label>
+
+            <label>Posturas de Trabalho
+              <select id="postura" onchange="calcularIndiceNR17()">
+                <option value="1">Confortável / poucas queixas</option>
+                <option value="2">Algum desconforto / posturas mantidas</option>
+                <option value="3">Posturas forçadas / queixas frequentes</option>
+              </select>
+            </label>
+
+            <label>Esforço Físico / Carga
+              <select id="esforco" onchange="calcularIndiceNR17()">
+                <option value="1">Esforço leve</option>
+                <option value="2">Esforço moderado</option>
+                <option value="3">Esforço intenso / repetitivo</option>
+              </select>
+            </label>
+
+            <label>Pausas / Ritmo de Trabalho
+              <select id="pausas" onchange="calcularIndiceNR17()">
+                <option value="1">Pausas adequadas</option>
+                <option value="2">Pausas insuficientes</option>
+                <option value="3">Sem pausas / ritmo elevado</option>
+              </select>
+            </label>
+
+            <label>Ambiente Físico (iluminação, ruído, temperatura)
+              <select id="ambiente" onchange="calcularIndiceNR17()">
+                <option value="1">Condições adequadas</option>
+                <option value="2">Alguns incômodos</option>
+                <option value="3">Condições desfavoráveis</option>
+              </select>
+            </label>
+
+            <label>Organização do Trabalho / Exigências cognitivas
+              <select id="organizacao" onchange="calcularIndiceNR17()">
+                <option value="1">Organizado, demandas claras</option>
+                <option value="2">Alguma pressão / demandas pouco claras</option>
+                <option value="3">Alta pressão / demandas conflitantes</option>
+              </select>
+            </label>
+
+            <label class="full-row">Observações (opcional)
+              <textarea id="observacoes" rows="3" placeholder="Descreva situações críticas, queixas, sugestões de melhoria..."></textarea>
+            </label>
+
+          </div>
+        </section>
+
+        <section class="nr17-table-card">
+          <h3>📋 Avaliações Registradas — NR-17</h3>
+
+          <div class="nr17-filter-row">
+            <input
+              type="text"
+              id="filtroNR17"
+              placeholder="Filtrar por setor, função ou risco..."
+              oninput="filtrarNR17()"
+            >
+          </div>
+
+          <div class="nr17-table-wrapper">
+            <table class="table" id="tabelaNR17">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Setor</th>
+                  <th>Função</th>
+                  <th>Tipo de Posto</th>
+                  <th>Classificação de Risco</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
 
       </div>
-
     </section>
 
-  </div>
+    <div id="areaRelatorioNR17" style="display:none;">
+      <div id="conteudoRelatorioNR17" style="padding:20px; font-family:system-ui;"></div>
+    </div>
 
+  </div>
 </main>
 
 <script>
