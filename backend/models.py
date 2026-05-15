@@ -7,9 +7,6 @@ from datetime import datetime
 from database import Base
 
 
-# ============================================================
-#  USUÁRIOS DO SISTEMA
-# ============================================================
 class User(Base):
     __tablename__ = "users"
 
@@ -18,15 +15,8 @@ class User(Base):
     password = Column(String, nullable=False)
     name = Column(String, nullable=False)
 
-    # admin  -> você, super administrador
-    # gestor -> dono da empresa contratante
-    # user   -> funcionário
     role = Column(String, default="user")
-
-    # free / pro / enterprise
     plan = Column(String, default="free")
-
-    # Data de vencimento do plano
     plan_expires_at = Column(Date, nullable=True)
 
     company_id = Column(Integer, nullable=True)
@@ -34,10 +24,6 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-
-# ============================================================
-#  MÓDULO PGR / NR-01 – ENTIDADES BÁSICAS
-# ============================================================
 
 class Company(Base):
     __tablename__ = "companies"
@@ -106,15 +92,13 @@ class Action(Base):
     risk = relationship("Risk", back_populates="actions")
 
 
-# ============================================================
-#  MÓDULO PCMSO / ASO
-# ============================================================
-
 class AsoRecord(Base):
     __tablename__ = "aso_records"
 
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    company_id = Column(Integer, nullable=True)
 
     nome = Column(String, nullable=False)
     cpf = Column(String, nullable=False)
@@ -128,15 +112,13 @@ class AsoRecord(Base):
     resultado = Column(String, nullable=False)
 
 
-# ============================================================
-#  MÓDULO NR-17 – Avaliações Ergonômicas
-# ============================================================
-
 class NR17Record(Base):
     __tablename__ = "nr17_records"
 
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    company_id = Column(Integer, nullable=True)
 
     empresa = Column(String)
     setor = Column(String)
@@ -151,14 +133,12 @@ class NR17Record(Base):
     observacoes = Column(Text)
 
 
-# ============================================================
-#  MÓDULO LTCAT – Laudo Técnico de Condições Ambientais
-# ============================================================
-
 class LTCATRecord(Base):
     __tablename__ = "ltcat_records"
 
     id = Column(Integer, primary_key=True, index=True)
+
+    company_id = Column(Integer, nullable=True)
 
     empresa = Column(String, nullable=False)
     cnpj = Column(String, nullable=True)
@@ -186,15 +166,13 @@ class LTCATRecord(Base):
     observacoes = Column(Text, nullable=True)
 
 
-# ============================================================
-#  MÓDULO PGR / NR-01 – Registros simplificados
-# ============================================================
-
 class PGRRecord(Base):
     __tablename__ = "pgr_records"
 
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    company_id = Column(Integer, nullable=True)
 
     empresa = Column(String, nullable=True)
     setor = Column(String, nullable=True)
