@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import date
 from pydantic import BaseModel, EmailStr
 
 
@@ -6,11 +7,10 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     name: str
-
-    # Valores padrão para facilitar na criação
-    role: str = "user"          # admin / gestor / user
-    plan: str = "free"          # free / pro / enterprise
+    role: str = "user"
+    plan: str = "free"
     company_id: Optional[int] = None
+    plan_expires_at: Optional[date] = None
 
 
 class UserLogin(BaseModel):
@@ -26,8 +26,7 @@ class UserResponse(BaseModel):
     plan: str
     company_id: Optional[int]
     is_active: bool
+    plan_expires_at: Optional[date]
 
     class Config:
-        from_attributes = True  # pydantic v2 (substitui orm_mode=True)
-
-
+        from_attributes = True
