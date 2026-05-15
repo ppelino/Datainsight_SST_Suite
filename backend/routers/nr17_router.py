@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from database import SessionLocal
-from models import NR17Record
+from database import get_db
+from models import NR17Record, User
+from routers.auth_router import get_current_user
 
 router = APIRouter(
     prefix="/nr17",
@@ -10,57 +11,67 @@ router = APIRouter(
 )
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def base_query_for_user(db: Session, current_user: User):
+    query = db.query(NR17Record)
+
+    if current_user.role == "admin":
+        return query
+
+    if not current_user.company_id:
+        return query.filter(NR17Record.company_id == -1)
+
+    return query.filter(NR17Record.company_id == current_user.company_id)
 
 
-# ============================
-#  LISTAR REGISTROS
-# ============================
 @router.get("/records")
-def list_nr17_records(db: Session = Depends(get_db)):
-    """
-    Lista todas as avaliações NR-17.
-    """
-    return db.query(NR17Record).order_by(NR17Record.id.asc()).all()
+def list_nr17_records(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return (
+        base_query_for_user(db, current_user)
+        .order_by(NR17Record.id.asc())
+        .all()
+    )
 
 
-# ============================
-#  CRIAR REGISTRO
-# ============================
 @router.post("/records", status_code=status.HTTP_201_CREATED)
-def create_nr17_record(data: dict, db: Session = Depends(get_db)):
-    """
-    Cria uma nova avaliação NR-17.
-    Espera JSON com:
-    empresa, setor, funcao, trabalhador, tipo_posto,
-    data_avaliacao, risco, score, observacoes.
-    """
+def create_nr17_record(
+    data: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    data["company_id"] = current_user.company_id
+
     record = NR17Record(**data)
+
     db.add(record)
     db.commit()
     db.refresh(record)
+
     return record
 
 
-# ============================
-#  ATUALIZAR REGISTRO
-# ============================
 @router.put("/records/{record_id}")
-def update_nr17_record(record_id: int, data: dict, db: Session = Depends(get_db)):
-    """
-    Atualiza uma avaliação NR-17 existente.
-    """
-    record = db.query(NR17Record).filter(NR17Record.id == record_id).first()
+def update_nr17_record(
+    record_id: int,
+    data: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    record = (
+        base_query_for_user(db, current_user)
+        .filter(NR17Record.id == record_id)
+        .first()
+    )
+
     if not record:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Avaliação NR-17 não encontrada."
+            detail="Avaliação NR-17 não encontrada ou sem permissão."
         )
+
+    data.pop("company_id", None)
 
     for key, value in data.items():
         if hasattr(record, key):
@@ -68,24 +79,29 @@ def update_nr17_record(record_id: int, data: dict, db: Session = Depends(get_db)
 
     db.commit()
     db.refresh(record)
+
     return record
 
 
-# ============================
-#  EXCLUIR REGISTRO
-# ============================
 @router.delete("/records/{record_id}")
-def delete_nr17_record(record_id: int, db: Session = Depends(get_db)):
-    """
-    Exclui uma avaliação NR-17 pelo ID.
-    """
-    record = db.query(NR17Record).filter(NR17Record.id == record_id).first()
+def delete_nr17_record(
+    record_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    record = (
+        base_query_for_user(db, current_user)
+        .filter(NR17Record.id == record_id)
+        .first()
+    )
+
     if not record:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Avaliação NR-17 não encontrada."
+            detail="Avaliação NR-17 não encontrada ou sem permissão."
         )
 
     db.delete(record)
     db.commit()
+
     return {"msg": "Avaliação NR-17 excluída com sucesso."}
