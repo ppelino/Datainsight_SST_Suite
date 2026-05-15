@@ -2,45 +2,89 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Login | Datainsight SST Suite</title>
+
   <link rel="stylesheet" href="assets/style.css" />
 </head>
+
 <body>
 
-  <div class="login-page">
-    <div class="login-card">
+  <main class="login-page">
 
-      <!-- Logo -->
-      <div class="login-logo">
-        <img src="assets/datainsight.jpg" alt="Datainsight SST" />
+    <section class="login-wrapper">
+
+      <div class="login-left">
+        <div class="login-brand">
+          <img src="assets/datainsight.jpg" alt="Datainsight SST" />
+          <span>Datainsight SST Suite</span>
+        </div>
+
+        <h1>Gestão SST inteligente, segura e profissional.</h1>
+
+        <p>
+          Plataforma para PGR, NR-01, PCMSO, ASO, NR-17, LTCAT,
+          dashboards técnicos e controle de clientes.
+        </p>
+
+        <div class="login-highlights">
+          <div>✅ Controle de usuários</div>
+          <div>✅ Planos e vencimentos</div>
+          <div>✅ Relatórios técnicos</div>
+          <div>✅ Dashboard executivo</div>
+        </div>
       </div>
 
-      <!-- Título -->
-      <h1 class="login-title">Datainsight SST Suite</h1>
-      <p class="login-subtitle">Acesse com seu usuário profissional</p>
+      <div class="login-card">
 
-      <!-- Campos -->
-      <input
-        id="email"
-        type="text"
-        placeholder="Email profissional"
-        class="login-input"
-      />
-      <input
-        id="password"
-        type="password"
-        placeholder="Senha"
-        class="login-input"
-      />
+        <div class="login-logo">
+          <img src="assets/datainsight.jpg" alt="Datainsight SST" />
+        </div>
 
-      <!-- Botão -->
-      <button class="login-button" onclick="login()">Entrar</button>
+        <h2 class="login-title">Acesse sua conta</h2>
+        <p class="login-subtitle">Entre com seu usuário profissional</p>
 
-      <!-- Mensagem -->
-      <p id="msg" class="login-msg"></p>
-    </div>
-  </div>
+        <div class="input-group">
+          <label for="email">E-mail profissional</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="seuemail@empresa.com"
+            class="login-input"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Senha</label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Digite sua senha"
+            class="login-input"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button class="login-button" onclick="login()">
+          Entrar no sistema
+        </button>
+
+        <p id="msg" class="login-msg"></p>
+
+        <div class="login-footer">
+          <span>Datainsight SST</span>
+          <small>Consultoria • Tecnologia • Segurança do Trabalho</small>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
 
   <script src="assets/script.js"></script>
+
 </body>
 </html>
