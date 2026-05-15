@@ -11,7 +11,6 @@
 </head>
 
 <body>
-  <!-- NAVBAR DA SUITE -->
   <nav class="nav">
     <div class="wrap">
       <div class="logo">
@@ -19,28 +18,31 @@
         <span>DataInsight SST Suite</span>
       </div>
 
-      <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;">
+      <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;" id="menu-buttons">
         <a class="btn active" href="dashboard.html">🏠 Dashboard</a>
         <a class="btn secondary" href="pgr.html">📝 PGR / NR-01</a>
         <a class="btn secondary" href="pcmso.html">⚕️ PCMSO / ASO</a>
         <a class="btn secondary" href="nr17.html">🪑 NR-17</a>
         <a class="btn secondary" href="ltcat.html">📄 LTCAT</a>
+
+        <a class="btn secondary" href="admin.html" id="admin-link" style="display:none;">
+          👑 Administração
+        </a>
+
         <button class="btn danger" onclick="logout()">Sair</button>
       </div>
     </div>
   </nav>
 
   <main class="container" style="padding-top:24px; padding-bottom:32px;">
-    <!-- CABEÇALHO -->
     <section class="card">
       <h2 style="margin-top:0;">📊 Visão Geral da Suite</h2>
       <p style="margin-bottom:0;">
         Indicadores consolidados dos módulos PCMSO / ASO, NR-17 e LTCAT com base nos registros armazenados
-        na plataforma (Supabase / API).
+        na plataforma.
       </p>
     </section>
 
-    <!-- KPIs PRINCIPAIS -->
     <section class="kpi-grid">
       <div class="card kpi-card">
         <h3>Total de ASOS registrados</h3>
@@ -67,7 +69,6 @@
       </div>
     </section>
 
-    <!-- TABS DOS DASHBOARDS -->
     <section class="card" style="margin-top:24px;">
       <div class="dashboard-tabs">
         <button class="tab-button active" data-tab="geral">🌐 Geral</button>
@@ -78,7 +79,6 @@
       </div>
     </section>
 
-    <!-- PAINEL GERAL (COMPLETO) -->
     <section id="tab-geral" class="tab-panel active">
       <div class="grid-2">
         <div class="card">
@@ -116,7 +116,6 @@
       </div>
     </section>
 
-    <!-- PAINEL NR-17 -->
     <section id="tab-nr17" class="tab-panel">
       <div class="grid-2">
         <div class="card">
@@ -137,30 +136,27 @@
       </div>
     </section>
 
-    <!-- PAINEL PCMSO / ASO -->
     <section id="tab-pcmsos" class="tab-panel">
-  <div class="grid-2">
-    <div class="card">
-      <h3>Exames por mês</h3>
-      <canvas id="chart-pcmsos-mensal"></canvas>
-    </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Exames por mês</h3>
+          <canvas id="chart-pcmsos-mensal"></canvas>
+        </div>
 
-    <div class="card">
-      <h3>Situação de ASOs</h3>
-      <canvas id="chart-pcmsos-status"></canvas>
-    </div>
-  </div>
-</section>
+        <div class="card">
+          <h3>Situação de ASOs</h3>
+          <canvas id="chart-pcmsos-status"></canvas>
+        </div>
+      </div>
+    </section>
 
-
-    <!-- PAINEL PGR / NR-01 -->
     <section id="tab-pgr" class="tab-panel">
       <div class="grid-2">
         <div class="card">
           <h3 style="margin-top:0;">Perigos por categoria</h3>
           <canvas id="chart-pgr-categorias" height="220"></canvas>
           <p class="chart-caption">
-            Distribuição dos perigos (físicos, químicos, biológicos, ergonômicos, mecânicos, etc.).
+            Distribuição dos perigos físicos, químicos, biológicos, ergonômicos e mecânicos.
           </p>
         </div>
 
@@ -174,7 +170,6 @@
       </div>
     </section>
 
-    <!-- PAINEL LTCAT -->
     <section id="tab-ltcat" class="tab-panel">
       <div class="grid-2">
         <div class="card">
@@ -197,16 +192,24 @@
   </main>
 
   <script>
-    // logout simples (mesmo padrão dos outros módulos)
+    const token = localStorage.getItem("authToken");
+    const userRole = localStorage.getItem("userRole");
+
+    if (!token) {
+      window.location.href = "index.html";
+    }
+
+    if (userRole === "admin") {
+      const adminLink = document.getElementById("admin-link");
+      if (adminLink) {
+        adminLink.style.display = "inline-flex";
+      }
+    }
+
     function logout() {
-      localStorage.removeItem("authToken");
+      localStorage.clear();
       window.location.href = "index.html";
     }
   </script>
 </body>
 </html>
-
-
-
-
-
