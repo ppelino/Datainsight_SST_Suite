@@ -1,59 +1,19 @@
-// ======================================================
-// DATainsight SST Suite
-// PGR / NR-01 COMPLETO
-// Multiempresa + Token + SaaS
-// ======================================================
-
 const API_BASE = "https://datainsight-sst-suite.onrender.com";
-
-// ======================================================
-// TOKEN / SESSÃO
-// ======================================================
-
 const token = localStorage.getItem("authToken");
 
 if (!token) {
   window.location.href = "index.html";
 }
 
-// ======================================================
-// DADOS DA SESSÃO
-// ======================================================
-
-const currentUserRole =
-  localStorage.getItem("userRole") || "user";
-
-const currentCompanyId =
-  localStorage.getItem("companyId");
-
-// ======================================================
-// ESTADO
-// ======================================================
-
 let selectedCompanyId = null;
 let selectedSectorId = null;
 let selectedHazardId = null;
 let selectedRiskId = null;
 
-// ======================================================
-// HELPERS API
-// ======================================================
-
 async function handleResponse(res, method, path) {
-
   if (!res.ok) {
-
-    let text = "";
-
-    try {
-      text = await res.text();
-    } catch (e) {
-      text = "";
-    }
-
-    throw new Error(
-      `HTTP ${res.status} ${method} ${path} → ${text}`
-    );
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} ${method} ${path} → ${text}`);
   }
 
   try {
@@ -63,28 +23,14 @@ async function handleResponse(res, method, path) {
   }
 }
 
-// ======================================================
-// GET
-// ======================================================
-
 async function apiGet(path) {
-
   const res = await fetch(`${API_BASE}${path}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+    headers: { Authorization: `Bearer ${token}` }
   });
-
   return handleResponse(res, "GET", path);
 }
 
-// ======================================================
-// POST
-// ======================================================
-
 async function apiPost(path, body) {
-
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: {
@@ -93,16 +39,10 @@ async function apiPost(path, body) {
     },
     body: JSON.stringify(body)
   });
-
   return handleResponse(res, "POST", path);
 }
 
-// ======================================================
-// PUT
-// ======================================================
-
 async function apiPut(path, body) {
-
   const res = await fetch(`${API_BASE}${path}`, {
     method: "PUT",
     headers: {
@@ -111,527 +51,469 @@ async function apiPut(path, body) {
     },
     body: JSON.stringify(body)
   });
-
   return handleResponse(res, "PUT", path);
 }
 
-// ======================================================
-// DELETE
-// ======================================================
-
 async function apiDelete(path) {
-
   const res = await fetch(`${API_BASE}${path}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+    headers: { Authorization: `Bearer ${token}` }
   });
-
   return handleResponse(res, "DELETE", path);
 }
 
-// ======================================================
-// LOGOUT
-// ======================================================
-
-function logout() {
-  localStorage.clear();
-  window.location.href = "index.html";
-}
-
-// ======================================================
-// ALERTAS
-// ======================================================
-
 function showError(err, title = "Erro") {
-
-  console.error(err);
-
+  console.error(title, err);
   alert(`${title}\n\n${err.message}`);
 }
 
-// ======================================================
-// CONTROLE ADMIN
-// ======================================================
-
-function hideAdminFeaturesIfNeeded() {
-
-  if (currentUserRole === "admin") return;
-
-  const companySection =
-    document.querySelector(".company-admin-only");
-
-  if (companySection) {
-    companySection.style.display = "none";
-  }
+function getTbody(tableId) {
+  return document.querySelector(`#${tableId} tbody`);
 }
 
-// ======================================================
-// EMPRESAS
-// ======================================================
+function clearCompanyForm() {
+  selectedCompanyId = null;
+  document.querySelector("#company-name").value = "";
+  document.querySelector("#company-cnpj").value = "";
+  document.querySelector("#company-address").value = "";
+  document.querySelector("#company-activity").value = "";
+  document.querySelector("#company-risk").value = "";
+
+  const btn = document.querySelector("#btn-save-company");
+  if (btn) btn.textContent = "Salvar empresa";
+}
 
 async function loadCompanies() {
-
   try {
-
     const companies = await apiGet("/pgr/companies");
-
-    renderCompanies(companies);
-
+    renderCompanies(companies || []);
   } catch (err) {
-
     showError(err, "Erro ao carregar empresas.");
   }
 }
 
 function renderCompanies(companies) {
-
-  const tbody =
-    document.getElementById("companiesTable");
-
+  const tbody = getTbody("companies-table");
   if (!tbody) return;
 
   if (!companies.length) {
-
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6">
-          Nenhuma empresa cadastrada.
-        </td>
-      </tr>
-    `;
-
+    tbody.innerHTML = `<tr><td colspan="5">Nenhuma empresa cadastrada.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = companies.map(company => `
-
     <tr>
-
       <td>${company.id}</td>
-
-      <td>${company.nome || "-"}</td>
-
+      <td>${company.name || "-"}</td>
       <td>${company.cnpj || "-"}</td>
-
-      <td>${company.grau_risco || "-"}</td>
-
-      <td>
-
-        <button onclick="selectCompany(${company.id})">
-          🔍
-        </button>
-
-        <button onclick="editCompany(${company.id})">
-          ✏️
-        </button>
-
-        <button onclick="deleteCompany(${company.id})">
-          🗑️
-        </button>
-
+      <td>${company.grau_risco ?? "-"}</td>
+      <td class="actions-cell">
+        <button class="icon-btn" onclick="selectCompany(${company.id})">🔍</button>
+        <button class="icon-btn" onclick="selectCompany(${company.id})">✏️</button>
+        <button class="icon-btn delete" onclick="deleteCompany(${company.id})">🗑️</button>
       </td>
-
     </tr>
-
   `).join("");
 }
 
-// ======================================================
-// SELECIONAR EMPRESA
-// ======================================================
+async function handleSaveCompany(event) {
+  if (event) event.preventDefault();
 
-async function selectCompany(companyId) {
+  const payload = {
+    name: document.querySelector("#company-name").value.trim(),
+    cnpj: document.querySelector("#company-cnpj").value.trim(),
+    endereco: document.querySelector("#company-address").value.trim(),
+    atividade: document.querySelector("#company-activity").value.trim(),
+    grau_risco: document.querySelector("#company-risk").value
+      ? Number(document.querySelector("#company-risk").value)
+      : null
+  };
 
-  selectedCompanyId = companyId;
-
-  selectedSectorId = null;
-  selectedHazardId = null;
-  selectedRiskId = null;
+  if (!payload.name) {
+    alert("Informe o nome da empresa.");
+    return;
+  }
 
   try {
+    if (selectedCompanyId) {
+      await apiPut(`/pgr/companies/${selectedCompanyId}`, payload);
+      alert("Empresa atualizada com sucesso!");
+    } else {
+      await apiPost("/pgr/companies", payload);
+      alert("Empresa salva com sucesso!");
+    }
 
-    const sectors =
-      await apiGet(`/pgr/sectors/by-company/${companyId}`);
-
-    renderSectors(sectors);
+    clearCompanyForm();
+    await loadCompanies();
 
   } catch (err) {
+    showError(err, "Erro ao salvar empresa.");
+  }
+}
 
+async function selectCompany(id) {
+  try {
+    const company = await apiGet(`/pgr/companies/${id}`);
+    selectedCompanyId = company.id;
+
+    document.querySelector("#company-name").value = company.name || "";
+    document.querySelector("#company-cnpj").value = company.cnpj || "";
+    document.querySelector("#company-address").value = company.endereco || "";
+    document.querySelector("#company-activity").value = company.atividade || "";
+    document.querySelector("#company-risk").value = company.grau_risco ?? "";
+
+    document.querySelector("#current-company-label").textContent =
+      `Empresa selecionada: ${company.name}`;
+
+    document.querySelector("#btn-save-company").textContent = "Atualizar empresa";
+
+    await loadSectors(id);
+
+  } catch (err) {
+    showError(err, "Erro ao selecionar empresa.");
+  }
+}
+
+async function deleteCompany(id) {
+  if (!confirm("Excluir empresa?")) return;
+
+  try {
+    await apiDelete(`/pgr/companies/${id}`);
+    clearCompanyForm();
+    await loadCompanies();
+  } catch (err) {
+    showError(err, "Erro ao excluir empresa.");
+  }
+}
+
+async function loadSectors(companyId) {
+  const tbody = getTbody("sectors-table");
+  if (!tbody) return;
+
+  try {
+    const sectors = await apiGet(`/pgr/sectors/by-company/${companyId}`);
+
+    if (!sectors.length) {
+      tbody.innerHTML = `<tr><td colspan="4">Nenhum setor cadastrado.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = sectors.map(sector => `
+      <tr>
+        <td>${sector.id}</td>
+        <td>${sector.nome || "-"}</td>
+        <td>${sector.descricao || "-"}</td>
+        <td class="actions-cell">
+          <button class="icon-btn" onclick="selectSector(${sector.id})">🔍</button>
+          <button class="icon-btn delete" onclick="deleteSector(${sector.id})">🗑️</button>
+        </td>
+      </tr>
+    `).join("");
+
+  } catch (err) {
     showError(err, "Erro ao carregar setores.");
   }
 }
 
-// ======================================================
-// SETORES
-// ======================================================
+async function handleSaveSector(event) {
+  if (event) event.preventDefault();
 
-function renderSectors(sectors) {
-
-  const tbody =
-    document.getElementById("sectorsTable");
-
-  if (!tbody) return;
-
-  if (!sectors.length) {
-
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4">
-          Nenhum setor cadastrado.
-        </td>
-      </tr>
-    `;
-
+  if (!selectedCompanyId) {
+    alert("Selecione primeiro uma empresa.");
     return;
   }
 
-  tbody.innerHTML = sectors.map(sector => `
+  const payload = {
+    company_id: selectedCompanyId,
+    nome: document.querySelector("#sector-name").value.trim(),
+    descricao: document.querySelector("#sector-description").value.trim()
+  };
 
-    <tr>
-
-      <td>${sector.id}</td>
-
-      <td>${sector.nome || "-"}</td>
-
-      <td>${sector.descricao || "-"}</td>
-
-      <td>
-
-        <button onclick="selectSector(${sector.id})">
-          🔍
-        </button>
-
-        <button onclick="deleteSector(${sector.id})">
-          🗑️
-        </button>
-
-      </td>
-
-    </tr>
-
-  `).join("");
-}
-
-// ======================================================
-// SELECIONAR SETOR
-// ======================================================
-
-async function selectSector(sectorId) {
-
-  selectedSectorId = sectorId;
+  if (!payload.nome) {
+    alert("Informe o nome do setor.");
+    return;
+  }
 
   try {
+    await apiPost("/pgr/sectors", payload);
+    document.querySelector("#sector-name").value = "";
+    document.querySelector("#sector-description").value = "";
+    await loadSectors(selectedCompanyId);
+  } catch (err) {
+    showError(err, "Erro ao salvar setor.");
+  }
+}
 
-    const hazards =
-      await apiGet(`/pgr/hazards/by-sector/${sectorId}`);
+async function selectSector(id) {
+  selectedSectorId = id;
+  document.querySelector("#current-sector-label").textContent = `Setor selecionado: ID ${id}`;
+  await loadHazards(id);
+}
 
-    renderHazards(hazards);
+async function deleteSector(id) {
+  if (!confirm("Excluir setor?")) return;
+
+  try {
+    await apiDelete(`/pgr/sectors/${id}`);
+    if (selectedCompanyId) await loadSectors(selectedCompanyId);
+  } catch (err) {
+    showError(err, "Erro ao excluir setor.");
+  }
+}
+
+async function loadHazards(sectorId) {
+  const tbody = getTbody("hazards-table");
+  if (!tbody) return;
+
+  try {
+    const hazards = await apiGet(`/pgr/hazards/by-sector/${sectorId}`);
+
+    if (!hazards.length) {
+      tbody.innerHTML = `<tr><td colspan="5">Nenhum perigo cadastrado.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = hazards.map(hazard => `
+      <tr>
+        <td>${hazard.id}</td>
+        <td>${hazard.nome || "-"}</td>
+        <td>${hazard.agente || "-"}</td>
+        <td>${hazard.fonte || "-"}</td>
+        <td class="actions-cell">
+          <button class="icon-btn" onclick="selectHazard(${hazard.id})">🔍</button>
+          <button class="icon-btn delete" onclick="deleteHazard(${hazard.id})">🗑️</button>
+        </td>
+      </tr>
+    `).join("");
 
   } catch (err) {
-
     showError(err, "Erro ao carregar perigos.");
   }
 }
 
-// ======================================================
-// PERIGOS
-// ======================================================
+async function handleSaveHazard(event) {
+  if (event) event.preventDefault();
 
-function renderHazards(hazards) {
-
-  const tbody =
-    document.getElementById("hazardsTable");
-
-  if (!tbody) return;
-
-  if (!hazards.length) {
-
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="5">
-          Nenhum perigo cadastrado.
-        </td>
-      </tr>
-    `;
-
+  if (!selectedSectorId) {
+    alert("Selecione primeiro um setor.");
     return;
   }
 
-  tbody.innerHTML = hazards.map(hazard => `
+  const payload = {
+    sector_id: selectedSectorId,
+    nome: document.querySelector("#hazard-name").value.trim(),
+    agente: document.querySelector("#hazard-agent").value.trim(),
+    fonte: document.querySelector("#hazard-source").value.trim(),
+    descricao: document.querySelector("#hazard-description").value.trim()
+  };
 
-    <tr>
-
-      <td>${hazard.id}</td>
-
-      <td>${hazard.nome || "-"}</td>
-
-      <td>${hazard.agente || "-"}</td>
-
-      <td>${hazard.fonte || "-"}</td>
-
-      <td>
-
-        <button onclick="selectHazard(${hazard.id})">
-          🔍
-        </button>
-
-        <button onclick="deleteHazard(${hazard.id})">
-          🗑️
-        </button>
-
-      </td>
-
-    </tr>
-
-  `).join("");
-}
-
-// ======================================================
-// SELECIONAR PERIGO
-// ======================================================
-
-async function selectHazard(hazardId) {
-
-  selectedHazardId = hazardId;
+  if (!payload.nome) {
+    alert("Informe o nome do perigo.");
+    return;
+  }
 
   try {
+    await apiPost("/pgr/hazards", payload);
+    document.querySelector("#hazard-name").value = "";
+    document.querySelector("#hazard-agent").value = "";
+    document.querySelector("#hazard-source").value = "";
+    document.querySelector("#hazard-description").value = "";
+    await loadHazards(selectedSectorId);
+  } catch (err) {
+    showError(err, "Erro ao salvar perigo.");
+  }
+}
 
-    const risks =
-      await apiGet(`/pgr/risks/by-hazard/${hazardId}`);
+async function selectHazard(id) {
+  selectedHazardId = id;
+  document.querySelector("#current-hazard-label").textContent = `Perigo selecionado: ID ${id}`;
+  await loadRisks(id);
+}
 
-    renderRisks(risks);
+async function deleteHazard(id) {
+  if (!confirm("Excluir perigo?")) return;
+
+  try {
+    await apiDelete(`/pgr/hazards/${id}`);
+    if (selectedSectorId) await loadHazards(selectedSectorId);
+  } catch (err) {
+    showError(err, "Erro ao excluir perigo.");
+  }
+}
+
+function calcRiskLevel(prob, sev) {
+  if (!prob || !sev) return "-";
+  const score = prob * sev;
+  if (score <= 4) return "Baixo";
+  if (score <= 9) return "Médio";
+  if (score <= 16) return "Alto";
+  return "Crítico";
+}
+
+async function loadRisks(hazardId) {
+  const tbody = getTbody("risks-table");
+  if (!tbody) return;
+
+  try {
+    const risks = await apiGet(`/pgr/risks/by-hazard/${hazardId}`);
+
+    if (!risks.length) {
+      tbody.innerHTML = `<tr><td colspan="6">Nenhum risco cadastrado.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = risks.map(risk => `
+      <tr>
+        <td>${risk.id}</td>
+        <td>${calcRiskLevel(risk.probabilidade, risk.severidade)}</td>
+        <td>${risk.probabilidade ?? "-"}</td>
+        <td>${risk.severidade ?? "-"}</td>
+        <td>${risk.medidas_existentes || "-"}</td>
+        <td class="actions-cell">
+          <button class="icon-btn" onclick="selectRisk(${risk.id})">🔍</button>
+          <button class="icon-btn delete" onclick="deleteRisk(${risk.id})">🗑️</button>
+        </td>
+      </tr>
+    `).join("");
 
   } catch (err) {
-
     showError(err, "Erro ao carregar riscos.");
   }
 }
 
-// ======================================================
-// RISCOS
-// ======================================================
+async function handleSaveRisk(event) {
+  if (event) event.preventDefault();
 
-function renderRisks(risks) {
-
-  const tbody =
-    document.getElementById("risksTable");
-
-  if (!tbody) return;
-
-  if (!risks.length) {
-
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6">
-          Nenhum risco cadastrado.
-        </td>
-      </tr>
-    `;
-
+  if (!selectedHazardId) {
+    alert("Selecione primeiro um perigo.");
     return;
   }
 
-  tbody.innerHTML = risks.map(risk => `
-
-    <tr>
-
-      <td>${risk.id}</td>
-
-      <td>${risk.nivel || "-"}</td>
-
-      <td>${risk.probabilidade || "-"}</td>
-
-      <td>${risk.severidade || "-"}</td>
-
-      <td>${risk.medidas_existentes || "-"}</td>
-
-      <td>
-
-        <button onclick="selectRisk(${risk.id})">
-          🔍
-        </button>
-
-        <button onclick="deleteRisk(${risk.id})">
-          🗑️
-        </button>
-
-      </td>
-
-    </tr>
-
-  `).join("");
-}
-
-// ======================================================
-// SELECIONAR RISCO
-// ======================================================
-
-async function selectRisk(riskId) {
-
-  selectedRiskId = riskId;
+  const payload = {
+    hazard_id: selectedHazardId,
+    probabilidade: document.querySelector("#risk-probability").value
+      ? Number(document.querySelector("#risk-probability").value)
+      : null,
+    severidade: document.querySelector("#risk-severity").value
+      ? Number(document.querySelector("#risk-severity").value)
+      : null,
+    medidas_existentes: document.querySelector("#risk-measures").value.trim()
+  };
 
   try {
+    await apiPost("/pgr/risks", payload);
+    document.querySelector("#risk-probability").value = "";
+    document.querySelector("#risk-severity").value = "";
+    document.querySelector("#risk-measures").value = "";
+    await loadRisks(selectedHazardId);
+  } catch (err) {
+    showError(err, "Erro ao salvar risco.");
+  }
+}
 
-    const actions =
-      await apiGet(`/pgr/actions/by-risk/${riskId}`);
+async function selectRisk(id) {
+  selectedRiskId = id;
+  document.querySelector("#current-risk-label").textContent = `Risco selecionado: ID ${id}`;
+  await loadActions(id);
+}
 
-    renderActions(actions);
+async function deleteRisk(id) {
+  if (!confirm("Excluir risco?")) return;
+
+  try {
+    await apiDelete(`/pgr/risks/${id}`);
+    if (selectedHazardId) await loadRisks(selectedHazardId);
+  } catch (err) {
+    showError(err, "Erro ao excluir risco.");
+  }
+}
+
+async function loadActions(riskId) {
+  const tbody = getTbody("actions-table");
+  if (!tbody) return;
+
+  try {
+    const actions = await apiGet(`/pgr/actions/by-risk/${riskId}`);
+
+    if (!actions.length) {
+      tbody.innerHTML = `<tr><td colspan="6">Nenhuma ação cadastrada.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = actions.map(action => `
+      <tr>
+        <td>${action.id}</td>
+        <td>${action.recomendacao || "-"}</td>
+        <td>${action.tipo || "-"}</td>
+        <td>${action.prazo || "-"}</td>
+        <td>${action.status || "-"}</td>
+        <td class="actions-cell">
+          <button class="icon-btn delete" onclick="deleteAction(${action.id})">🗑️</button>
+        </td>
+      </tr>
+    `).join("");
 
   } catch (err) {
-
     showError(err, "Erro ao carregar ações.");
   }
 }
 
-// ======================================================
-// AÇÕES
-// ======================================================
+async function handleSaveAction(event) {
+  if (event) event.preventDefault();
 
-function renderActions(actions) {
-
-  const tbody =
-    document.getElementById("actionsTable");
-
-  if (!tbody) return;
-
-  if (!actions.length) {
-
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6">
-          Nenhuma ação cadastrada.
-        </td>
-      </tr>
-    `;
-
+  if (!selectedRiskId) {
+    alert("Selecione primeiro um risco.");
     return;
   }
 
-  tbody.innerHTML = actions.map(action => `
+  const payload = {
+    risk_id: selectedRiskId,
+    recomendacao: document.querySelector("#action-recommendation").value.trim(),
+    tipo: document.querySelector("#action-type").value.trim(),
+    prazo: document.querySelector("#action-deadline").value || null,
+    responsavel: document.querySelector("#action-responsible").value.trim(),
+    status: document.querySelector("#action-status").value
+  };
 
-    <tr>
-
-      <td>${action.id}</td>
-
-      <td>${action.recomendacao || "-"}</td>
-
-      <td>${action.tipo || "-"}</td>
-
-      <td>${action.responsavel || "-"}</td>
-
-      <td>${action.status || "-"}</td>
-
-      <td>
-
-        <button onclick="deleteAction(${action.id})">
-          🗑️
-        </button>
-
-      </td>
-
-    </tr>
-
-  `).join("");
-}
-
-// ======================================================
-// DELETES
-// ======================================================
-
-async function deleteCompany(id) {
-
-  if (!confirm("Excluir empresa?")) return;
-
-  try {
-
-    await apiDelete(`/pgr/companies/${id}`);
-
-    loadCompanies();
-
-  } catch (err) {
-
-    showError(err);
+  if (!payload.recomendacao) {
+    alert("Informe a recomendação.");
+    return;
   }
-}
-
-async function deleteSector(id) {
-
-  if (!confirm("Excluir setor?")) return;
 
   try {
-
-    await apiDelete(`/pgr/sectors/${id}`);
-
-    if (selectedCompanyId) {
-      selectCompany(selectedCompanyId);
-    }
-
+    await apiPost("/pgr/actions", payload);
+    document.querySelector("#action-recommendation").value = "";
+    document.querySelector("#action-type").value = "";
+    document.querySelector("#action-deadline").value = "";
+    document.querySelector("#action-responsible").value = "";
+    document.querySelector("#action-status").value = "Pendente";
+    await loadActions(selectedRiskId);
   } catch (err) {
-
-    showError(err);
-  }
-}
-
-async function deleteHazard(id) {
-
-  if (!confirm("Excluir perigo?")) return;
-
-  try {
-
-    await apiDelete(`/pgr/hazards/${id}`);
-
-    if (selectedSectorId) {
-      selectSector(selectedSectorId);
-    }
-
-  } catch (err) {
-
-    showError(err);
-  }
-}
-
-async function deleteRisk(id) {
-
-  if (!confirm("Excluir risco?")) return;
-
-  try {
-
-    await apiDelete(`/pgr/risks/${id}`);
-
-    if (selectedHazardId) {
-      selectHazard(selectedHazardId);
-    }
-
-  } catch (err) {
-
-    showError(err);
+    showError(err, "Erro ao salvar ação.");
   }
 }
 
 async function deleteAction(id) {
-
   if (!confirm("Excluir ação?")) return;
 
   try {
-
     await apiDelete(`/pgr/actions/${id}`);
-
-    if (selectedRiskId) {
-      selectRisk(selectedRiskId);
-    }
-
+    if (selectedRiskId) await loadActions(selectedRiskId);
   } catch (err) {
-
-    showError(err);
+    showError(err, "Erro ao excluir ação.");
   }
 }
 
-// ======================================================
-// INICIALIZAÇÃO
-// ======================================================
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelector("#btn-save-company")?.addEventListener("click", handleSaveCompany);
+  document.querySelector("#btn-save-sector")?.addEventListener("click", handleSaveSector);
+  document.querySelector("#btn-save-hazard")?.addEventListener("click", handleSaveHazard);
+  document.querySelector("#btn-save-risk")?.addEventListener("click", handleSaveRisk);
+  document.querySelector("#btn-save-action")?.addEventListener("click", handleSaveAction);
 
-hideAdminFeaturesIfNeeded();
+  document.querySelector("#btn-clear-all")?.addEventListener("click", () => location.reload());
+  document.querySelector("#btn-print")?.addEventListener("click", () => window.print());
+  document.querySelector("#btn-export-pdf")?.addEventListener("click", () => window.print());
 
-loadCompanies();
+  loadCompanies();
+});
