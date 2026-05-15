@@ -423,3 +423,269 @@ main.container {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   PGR / NR01 — LAYOUT PROFISSIONAL
+========================================================= */
+
+.page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 30px 20px 60px;
+  background: #f1f5f9;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.pgr-header {
+  margin-bottom: 25px;
+}
+
+.pgr-header h1 {
+  font-size: 34px;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.pgr-header p {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* =========================================================
+   GRID PRINCIPAL
+========================================================= */
+
+.pgr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* =========================================================
+   COLUNAS INTERNAS
+========================================================= */
+
+.stack-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* =========================================================
+   CARDS
+========================================================= */
+
+.card {
+  background: #ffffff;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.card-header {
+  padding: 22px 24px 10px;
+}
+
+.card-header h2 {
+  font-size: 22px;
+  margin-bottom: 5px;
+  color: #0f172a;
+}
+
+.card-header p {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.card-header small {
+  display: block;
+  margin-top: 6px;
+  color: #0ea5e9;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 0 24px 24px;
+}
+
+/* =========================================================
+   FORMULÁRIOS
+========================================================= */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #334155;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* =========================================================
+   BOTÕES
+========================================================= */
+
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 11px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  color: white;
+}
+
+.btn.primary:hover {
+  transform: translateY(-1px);
+  opacity: 0.96;
+}
+
+.btn.secondary {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.btn.secondary:hover {
+  background: #cbd5e1;
+}
+
+/* =========================================================
+   TABELAS
+========================================================= */
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.data-table th {
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 13px;
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 14px;
+  color: #334155;
+}
+
+.data-table tr:hover {
+  background: #f8fafc;
+}
+
+/* =========================================================
+   AÇÕES
+========================================================= */
+
+.data-table button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  margin: 0 3px;
+}
+
+/* =========================================================
+   AÇÕES RÁPIDAS
+========================================================= */
+
+.pgr-actions {
+  margin-bottom: 24px;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+========================================================= */
+
+@media (max-width: 1200px) {
+
+  .pgr-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .page {
+    padding: 20px 12px 40px;
+  }
+
+  .pgr-header h1 {
+    font-size: 28px;
+  }
+
+  .card-header,
+  .card-body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
