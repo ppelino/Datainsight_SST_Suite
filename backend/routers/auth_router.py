@@ -1,4 +1,5 @@
 from typing import List, Optional
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
@@ -9,6 +10,13 @@ import models, schemas
 from auth import hash_password, verify_password, create_token, SECRET_KEY, ALGORITHM
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def is_plan_expired(user: models.User):
+    if not user.plan_expires_at:
+        return False
+
+    return user.plan_expires_at < date.today()
 
 
 def get_current_user(
@@ -38,6 +46,12 @@ def get_current_user(
         if not user.is_active:
             raise HTTPException(status_code=403, detail="Usuário inativo")
 
+        if is_plan_expired(user):
+            raise HTTPException(
+                status_code=403,
+                detail="Plano vencido. Entre em contato com o administrador."
+            )
+
         return user
 
     except ExpiredSignatureError:
@@ -64,14 +78,6 @@ def register(
     authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db)
 ):
-    """
-    Cadastro controlado.
-
-    Regra:
-    - Se não existir nenhum usuário no sistema, cria o primeiro usuário como ADMIN.
-    - Depois disso, somente ADMIN pode criar novos usuários.
-    """
-
     total_users = db.query(models.User).count()
 
     if total_users > 0:
@@ -110,6 +116,8 @@ def register(
     if exists:
         raise HTTPException(status_code=400, detail="Usuário já existe")
 
+    default_expiration = date.today() + timedelta(days=30)
+
     new_user = models.User(
         email=user.email,
         password=hash_password(user.password),
@@ -118,6 +126,7 @@ def register(
         plan="enterprise" if total_users == 0 else user.plan or "free",
         company_id=user.company_id,
         is_active=True,
+        plan_expires_at=user.plan_expires_at or default_expiration,
     )
 
     db.add(new_user)
@@ -129,11 +138,6 @@ def register(
 
 @router.post("/login")
 def login(data: schemas.UserLogin, db: Session = Depends(get_db)):
-    """
-    Login profissional.
-    Retorna token + dados do usuário.
-    """
-
     user = db.query(models.User).filter(models.User.email == data.email).first()
 
     if not user:
@@ -141,6 +145,12 @@ def login(data: schemas.UserLogin, db: Session = Depends(get_db)):
 
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Usuário inativo")
+
+    if is_plan_expired(user):
+        raise HTTPException(
+            status_code=403,
+            detail="Plano vencido. Entre em contato com o administrador."
+        )
 
     if not verify_password(data.password, user.password):
         raise HTTPException(status_code=400, detail="Senha incorreta")
@@ -165,15 +175,12 @@ def login(data: schemas.UserLogin, db: Session = Depends(get_db)):
         "plan": user.plan,
         "company_id": user.company_id,
         "is_active": user.is_active,
+        "plan_expires_at": str(user.plan_expires_at) if user.plan_expires_at else None,
     }
 
 
 @router.get("/me")
 def me(current_user: models.User = Depends(get_current_user)):
-    """
-    Retorna os dados do usuário logado.
-    """
-
     return {
         "id": current_user.id,
         "name": current_user.name,
@@ -182,6 +189,7 @@ def me(current_user: models.User = Depends(get_current_user)):
         "plan": current_user.plan,
         "company_id": current_user.company_id,
         "is_active": current_user.is_active,
+        "plan_expires_at": str(current_user.plan_expires_at) if current_user.plan_expires_at else None,
     }
 
 
@@ -190,11 +198,6 @@ def list_users(
     db: Session = Depends(get_db),
     admin: models.User = Depends(require_admin)
 ):
-    """
-    Lista usuários.
-    Apenas administrador.
-    """
-
     users = db.query(models.User).order_by(models.User.id.desc()).all()
     return users
 
@@ -205,11 +208,6 @@ def toggle_user_active(
     db: Session = Depends(get_db),
     admin: models.User = Depends(require_admin)
 ):
-    """
-    Ativa ou inativa usuário.
-    Apenas administrador.
-    """
-
     user = db.query(models.User).filter(models.User.id == user_id).first()
 
     if not user:
@@ -222,6 +220,28 @@ def toggle_user_active(
         )
 
     user.is_active = not user.is_active
+
+    db.commit()
+    db.refresh(user)
+
+    return user
+
+
+@router.patch("/users/{user_id}/renew-plan", response_model=schemas.UserResponse)
+def renew_plan(
+    user_id: int,
+    days: int = 30,
+    db: Session = Depends(get_db),
+    admin: models.User = Depends(require_admin)
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    base_date = user.plan_expires_at if user.plan_expires_at and user.plan_expires_at >= date.today() else date.today()
+    user.plan_expires_at = base_date + timedelta(days=days)
+    user.is_active = True
 
     db.commit()
     db.refresh(user)
