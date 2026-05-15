@@ -41,6 +41,12 @@
       margin-top:5px;
     }
 
+    .top-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
     .logout-btn{
       background:#dc2626;
       border:none;
@@ -49,6 +55,23 @@
       border-radius:10px;
       cursor:pointer;
       font-weight:bold;
+      transition:0.3s;
+    }
+
+    .system-btn{
+      background:#0ea5e9;
+      border:none;
+      color:white;
+      padding:12px 18px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:bold;
+      transition:0.3s;
+    }
+
+    .logout-btn:hover,
+    .system-btn:hover{
+      opacity:0.9;
     }
 
     .container{
@@ -80,7 +103,8 @@
       color:#cbd5e1;
     }
 
-    input, select{
+    input,
+    select{
       width:100%;
       padding:12px;
       border:none;
@@ -112,7 +136,8 @@
       min-width:980px;
     }
 
-    th, td{
+    th,
+    td{
       padding:12px;
       border-bottom:1px solid #334155;
       text-align:left;
@@ -176,6 +201,7 @@
     }
 
     @media(max-width:900px){
+
       body{
         padding:18px;
       }
@@ -187,6 +213,14 @@
       table{
         font-size:14px;
       }
+
+      .top-actions{
+        width:100%;
+      }
+
+      .top-actions button{
+        flex:1;
+      }
     }
   </style>
 </head>
@@ -194,19 +228,37 @@
 <body>
 
   <div class="topbar">
+
     <div>
       <div class="logo">Datainsight SST Suite</div>
       <div class="subtitle">Painel Administrativo</div>
     </div>
 
-    <button class="logout-btn" onclick="logout()">
-      Sair
-    </button>
+    <div class="top-actions">
+
+      <button
+        class="system-btn"
+        onclick="window.location.href='dashboard.html'"
+      >
+        Ir para o Sistema
+      </button>
+
+      <button
+        class="logout-btn"
+        onclick="logout()"
+      >
+        Sair
+      </button>
+
+    </div>
+
   </div>
 
   <div class="container">
 
+    <!-- Cadastro -->
     <div class="card">
+
       <h2>Novo Usuário</h2>
 
       <div class="form-group">
@@ -253,12 +305,16 @@
       </button>
 
       <div id="msg"></div>
+
     </div>
 
+    <!-- Lista -->
     <div class="card">
+
       <h2>Usuários</h2>
 
       <table>
+
         <thead>
           <tr>
             <th>Nome</th>
@@ -272,7 +328,9 @@
         </thead>
 
         <tbody id="usersTable"></tbody>
+
       </table>
+
     </div>
 
   </div>
