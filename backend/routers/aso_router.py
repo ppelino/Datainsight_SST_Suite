@@ -7,16 +7,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from database import get_db
-from models import AsoRecord
+from models import AsoRecord, User
+from routers.auth_router import get_current_user
 
 router = APIRouter(
     prefix="/api/aso",
     tags=["aso"],
 )
 
-# -----------------------------------------
-# SCHEMAS
-# -----------------------------------------
 
 class AsoBase(BaseModel):
     nome: str
@@ -28,76 +26,110 @@ class AsoBase(BaseModel):
     medico: Optional[str] = None
     resultado: str
 
+
 class AsoCreate(AsoBase):
     pass
+
 
 class AsoOut(AsoBase):
     id: int
     created_at: datetime
+    company_id: Optional[int] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
-# -----------------------------------------
-# CRIAR
-# -----------------------------------------
+def base_query_for_user(db: Session, current_user: User):
+    query = db.query(AsoRecord)
+
+    if current_user.role == "admin":
+        return query
+
+    if not current_user.company_id:
+        return query.filter(AsoRecord.company_id == -1)
+
+    return query.filter(AsoRecord.company_id == current_user.company_id)
+
 
 @router.post("/records", response_model=AsoOut)
-def create_aso_record(payload: AsoCreate, db: Session = Depends(get_db)):
+def create_aso_record(
+    payload: AsoCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     try:
-        db_aso = AsoRecord(**payload.dict())
+        db_aso = AsoRecord(
+            **payload.dict(),
+            company_id=current_user.company_id
+        )
+
         db.add(db_aso)
         db.commit()
         db.refresh(db_aso)
+
         return db_aso
+
     except Exception as e:
         db.rollback()
         print("Erro ao salvar ASO:", e)
         raise HTTPException(status_code=500, detail="Erro ao salvar ASO no banco.")
 
 
-# -----------------------------------------
-# LISTAR
-# -----------------------------------------
-
 @router.get("/records", response_model=List[AsoOut])
-def list_aso_records(db: Session = Depends(get_db)):
-    return db.query(AsoRecord).order_by(AsoRecord.created_at.desc()).all()
+def list_aso_records(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return (
+        base_query_for_user(db, current_user)
+        .order_by(AsoRecord.created_at.desc())
+        .all()
+    )
 
-
-# -----------------------------------------
-# DELETAR
-# -----------------------------------------
 
 @router.delete("/records/{record_id}", response_model=dict)
-def delete_aso_record(record_id: int, db: Session = Depends(get_db)):
+def delete_aso_record(
+    record_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     try:
-        linhas = (
-            db.query(AsoRecord)
-            .filter(AsoRecord.id == record_id)
-            .delete(synchronize_session=False)
-        )
+        query = base_query_for_user(db, current_user)
+
+        record = query.filter(AsoRecord.id == record_id).first()
+
+        if not record:
+            raise HTTPException(
+                status_code=404,
+                detail="Registro não encontrado ou sem permissão para excluir."
+            )
+
+        db.delete(record)
         db.commit()
-        return {"msg": f"Registros afetados: {linhas}"}
+
+        return {"msg": "Registro excluído com sucesso."}
+
+    except HTTPException:
+        raise
+
     except Exception as e:
         db.rollback()
         print("Erro ao excluir:", e)
         raise HTTPException(status_code=500, detail="Erro ao excluir registro.")
 
 
-# ============================================================
-# DASHBOARD
-# ============================================================
-
 @router.get("/dashboard/pcmsos")
-def dashboard_pcmsos(db: Session = Depends(get_db)):
+def dashboard_pcmsos(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    query = base_query_for_user(db, current_user)
 
-    # Formatar dia/mês/ano
     format_expr = func.to_char(AsoRecord.data_exame, "MM/YYYY")
 
     exames_rows = (
-        db.query(
+        query.with_entities(
             format_expr.label("mes"),
             func.count(AsoRecord.id).label("total"),
         )
@@ -106,9 +138,12 @@ def dashboard_pcmsos(db: Session = Depends(get_db)):
         .all()
     )
 
-    exames_por_mes = [{"mes": m.mes, "total": m.total} for m in exames_rows]
+    exames_por_mes = [
+        {"mes": row.mes, "total": row.total}
+        for row in exames_rows
+    ]
 
-    total = db.query(func.count(AsoRecord.id)).scalar() or 0
+    total = query.with_entities(func.count(AsoRecord.id)).scalar() or 0
 
     status_asos = {
         "validos": total,
