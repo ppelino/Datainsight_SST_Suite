@@ -26,6 +26,9 @@ class User(Base):
     # free / pro / enterprise
     plan = Column(String, default="free")
 
+    # Data de vencimento do plano
+    plan_expires_at = Column(Date, nullable=True)
+
     company_id = Column(Integer, nullable=True)
 
     is_active = Column(Boolean, default=True)
@@ -36,7 +39,6 @@ class User(Base):
 #  MÓDULO PGR / NR-01 – ENTIDADES BÁSICAS
 # ============================================================
 
-# 1. Empresas
 class Company(Base):
     __tablename__ = "companies"
 
@@ -51,7 +53,6 @@ class Company(Base):
     sectors = relationship("Sector", back_populates="company")
 
 
-# 2. Setores
 class Sector(Base):
     __tablename__ = "sectors"
 
@@ -64,7 +65,6 @@ class Sector(Base):
     hazards = relationship("Hazard", back_populates="sector")
 
 
-# 3. Perigos (Hazards)
 class Hazard(Base):
     __tablename__ = "hazards"
 
@@ -79,7 +79,6 @@ class Hazard(Base):
     risks = relationship("Risk", back_populates="hazard")
 
 
-# 4. Riscos
 class Risk(Base):
     __tablename__ = "risks"
 
@@ -93,7 +92,6 @@ class Risk(Base):
     actions = relationship("Action", back_populates="risk")
 
 
-# 5. Ações de Controle
 class Action(Base):
     __tablename__ = "actions"
 
@@ -111,6 +109,7 @@ class Action(Base):
 # ============================================================
 #  MÓDULO PCMSO / ASO
 # ============================================================
+
 class AsoRecord(Base):
     __tablename__ = "aso_records"
 
@@ -132,6 +131,7 @@ class AsoRecord(Base):
 # ============================================================
 #  MÓDULO NR-17 – Avaliações Ergonômicas
 # ============================================================
+
 class NR17Record(Base):
     __tablename__ = "nr17_records"
 
@@ -154,63 +154,62 @@ class NR17Record(Base):
 # ============================================================
 #  MÓDULO LTCAT – Laudo Técnico de Condições Ambientais
 # ============================================================
+
 class LTCATRecord(Base):
     __tablename__ = "ltcat_records"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    empresa       = Column(String, nullable=False)
-    cnpj          = Column(String, nullable=True)
-    setor         = Column(String, nullable=False)
-    funcao        = Column(String, nullable=False)
-    ghe           = Column(String, nullable=True)
+    empresa = Column(String, nullable=False)
+    cnpj = Column(String, nullable=True)
+    setor = Column(String, nullable=False)
+    funcao = Column(String, nullable=False)
+    ghe = Column(String, nullable=True)
 
-    agente        = Column(String, nullable=False)
+    agente = Column(String, nullable=False)
     classificacao = Column(String, nullable=False)
 
-    fonte         = Column(String, nullable=True)
-    meio          = Column(String, nullable=True)
-    intensidade   = Column(String, nullable=True)
-    unidade       = Column(String, nullable=True)
+    fonte = Column(String, nullable=True)
+    meio = Column(String, nullable=True)
+    intensidade = Column(String, nullable=True)
+    unidade = Column(String, nullable=True)
 
-    jornada       = Column(Float, nullable=True)      # horas/dia
-    dias_semana   = Column(Integer, nullable=True)    # dias/semana
-    tempo_anos    = Column(Float, nullable=True)      # anos de exposição
+    jornada = Column(Float, nullable=True)
+    dias_semana = Column(Integer, nullable=True)
+    tempo_anos = Column(Float, nullable=True)
 
-    epi_eficaz    = Column(String, nullable=False, default="Sim")
+    epi_eficaz = Column(String, nullable=False, default="Sim")
     enquadramento = Column(String, nullable=False, default="Sem enquadramento")
 
     data_avaliacao = Column(Date, nullable=True)
-    responsavel    = Column(String, nullable=True)
-    observacoes    = Column(Text, nullable=True)
+    responsavel = Column(String, nullable=True)
+    observacoes = Column(Text, nullable=True)
 
 
 # ============================================================
 #  MÓDULO PGR / NR-01 – Registros simplificados
 # ============================================================
+
 class PGRRecord(Base):
-    __tablename__ = "pgr_records"  # deve bater com o nome da tabela no Supabase
+    __tablename__ = "pgr_records"
 
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    # Campos básicos
     empresa = Column(String, nullable=True)
     setor = Column(String, nullable=True)
-    ghe = Column(String, nullable=True)          # ex: "GHE 01 – Soldagem"
-    atividade = Column(String, nullable=True)    # descrição da atividade
+    ghe = Column(String, nullable=True)
+    atividade = Column(String, nullable=True)
 
-    # Perigo / risco
-    perigo = Column(String, nullable=True)       # fonte / situação perigosa
-    risco = Column(String, nullable=True)        # nome do risco
+    perigo = Column(String, nullable=True)
+    risco = Column(String, nullable=True)
 
-    probabilidade = Column(Integer, nullable=True)  # 1 a 5
-    severidade = Column(Integer, nullable=True)     # 1 a 5
-    nivel_risco = Column(String, nullable=True)     # ex: "Baixo", "Médio", "Alto"
+    probabilidade = Column(Integer, nullable=True)
+    severidade = Column(Integer, nullable=True)
+    nivel_risco = Column(String, nullable=True)
 
-    # Controle
-    medidas = Column(Text, nullable=True)        # medidas existentes
-    plano_acao = Column(Text, nullable=True)     # o que fazer
-    prazo = Column(Date, nullable=True)          # data limite
-    responsavel = Column(String, nullable=True)  # responsável pela ação
-    status = Column(String, nullable=True)       # "Pendente", "Em andamento", "Concluído"
+    medidas = Column(Text, nullable=True)
+    plano_acao = Column(Text, nullable=True)
+    prazo = Column(Date, nullable=True)
+    responsavel = Column(String, nullable=True)
+    status = Column(String, nullable=True)
