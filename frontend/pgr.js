@@ -685,7 +685,15 @@ async function montarRelatorioPGRCompleto() {
 async function visualizarRelatorioPGR() {
   try {
     const html = await montarRelatorioPGRCompleto();
+
     const win = window.open("", "_blank");
+
+    if (!win) {
+      alert("O navegador bloqueou a abertura do relatório. Permita pop-ups para este site e tente novamente.");
+      return;
+    }
+
+    win.document.open();
 
     win.document.write(`
       <!doctype html>
@@ -726,6 +734,11 @@ async function visualizarRelatorioPGR() {
 
     win.document.close();
     win.focus();
+
+  } catch (err) {
+    showError(err, "Erro ao gerar relatório PGR.");
+  }
+}
 
   } catch (err) {
     showError(err, "Erro ao gerar relatório PGR.");
