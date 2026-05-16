@@ -2,15 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import (
-    Company,
-    Sector,
-    Hazard,
-    Risk,
-    Action,
-    User
-)
-
+from models import Company, Sector, Hazard, Risk, Action, User
 from routers.auth_router import get_current_user
 
 router = APIRouter(
@@ -18,10 +10,6 @@ router = APIRouter(
     tags=["PGR / NR-01"]
 )
 
-
-# ============================================================
-# HELPERS
-# ============================================================
 
 def get_or_404(db: Session, model, obj_id: int):
     obj = db.query(model).filter(model.id == obj_id).first()
@@ -39,8 +27,15 @@ def is_admin(user: User):
     return user.role == "admin"
 
 
-def validate_company_access(company_id: int, current_user: User):
+def is_gestor(user: User):
+    return user.role == "gestor"
 
+
+def can_manage_company(user: User):
+    return user.role in ["admin", "gestor"]
+
+
+def validate_company_access(company_id: int, current_user: User):
     if is_admin(current_user):
         return True
 
@@ -57,11 +52,10 @@ def create_company(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
-    if not is_admin(current_user):
+    if not can_manage_company(current_user):
         raise HTTPException(
             status_code=403,
-            detail="Somente administrador pode criar empresas."
+            detail="Sem permissão para criar empresas."
         )
 
     company = Company(**data)
@@ -69,6 +63,10 @@ def create_company(
     db.add(company)
     db.commit()
     db.refresh(company)
+
+    if is_gestor(current_user) and not current_user.company_id:
+        current_user.company_id = company.id
+        db.commit()
 
     return company
 
@@ -78,7 +76,6 @@ def list_companies(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
     if is_admin(current_user):
         return db.query(Company).all()
 
@@ -98,12 +95,8 @@ def get_company(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
     if not validate_company_access(company_id, current_user):
-        raise HTTPException(
-            status_code=403,
-            detail="Sem permissão."
-        )
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
     return get_or_404(db, Company, company_id)
 
@@ -115,12 +108,8 @@ def update_company(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
     if not validate_company_access(company_id, current_user):
-        raise HTTPException(
-            status_code=403,
-            detail="Sem permissão."
-        )
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
     company = get_or_404(db, Company, company_id)
 
@@ -140,7 +129,6 @@ def delete_company(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
     if not is_admin(current_user):
         raise HTTPException(
             status_code=403,
@@ -165,14 +153,10 @@ def create_sector(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
     company_id = data.get("company_id")
 
     if not validate_company_access(company_id, current_user):
-        raise HTTPException(
-            status_code=403,
-            detail="Sem permissão."
-        )
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
     sector = Sector(**data)
 
@@ -189,18 +173,10 @@ def list_sectors_by_company(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
     if not validate_company_access(company_id, current_user):
-        raise HTTPException(
-            status_code=403,
-            detail="Sem permissão."
-        )
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
-    return (
-        db.query(Sector)
-        .filter(Sector.company_id == company_id)
-        .all()
-    )
+    return db.query(Sector).filter(Sector.company_id == company_id).all()
 
 
 @router.get("/sectors/{sector_id}")
@@ -209,14 +185,10 @@ def get_sector(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
     sector = get_or_404(db, Sector, sector_id)
 
     if not validate_company_access(sector.company_id, current_user):
-        raise HTTPException(
-            status_code=403,
-            detail="Sem permissão."
-        )
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
     return sector
 
@@ -228,14 +200,10 @@ def update_sector(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
     sector = get_or_404(db, Sector, sector_id)
 
     if not validate_company_access(sector.company_id, current_user):
-        raise HTTPException(
-            status_code=403,
-            detail="Sem permissão."
-        )
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
     for k, v in data.items():
         if hasattr(sector, k):
@@ -253,14 +221,10 @@ def delete_sector(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
     sector = get_or_404(db, Sector, sector_id)
 
     if not validate_company_access(sector.company_id, current_user):
-        raise HTTPException(
-            status_code=403,
-            detail="Sem permissão."
-        )
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
     db.delete(sector)
     db.commit()
@@ -278,6 +242,11 @@ def create_hazard(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    sector_id = data.get("sector_id")
+    sector = get_or_404(db, Sector, sector_id)
+
+    if not validate_company_access(sector.company_id, current_user):
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
     hazard = Hazard(**data)
 
@@ -291,31 +260,44 @@ def create_hazard(
 @router.get("/hazards/by-sector/{sector_id}")
 def list_hazards_by_sector(
     sector_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    return (
-        db.query(Hazard)
-        .filter(Hazard.sector_id == sector_id)
-        .all()
-    )
+    sector = get_or_404(db, Sector, sector_id)
+
+    if not validate_company_access(sector.company_id, current_user):
+        raise HTTPException(status_code=403, detail="Sem permissão.")
+
+    return db.query(Hazard).filter(Hazard.sector_id == sector_id).all()
 
 
 @router.get("/hazards/{hazard_id}")
 def get_hazard(
     hazard_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    return get_or_404(db, Hazard, hazard_id)
+    hazard = get_or_404(db, Hazard, hazard_id)
+    sector = get_or_404(db, Sector, hazard.sector_id)
+
+    if not validate_company_access(sector.company_id, current_user):
+        raise HTTPException(status_code=403, detail="Sem permissão.")
+
+    return hazard
 
 
 @router.put("/hazards/{hazard_id}")
 def update_hazard(
     hazard_id: int,
     data: dict,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-
     hazard = get_or_404(db, Hazard, hazard_id)
+    sector = get_or_404(db, Sector, hazard.sector_id)
+
+    if not validate_company_access(sector.company_id, current_user):
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
     for k, v in data.items():
         if hasattr(hazard, k):
@@ -330,10 +312,14 @@ def update_hazard(
 @router.delete("/hazards/{hazard_id}")
 def delete_hazard(
     hazard_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-
     hazard = get_or_404(db, Hazard, hazard_id)
+    sector = get_or_404(db, Sector, hazard.sector_id)
+
+    if not validate_company_access(sector.company_id, current_user):
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
     db.delete(hazard)
     db.commit()
@@ -348,8 +334,15 @@ def delete_hazard(
 @router.post("/risks", status_code=status.HTTP_201_CREATED)
 def create_risk(
     data: dict,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
+    hazard_id = data.get("hazard_id")
+    hazard = get_or_404(db, Hazard, hazard_id)
+    sector = get_or_404(db, Sector, hazard.sector_id)
+
+    if not validate_company_access(sector.company_id, current_user):
+        raise HTTPException(status_code=403, detail="Sem permissão.")
 
     risk = Risk(**data)
 
@@ -357,129 +350,4 @@ def create_risk(
     db.commit()
     db.refresh(risk)
 
-    return risk
-
-
-@router.get("/risks/by-hazard/{hazard_id}")
-def list_risks_by_hazard(
-    hazard_id: int,
-    db: Session = Depends(get_db)
-):
-    return (
-        db.query(Risk)
-        .filter(Risk.hazard_id == hazard_id)
-        .all()
-    )
-
-
-@router.get("/risks/{risk_id}")
-def get_risk(
-    risk_id: int,
-    db: Session = Depends(get_db)
-):
-    return get_or_404(db, Risk, risk_id)
-
-
-@router.put("/risks/{risk_id}")
-def update_risk(
-    risk_id: int,
-    data: dict,
-    db: Session = Depends(get_db)
-):
-
-    risk = get_or_404(db, Risk, risk_id)
-
-    for k, v in data.items():
-        if hasattr(risk, k):
-            setattr(risk, k, v)
-
-    db.commit()
-    db.refresh(risk)
-
-    return risk
-
-
-@router.delete("/risks/{risk_id}")
-def delete_risk(
-    risk_id: int,
-    db: Session = Depends(get_db)
-):
-
-    risk = get_or_404(db, Risk, risk_id)
-
-    db.delete(risk)
-    db.commit()
-
-    return {"msg": "Risco excluído com sucesso."}
-
-
-# ============================================================
-# AÇÕES
-# ============================================================
-
-@router.post("/actions", status_code=status.HTTP_201_CREATED)
-def create_action(
-    data: dict,
-    db: Session = Depends(get_db)
-):
-
-    action = Action(**data)
-
-    db.add(action)
-    db.commit()
-    db.refresh(action)
-
-    return action
-
-
-@router.get("/actions/by-risk/{risk_id}")
-def list_actions_by_risk(
-    risk_id: int,
-    db: Session = Depends(get_db)
-):
-    return (
-        db.query(Action)
-        .filter(Action.risk_id == risk_id)
-        .all()
-    )
-
-
-@router.get("/actions/{action_id}")
-def get_action(
-    action_id: int,
-    db: Session = Depends(get_db)
-):
-    return get_or_404(db, Action, action_id)
-
-
-@router.put("/actions/{action_id}")
-def update_action(
-    action_id: int,
-    data: dict,
-    db: Session = Depends(get_db)
-):
-
-    action = get_or_404(db, Action, action_id)
-
-    for k, v in data.items():
-        if hasattr(action, k):
-            setattr(action, k, v)
-
-    db.commit()
-    db.refresh(action)
-
-    return action
-
-
-@router.delete("/actions/{action_id}")
-def delete_action(
-    action_id: int,
-    db: Session = Depends(get_db)
-):
-
-    action = get_or_404(db, Action, action_id)
-
-    db.delete(action)
-    db.commit()
-
-    return {"msg": "Ação excluída com sucesso."}
+   
