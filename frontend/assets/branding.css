@@ -863,3 +863,41 @@ body,
     width: 100% !important;
   }
 }
+/* ===== PGR DESKTOP: TABELA SEM ESCONDER AÇÕES ===== */
+
+@media (min-width: 1101px) {
+  .pgr-grid .card {
+    overflow: hidden !important;
+  }
+
+  .table-wrapper {
+    width: 100% !important;
+    overflow-x: auto !important;
+  }
+
+  .data-table {
+    width: 100% !important;
+    min-width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  .data-table th:last-child,
+  .data-table td:last-child {
+    width: 110px !important;
+    min-width: 110px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  .actions-cell {
+    display: table-cell !important;
+    white-space: nowrap !important;
+  }
+
+  .icon-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+  }
+}
