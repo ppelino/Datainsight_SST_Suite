@@ -254,30 +254,165 @@ function limparFormulario() {
   document.getElementById("resultado").value = "Apto";
 }
 
+function campoHTML(label, valor) {
+  return `
+    <div style="
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      padding:16px;
+    ">
+      <div style="
+        font-size:12px;
+        color:#64748b;
+        margin-bottom:6px;
+        font-weight:600;
+      ">
+        ${label}
+      </div>
+
+      <div style="
+        font-size:15px;
+        color:#0f172a;
+        font-weight:600;
+      ">
+        ${valor || "-"}
+      </div>
+    </div>
+  `;
+}
+
 function montarHTMLASO(reg) {
   return `
-    <div style="font-family: system-ui; padding: 28px; max-width: 850px; margin: 0 auto;">
-      <h1 style="margin-bottom: 8px;">ASO – Atestado de Saúde Ocupacional</h1>
+  <div style="
+    font-family:Arial,sans-serif;
+    background:#f1f5f9;
+    padding:40px;
+    min-height:100vh;
+  ">
 
-      <p><strong>Nome:</strong> ${reg.nome || "-"}</p>
-      <p><strong>CPF:</strong> ${reg.cpf || "-"}</p>
-      <p><strong>Função:</strong> ${reg.funcao || "-"}</p>
-      <p><strong>Setor:</strong> ${reg.setor || "-"}</p>
-      <p><strong>Tipo de Exame:</strong> ${reg.tipo_exame || "-"}</p>
-      <p><strong>Data do Exame:</strong> ${formatDateBR(reg.data_exame)}</p>
-      <p><strong>Médico Responsável:</strong> ${reg.medico || "-"}</p>
-      <p><strong>Resultado:</strong> ${reg.resultado || "-"}</p>
+    <div style="
+      max-width:900px;
+      margin:0 auto;
+      background:white;
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow:0 10px 30px rgba(0,0,0,0.12);
+    ">
 
-      <hr style="margin: 20px 0;">
+      <div style="
+        background:linear-gradient(135deg,#0f172a,#1e3a8a);
+        color:white;
+        padding:30px;
+      ">
 
-      <p style="font-size: 12px; color:#6b7280;">
-        Gerado pela suíte <strong>DataInsight SST</strong>.
-      </p>
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:20px;
+          flex-wrap:wrap;
+        ">
 
-      <button onclick="window.print()" style="padding:8px 14px; margin-top:10px;">
-        Imprimir
-      </button>
+          <div>
+            <h1 style="
+              margin:0;
+              font-size:30px;
+            ">
+              DataInsight SST
+            </h1>
+
+            <p style="
+              margin-top:8px;
+              color:#cbd5e1;
+              font-size:14px;
+            ">
+              Sistema de Gestão em Segurança do Trabalho
+            </p>
+          </div>
+
+          <div style="
+            background:rgba(255,255,255,0.12);
+            padding:12px 18px;
+            border-radius:14px;
+            font-size:14px;
+            font-weight:bold;
+          ">
+            PCMSO / ASO
+          </div>
+
+        </div>
+      </div>
+
+      <div style="padding:35px;">
+
+        <h2 style="
+          margin-top:0;
+          color:#0f172a;
+          font-size:26px;
+        ">
+          Atestado de Saúde Ocupacional
+        </h2>
+
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:18px;
+          margin-top:25px;
+        ">
+
+          ${campoHTML("Nome", reg.nome)}
+          ${campoHTML("CPF", reg.cpf)}
+          ${campoHTML("Função", reg.funcao)}
+          ${campoHTML("Setor", reg.setor)}
+          ${campoHTML("Tipo de Exame", reg.tipo_exame)}
+          ${campoHTML("Data do Exame", formatDateBR(reg.data_exame))}
+          ${campoHTML("Médico Responsável", reg.medico || "-")}
+          ${campoHTML("Resultado", reg.resultado)}
+
+        </div>
+
+        <div style="
+          margin-top:40px;
+          padding-top:20px;
+          border-top:1px solid #e2e8f0;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          flex-wrap:wrap;
+          gap:12px;
+        ">
+
+          <div style="
+            color:#64748b;
+            font-size:13px;
+          ">
+            Documento gerado automaticamente pela suíte
+            <strong>DataInsight SST</strong>.
+          </div>
+
+          <div style="
+            text-align:center;
+            min-width:240px;
+          ">
+            <div style="
+              border-top:1px solid #0f172a;
+              margin-top:35px;
+              padding-top:8px;
+              font-size:13px;
+              color:#334155;
+            ">
+              Assinatura / Responsável Técnico
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
+
+  </div>
   `;
 }
 
@@ -297,9 +432,40 @@ function visualizarASO(id) {
     <head>
       <meta charset="utf-8">
       <title>Detalhes do ASO</title>
+
+      <style>
+        body{
+          margin:0;
+          background:#f1f5f9;
+        }
+
+        @media print{
+          button{
+            display:none;
+          }
+        }
+      </style>
     </head>
     <body>
       ${montarHTMLASO(reg)}
+
+      <div style="
+        position:fixed;
+        bottom:20px;
+        right:20px;
+      ">
+        <button onclick="window.print()" style="
+          background:#2563eb;
+          color:white;
+          border:none;
+          border-radius:12px;
+          padding:12px 18px;
+          cursor:pointer;
+          font-size:14px;
+        ">
+          🖨️ Imprimir
+        </button>
+      </div>
     </body>
     </html>
   `);
@@ -331,13 +497,46 @@ async function imprimirUltimoASO() {
     <html>
     <head>
       <meta charset="utf-8">
+
       <title>Imprimir ASO</title>
+
+      <style>
+        body{
+          margin:0;
+          background:#f1f5f9;
+        }
+
+        @media print{
+          button{
+            display:none;
+          }
+        }
+      </style>
+
     </head>
+
     <body>
+
       ${montarHTMLASO(ultimo)}
-      <script>
-        window.print();
-      </script>
+
+      <div style="
+        position:fixed;
+        bottom:20px;
+        right:20px;
+      ">
+        <button onclick="window.print()" style="
+          background:#2563eb;
+          color:white;
+          border:none;
+          border-radius:12px;
+          padding:12px 18px;
+          cursor:pointer;
+          font-size:14px;
+        ">
+          🖨️ Imprimir
+        </button>
+      </div>
+
     </body>
     </html>
   `);
@@ -347,33 +546,7 @@ async function imprimirUltimoASO() {
 }
 
 async function exportarPDF_ASO() {
-  const ultimo = await obterUltimoASO();
-
-  if (!ultimo) {
-    alert("Não há registros para exportar.");
-    return;
-  }
-
-  const printWindow = window.open("", "_blank");
-
-  printWindow.document.write(`
-    <!doctype html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Exportar ASO</title>
-    </head>
-    <body>
-      ${montarHTMLASO(ultimo)}
-      <script>
-        window.print();
-      </script>
-    </body>
-    </html>
-  `);
-
-  printWindow.document.close();
-  printWindow.focus();
+  await imprimirUltimoASO();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
