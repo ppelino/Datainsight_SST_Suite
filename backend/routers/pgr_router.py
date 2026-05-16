@@ -44,9 +44,7 @@ def validate_company_access(company_id: int, current_user: User):
 def create_company(
     data: dict,
     db: Session = Depends(get_db),
-  db.add(company)
-db.commit()
-db.refresh(company)
+    current_user: User = Depends(get_current_user)
 ):
     if not can_create_company(current_user):
         raise HTTPException(
@@ -60,10 +58,10 @@ db.refresh(company)
     db.commit()
     db.refresh(company)
 
-  if not is_admin(current_user):
-    current_user.company_id = company.id
-    db.commit()
-    db.refresh(current_user)
+    if not is_admin(current_user):
+        current_user.company_id = company.id
+        db.commit()
+        db.refresh(current_user)
 
     return company
 
