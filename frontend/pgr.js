@@ -510,10 +510,66 @@ function montarRelatorioPGR() {
   const atividade = document.querySelector("#company-activity")?.value || "-";
   const grau = document.querySelector("#company-risk")?.value || "-";
 
-  const sectors = document.querySelector("#sectors-table tbody")?.innerHTML || "";
-  const hazards = document.querySelector("#hazards-table tbody")?.innerHTML || "";
-  const risks = document.querySelector("#risks-table tbody")?.innerHTML || "";
-  const actions = document.querySelector("#actions-table tbody")?.innerHTML || "";
-
   return `
-    <
+    <div style="font-family:Arial,sans-serif;padding:40px;background:#f1f5f9;">
+      <div style="max-width:1000px;margin:0 auto;background:white;border-radius:22px;overflow:hidden;">
+        <div style="background:#0f172a;color:white;padding:30px;">
+          <h1>DataInsight SST</h1>
+          <p>Programa de Gerenciamento de Riscos — NR-01</p>
+        </div>
+        <div style="padding:30px;">
+          <h2>Relatório PGR</h2>
+          <p><strong>Empresa:</strong> ${empresa}</p>
+          <p><strong>CNPJ:</strong> ${cnpj}</p>
+          <p><strong>Atividade:</strong> ${atividade}</p>
+          <p><strong>Grau de risco:</strong> ${grau}</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function visualizarRelatorioPGR() {
+  const win = window.open("", "_blank");
+
+  win.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Relatório PGR</title>
+    </head>
+    <body style="margin:0;background:#f1f5f9;">
+      ${montarRelatorioPGR()}
+      <button onclick="window.print()" style="
+        position:fixed;
+        bottom:20px;
+        right:20px;
+        background:#2563eb;
+        color:white;
+        border:none;
+        border-radius:12px;
+        padding:12px 18px;
+        cursor:pointer;
+      ">🖨️ Imprimir</button>
+    </body>
+    </html>
+  `);
+
+  win.document.close();
+  win.focus();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelector("#btn-save-company")?.addEventListener("click", handleSaveCompany);
+  document.querySelector("#btn-save-sector")?.addEventListener("click", handleSaveSector);
+  document.querySelector("#btn-save-hazard")?.addEventListener("click", handleSaveHazard);
+  document.querySelector("#btn-save-risk")?.addEventListener("click", handleSaveRisk);
+  document.querySelector("#btn-save-action")?.addEventListener("click", handleSaveAction);
+
+  document.querySelector("#btn-clear-all")?.addEventListener("click", () => location.reload());
+  document.querySelector("#btn-print")?.addEventListener("click", visualizarRelatorioPGR);
+  document.querySelector("#btn-export-pdf")?.addEventListener("click", visualizarRelatorioPGR);
+
+  loadCompanies();
+});
