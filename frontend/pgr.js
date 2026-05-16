@@ -511,9 +511,325 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#btn-save-risk")?.addEventListener("click", handleSaveRisk);
   document.querySelector("#btn-save-action")?.addEventListener("click", handleSaveAction);
 
-  document.querySelector("#btn-clear-all")?.addEventListener("click", () => location.reload());
-  document.querySelector("#btn-print")?.addEventListener("click", () => window.print());
-  document.querySelector("#btn-export-pdf")?.addEventListener("click", () => window.print());
+function montarRelatorioPGR() {
+
+  const empresa =
+    document.querySelector("#company-name")?.value || "Empresa não informada";
+
+  const cnpj =
+    document.querySelector("#company-cnpj")?.value || "-";
+
+  const atividade =
+    document.querySelector("#company-activity")?.value || "-";
+
+  const grau =
+    document.querySelector("#company-risk")?.value || "-";
+
+  const sectors =
+    document.querySelector("#sectors-table tbody")?.innerHTML || "";
+
+  const hazards =
+    document.querySelector("#hazards-table tbody")?.innerHTML || "";
+
+  const risks =
+    document.querySelector("#risks-table tbody")?.innerHTML || "";
+
+  const actions =
+    document.querySelector("#actions-table tbody")?.innerHTML || "";
+
+  return `
+  <div style="
+    font-family:Arial,sans-serif;
+    background:#f1f5f9;
+    padding:40px;
+    min-height:100vh;
+  ">
+
+    <div style="
+      max-width:1200px;
+      margin:0 auto;
+      background:white;
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:0 10px 30px rgba(0,0,0,0.12);
+    ">
+
+      <!-- HEADER -->
+      <div style="
+        background:linear-gradient(135deg,#0f172a,#1e3a8a);
+        color:white;
+        padding:35px;
+      ">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:20px;
+          flex-wrap:wrap;
+        ">
+
+          <div>
+            <h1 style="
+              margin:0;
+              font-size:34px;
+            ">
+              DataInsight SST
+            </h1>
+
+            <p style="
+              margin-top:8px;
+              color:#cbd5e1;
+              font-size:14px;
+            ">
+              Programa de Gerenciamento de Riscos — NR-01
+            </p>
+          </div>
+
+          <div style="
+            background:rgba(255,255,255,0.12);
+            padding:14px 18px;
+            border-radius:14px;
+            font-size:14px;
+            font-weight:bold;
+          ">
+            RELATÓRIO PGR
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BODY -->
+      <div style="padding:35px;">
+
+        <h2 style="
+          margin-top:0;
+          color:#0f172a;
+          font-size:28px;
+        ">
+          Dados da Empresa
+        </h2>
+
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:18px;
+          margin-top:20px;
+        ">
+
+          ${cardPGR("Empresa", empresa)}
+          ${cardPGR("CNPJ", cnpj)}
+          ${cardPGR("Atividade", atividade)}
+          ${cardPGR("Grau de Risco", grau)}
+
+        </div>
+
+        ${secaoTabelaPGR("Setores", sectors)}
+        ${secaoTabelaPGR("Perigos", hazards)}
+        ${secaoTabelaPGR("Riscos", risks)}
+        ${secaoTabelaPGR("Plano de Ação", actions)}
+
+        <div style="
+          margin-top:50px;
+          padding-top:20px;
+          border-top:1px solid #e2e8f0;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          flex-wrap:wrap;
+          gap:12px;
+        ">
+
+          <div style="
+            color:#64748b;
+            font-size:13px;
+          ">
+            Documento gerado automaticamente pela suíte
+            <strong>DataInsight SST</strong>.
+          </div>
+
+          <div style="
+            text-align:center;
+            min-width:240px;
+          ">
+            <div style="
+              border-top:1px solid #0f172a;
+              margin-top:35px;
+              padding-top:8px;
+              font-size:13px;
+              color:#334155;
+            ">
+              Responsável Técnico
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+  `;
+}
+
+function cardPGR(label, valor) {
+  return `
+    <div style="
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      padding:16px;
+    ">
+      <div style="
+        font-size:12px;
+        color:#64748b;
+        margin-bottom:6px;
+        font-weight:600;
+      ">
+        ${label}
+      </div>
+
+      <div style="
+        font-size:15px;
+        color:#0f172a;
+        font-weight:600;
+      ">
+        ${valor || "-"}
+      </div>
+    </div>
+  `;
+}
+
+function secaoTabelaPGR(titulo, tbodyHTML) {
+
+  return `
+    <div style="margin-top:40px;">
+
+      <h2 style="
+        color:#0f172a;
+        font-size:24px;
+        margin-bottom:14px;
+      ">
+        ${titulo}
+      </h2>
+
+      <div style="
+        border:1px solid #e2e8f0;
+        border-radius:18px;
+        overflow:hidden;
+      ">
+
+        <table style="
+          width:100%;
+          border-collapse:collapse;
+          font-size:14px;
+        ">
+
+          <tbody>
+            ${tbodyHTML}
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+  `;
+}
+
+function visualizarRelatorioPGR() {
+
+  const html = montarRelatorioPGR();
+
+  const win = window.open("", "_blank");
+
+  win.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+
+      <title>Relatório PGR</title>
+
+      <style>
+        body{
+          margin:0;
+          background:#f1f5f9;
+        }
+
+        table td{
+          padding:12px;
+          border-bottom:1px solid #e2e8f0;
+          color:#334155;
+        }
+
+        @media print{
+          button{
+            display:none;
+          }
+        }
+      </style>
+
+    </head>
+
+    <body>
+
+      ${html}
+
+      <div style="
+        position:fixed;
+        bottom:20px;
+        right:20px;
+      ">
+
+        <button onclick="window.print()" style="
+          background:#2563eb;
+          color:white;
+          border:none;
+          border-radius:12px;
+          padding:12px 18px;
+          cursor:pointer;
+          font-size:14px;
+        ">
+          🖨️ Imprimir
+        </button>
+
+      </div>
+
+    </body>
+    </html>
+  `);
+
+  win.document.close();
+  win.focus();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  document.querySelector("#btn-save-company")
+    ?.addEventListener("click", handleSaveCompany);
+
+  document.querySelector("#btn-save-sector")
+    ?.addEventListener("click", handleSaveSector);
+
+  document.querySelector("#btn-save-hazard")
+    ?.addEventListener("click", handleSaveHazard);
+
+  document.querySelector("#btn-save-risk")
+    ?.addEventListener("click", handleSaveRisk);
+
+  document.querySelector("#btn-save-action")
+    ?.addEventListener("click", handleSaveAction);
+
+  document.querySelector("#btn-clear-all")
+    ?.addEventListener("click", () => location.reload());
+
+  document.querySelector("#btn-print")
+    ?.addEventListener("click", visualizarRelatorioPGR);
+
+  document.querySelector("#btn-export-pdf")
+    ?.addEventListener("click", visualizarRelatorioPGR);
 
   loadCompanies();
 });
