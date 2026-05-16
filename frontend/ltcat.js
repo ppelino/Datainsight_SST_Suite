@@ -396,131 +396,321 @@ function obterUltimoLTCAT() {
   return lista[lista.length - 1];
 }
 
-function montarHTMLRelatorioLTCAT(r) {
+function cardLTCAT(label, valor) {
   return `
-    <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#111827;">
-      <h1 style="font-size:20px; margin-bottom:4px;">Relatório Sintético – LTCAT</h1>
-      <p style="font-size:13px; color:#6b7280; margin-bottom:18px;">
-        Registro estruturado para suporte ao Laudo Técnico de Condições Ambientais do Trabalho.
-      </p>
-
-      <h2 style="font-size:16px; margin-bottom:6px;">1. Identificação</h2>
-      <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:12px;">
-        <tr>
-          <td style="padding:4px 0;"><strong>Empresa:</strong> ${r.empresa || "-"}</td>
-          <td style="padding:4px 0;"><strong>CNPJ:</strong> ${r.cnpj || "-"}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;"><strong>Setor:</strong> ${r.setor || "-"}</td>
-          <td style="padding:4px 0;"><strong>Função:</strong> ${r.funcao || "-"}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;"><strong>GHE:</strong> ${r.ghe || "-"}</td>
-          <td style="padding:4px 0;"><strong>Data da avaliação:</strong> ${r.data_avaliacao || r.data || "-"}</td>
-        </tr>
-      </table>
-
-      <h2 style="font-size:16px; margin-bottom:6px;">2. Agente Nocivo e Exposição</h2>
-      <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:12px;">
-        <tr>
-          <td style="padding:4px 0;"><strong>Agente nocivo:</strong> ${r.agente || "-"}</td>
-          <td style="padding:4px 0;"><strong>Classificação:</strong> ${r.classificacao || "-"}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;"><strong>Fonte geradora:</strong> ${r.fonte || "-"}</td>
-          <td style="padding:4px 0;"><strong>Meio de propagação:</strong> ${r.meio || "-"}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;"><strong>Intensidade / concentração:</strong> ${r.intensidade || "-"} ${r.unidade || ""}</td>
-          <td style="padding:4px 0;"><strong>Jornada / dias semanais:</strong> ${r.jornada || "-"} h, ${r.dias_semana ?? r.diasSemana ?? "-"} dias/sem</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;"><strong>Tempo de exposição:</strong> ${r.tempo_anos ?? r.tempoAnos ?? "-"} anos</td>
-          <td style="padding:4px 0;"><strong>EPC / EPI eficaz:</strong> ${r.epi_eficaz || r.epiEficaz || "-"}</td>
-        </tr>
-      </table>
-
-      <h2 style="font-size:16px; margin-bottom:6px;">3. Enquadramento Previdenciário</h2>
-      <p style="font-size:13px; margin-bottom:10px;">
-        <strong>Situação:</strong> ${r.enquadramento || "Sem enquadramento definido."}
-      </p>
-
-      <h2 style="font-size:16px; margin-bottom:6px;">4. Observações</h2>
-      <div style="font-size:13px; border:1px solid #e5e7eb; border-radius:8px; padding:10px; min-height:60px;">
-        ${r.observacoes && r.observacoes.trim() !== "" ? r.observacoes : "Sem observações adicionais registradas."}
+    <div style="
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      padding:16px;
+    ">
+      <div style="
+        font-size:12px;
+        color:#64748b;
+        margin-bottom:6px;
+        font-weight:600;
+      ">
+        ${label}
       </div>
 
-      <h2 style="font-size:16px; margin-top:16px; margin-bottom:6px;">5. Responsável Técnico</h2>
-      <p style="font-size:13px; margin-bottom:4px;">
-        <strong>Nome / Registro:</strong> ${r.responsavel || "-"}
-      </p>
-
-      <p style="font-size:11px; color:#9ca3af; margin-top:18px;">
-        Este relatório sintético não substitui o LTCAT completo, mas organiza de forma padronizada as informações
-        essenciais para sua elaboração, em conformidade com a legislação previdenciária e normas de SST.
-      </p>
+      <div style="
+        font-size:15px;
+        color:#0f172a;
+        font-weight:600;
+      ">
+        ${valor || "-"}
+      </div>
     </div>
   `;
 }
 
+function montarHTMLRelatorioLTCAT(r) {
+
+  const enquadramentoCor =
+    r.enquadramento?.includes("15") ? "#dc2626" :
+    r.enquadramento?.includes("20") ? "#f97316" :
+    r.enquadramento?.includes("25") ? "#2563eb" :
+    "#16a34a";
+
+  return `
+  <div style="
+    font-family:Arial,sans-serif;
+    background:#f1f5f9;
+    padding:40px;
+    min-height:100vh;
+  ">
+
+    <div style="
+      max-width:950px;
+      margin:0 auto;
+      background:white;
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow:0 10px 30px rgba(0,0,0,0.12);
+    ">
+
+      <!-- HEADER -->
+      <div style="
+        background:linear-gradient(135deg,#0f172a,#1e3a8a);
+        color:white;
+        padding:30px;
+      ">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:20px;
+          flex-wrap:wrap;
+        ">
+
+          <div>
+            <h1 style="
+              margin:0;
+              font-size:30px;
+            ">
+              DataInsight SST
+            </h1>
+
+            <p style="
+              margin-top:8px;
+              color:#cbd5e1;
+              font-size:14px;
+            ">
+              Sistema de Gestão em Segurança do Trabalho
+            </p>
+          </div>
+
+          <div style="
+            background:rgba(255,255,255,0.12);
+            padding:12px 18px;
+            border-radius:14px;
+            font-size:14px;
+            font-weight:bold;
+          ">
+            LTCAT
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BODY -->
+      <div style="padding:35px;">
+
+        <h2 style="
+          margin-top:0;
+          color:#0f172a;
+          font-size:26px;
+        ">
+          Relatório Técnico de Exposição
+        </h2>
+
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:18px;
+          margin-top:25px;
+        ">
+
+          ${cardLTCAT("Empresa", r.empresa)}
+          ${cardLTCAT("CNPJ", r.cnpj || "-")}
+          ${cardLTCAT("Setor", r.setor)}
+          ${cardLTCAT("Função", r.funcao)}
+          ${cardLTCAT("GHE", r.ghe || "-")}
+          ${cardLTCAT("Agente Nocivo", r.agente)}
+          ${cardLTCAT("Classificação", r.classificacao)}
+          ${cardLTCAT("Fonte Geradora", r.fonte || "-")}
+          ${cardLTCAT("Meio de Propagação", r.meio || "-")}
+          ${cardLTCAT("Intensidade", `${r.intensidade || "-"} ${r.unidade || ""}`)}
+          ${cardLTCAT("Jornada", `${r.jornada || "-"} h`)}
+          ${cardLTCAT("Dias Semanais", `${r.dias_semana ?? r.diasSemana ?? "-"}`)}
+          ${cardLTCAT("Tempo de Exposição", `${r.tempo_anos ?? r.tempoAnos ?? "-"} anos`)}
+          ${cardLTCAT("EPI / EPC eficaz", r.epi_eficaz || r.epiEficaz || "-")}
+          ${cardLTCAT("Data da Avaliação", r.data_avaliacao || r.data || "-")}
+          ${cardLTCAT("Responsável Técnico", r.responsavel || "-")}
+
+        </div>
+
+        <div style="
+          margin-top:30px;
+          background:#f8fafc;
+          border:1px solid #e2e8f0;
+          border-radius:18px;
+          padding:22px;
+        ">
+
+          <div style="
+            font-size:13px;
+            color:#64748b;
+            margin-bottom:8px;
+            font-weight:600;
+          ">
+            Enquadramento Previdenciário
+          </div>
+
+          <div style="
+            font-size:22px;
+            font-weight:bold;
+            color:${enquadramentoCor};
+          ">
+            ${r.enquadramento || "Sem enquadramento"}
+          </div>
+
+        </div>
+
+        <div style="
+          margin-top:28px;
+        ">
+
+          <div style="
+            font-size:14px;
+            font-weight:700;
+            margin-bottom:10px;
+            color:#0f172a;
+          ">
+            Observações Técnicas
+          </div>
+
+          <div style="
+            border:1px solid #e2e8f0;
+            border-radius:14px;
+            padding:18px;
+            background:#f8fafc;
+            min-height:90px;
+            font-size:14px;
+            color:#334155;
+            line-height:1.6;
+          ">
+            ${
+              r.observacoes && r.observacoes.trim() !== ""
+                ? r.observacoes
+                : "Sem observações registradas."
+            }
+          </div>
+
+        </div>
+
+        <div style="
+          margin-top:40px;
+          padding-top:20px;
+          border-top:1px solid #e2e8f0;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          flex-wrap:wrap;
+          gap:12px;
+        ">
+
+          <div style="
+            color:#64748b;
+            font-size:13px;
+          ">
+            Documento gerado automaticamente pela suíte
+            <strong>DataInsight SST</strong>.
+          </div>
+
+          <div style="
+            text-align:center;
+            min-width:240px;
+          ">
+            <div style="
+              border-top:1px solid #0f172a;
+              margin-top:35px;
+              padding-top:8px;
+              font-size:13px;
+              color:#334155;
+            ">
+              Responsável Técnico
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+  `;
+}
+
 function visualizarLTCAT(r) {
+
   const html = montarHTMLRelatorioLTCAT(r);
+
   const win = window.open("", "_blank");
+
   win.document.write(`
     <!doctype html>
     <html>
     <head>
       <meta charset="utf-8">
       <title>Relatório LTCAT</title>
+
+      <style>
+        body{
+          margin:0;
+          background:#f1f5f9;
+        }
+
+        @media print{
+          button{
+            display:none;
+          }
+        }
+      </style>
     </head>
-    <body style="margin:20px;">${html}</body>
+
+    <body>
+
+      ${html}
+
+      <div style="
+        position:fixed;
+        bottom:20px;
+        right:20px;
+      ">
+        <button onclick="window.print()" style="
+          background:#2563eb;
+          color:white;
+          border:none;
+          border-radius:12px;
+          padding:12px 18px;
+          cursor:pointer;
+          font-size:14px;
+        ">
+          🖨️ Imprimir
+        </button>
+      </div>
+
+    </body>
     </html>
   `);
+
   win.document.close();
   win.focus();
 }
 
 function imprimirUltimoLTCAT() {
+
   const r = obterUltimoLTCAT();
+
   if (!r) {
     alert("⚠️ Ainda não há registros LTCAT salvos.");
     return;
   }
 
-  const html = montarHTMLRelatorioLTCAT(r);
-  const win = window.open("", "_blank");
-  win.document.write(`
-    <!doctype html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Relatório LTCAT</title>
-    </head>
-    <body style="margin:20px;">${html}</body>
-    </html>
-  `);
-  win.document.close();
-  win.focus();
-  win.print();
+  visualizarLTCAT(r);
 }
 
 function exportarPDFUltimoLTCAT() {
+
   const r = obterUltimoLTCAT();
+
   if (!r) {
     alert("⚠️ Ainda não há registros LTCAT salvos.");
     return;
   }
 
-  const container = document.getElementById("conteudoRelatorioLTCAT");
-  container.innerHTML = montarHTMLRelatorioLTCAT(r);
-
-  const opt = {
-    margin: 10,
-    filename: `LTCAT_${(r.empresa || "empresa").replace(/\s+/g, "_")}.pdf`,
-    image: { type: "jpeg", quality: 0.95 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-  };
-
-  html2pdf().from(container).set(opt).save();
+  visualizarLTCAT(r);
 }
