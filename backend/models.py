@@ -29,10 +29,6 @@ class Company(Base):
     __tablename__ = "companies"
 
     id = Column(Integer, primary_key=True, index=True)
-
-    # NOVO
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-
     name = Column(String, nullable=False)
     cnpj = Column(String)
     endereco = Column(String)
