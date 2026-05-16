@@ -407,7 +407,36 @@ function obterUltimaAvaliacaoNR17() {
   return lista[lista.length - 1];
 }
 
+function cardCampo(label, valor) {
+  return `
+    <div style="
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      padding:16px;
+    ">
+      <div style="
+        font-size:12px;
+        color:#64748b;
+        margin-bottom:6px;
+        font-weight:600;
+      ">
+        ${label}
+      </div>
+
+      <div style="
+        font-size:15px;
+        color:#0f172a;
+        font-weight:600;
+      ">
+        ${valor || "-"}
+      </div>
+    </div>
+  `;
+}
+
 function montarHTMLRelatorio(av) {
+
   const riscoCor =
     av.risco === "Alto" ? "#dc2626" :
     av.risco === "Médio" ? "#f97316" :
@@ -417,112 +446,285 @@ function montarHTMLRelatorio(av) {
   const tipoPosto = av.tipo_posto || av.tipoPosto || "-";
 
   return `
-    <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#111827;">
-      <h1 style="font-size:20px; margin-bottom:4px;">Relatório de Avaliação Ergonômica – NR-17</h1>
-      <p style="font-size:13px; color:#6b7280; margin-bottom:18px;">
-        Gerado pela suíte DataInsight SST.
-      </p>
+  <div style="
+    font-family:Arial,sans-serif;
+    background:#f1f5f9;
+    padding:40px;
+    min-height:100vh;
+  ">
 
-      <h2 style="font-size:16px; margin-bottom:6px;">1. Identificação</h2>
-      <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:12px;">
-        <tr>
-          <td style="padding:4px 0;"><strong>Empresa:</strong> ${av.empresa || "-"}</td>
-          <td style="padding:4px 0;"><strong>Setor:</strong> ${av.setor || "-"}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;"><strong>Função Avaliada:</strong> ${av.funcao || "-"}</td>
-          <td style="padding:4px 0;"><strong>Trabalhador:</strong> ${av.trabalhador || "-"}</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;"><strong>Tipo de Posto:</strong> ${tipoPosto}</td>
-          <td style="padding:4px 0;"><strong>Data da Avaliação:</strong> ${data}</td>
-        </tr>
-      </table>
+    <div style="
+      max-width:950px;
+      margin:0 auto;
+      background:white;
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow:0 10px 30px rgba(0,0,0,0.12);
+    ">
 
-      <h2 style="font-size:16px; margin-bottom:6px;">2. Resultado Global</h2>
-      <p style="font-size:13px; margin-bottom:4px;">
-        <strong>Classificação de risco: </strong>
-        <span style="color:${riscoCor}; font-weight:600;">
-          ${av.risco} (score: ${av.score})
-        </span>
-      </p>
-      <p style="font-size:12px; color:#6b7280; margin-bottom:14px;">
-        Score calculado a partir de fatores de mobiliário, postura, esforço físico, pausas, ambiente físico e organização do trabalho.
-      </p>
+      <!-- HEADER -->
+      <div style="
+        background:linear-gradient(135deg,#0f172a,#1e3a8a);
+        color:white;
+        padding:30px;
+      ">
 
-      <h2 style="font-size:16px; margin-bottom:6px;">3. Observações</h2>
-      <div style="font-size:13px; border:1px solid #e5e7eb; border-radius:8px; padding:10px; min-height:60px;">
-        ${av.observacoes && av.observacoes.trim() !== "" ? av.observacoes : "Sem observações registradas."}
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:20px;
+          flex-wrap:wrap;
+        ">
+
+          <div>
+            <h1 style="
+              margin:0;
+              font-size:30px;
+            ">
+              DataInsight SST
+            </h1>
+
+            <p style="
+              margin-top:8px;
+              color:#cbd5e1;
+              font-size:14px;
+            ">
+              Sistema de Gestão em Segurança do Trabalho
+            </p>
+          </div>
+
+          <div style="
+            background:rgba(255,255,255,0.12);
+            padding:12px 18px;
+            border-radius:14px;
+            font-size:14px;
+            font-weight:bold;
+          ">
+            NR-17
+          </div>
+
+        </div>
       </div>
 
-      <p style="font-size:11px; color:#9ca3af; margin-top:18px;">
-        Este relatório simplificado não substitui o laudo ergonômico completo, mas serve como registro estruturado da avaliação do posto de trabalho segundo a NR-17.
-      </p>
+      <!-- BODY -->
+      <div style="padding:35px;">
+
+        <h2 style="
+          margin-top:0;
+          color:#0f172a;
+          font-size:26px;
+        ">
+          Relatório de Avaliação Ergonômica
+        </h2>
+
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:18px;
+          margin-top:25px;
+        ">
+
+          ${cardCampo("Empresa", av.empresa || "-")}
+          ${cardCampo("Setor", av.setor || "-")}
+          ${cardCampo("Função", av.funcao || "-")}
+          ${cardCampo("Trabalhador", av.trabalhador || "-")}
+          ${cardCampo("Tipo de Posto", tipoPosto)}
+          ${cardCampo("Data da Avaliação", data)}
+
+        </div>
+
+        <div style="
+          margin-top:30px;
+          background:#f8fafc;
+          border:1px solid #e2e8f0;
+          border-radius:18px;
+          padding:22px;
+        ">
+
+          <div style="
+            font-size:13px;
+            color:#64748b;
+            margin-bottom:8px;
+            font-weight:600;
+          ">
+            Resultado Global
+          </div>
+
+          <div style="
+            font-size:22px;
+            font-weight:bold;
+            color:${riscoCor};
+          ">
+            ${av.risco} (score: ${av.score})
+          </div>
+
+          <div style="
+            margin-top:10px;
+            color:#64748b;
+            font-size:13px;
+            line-height:1.5;
+          ">
+            Avaliação baseada em critérios ergonômicos relacionados
+            à postura, mobiliário, esforço físico, pausas, ambiente
+            e organização do trabalho.
+          </div>
+
+        </div>
+
+        <div style="
+          margin-top:28px;
+        ">
+
+          <div style="
+            font-size:14px;
+            font-weight:700;
+            margin-bottom:10px;
+            color:#0f172a;
+          ">
+            Observações Técnicas
+          </div>
+
+          <div style="
+            border:1px solid #e2e8f0;
+            border-radius:14px;
+            padding:18px;
+            background:#f8fafc;
+            min-height:90px;
+            font-size:14px;
+            color:#334155;
+            line-height:1.6;
+          ">
+            ${
+              av.observacoes && av.observacoes.trim() !== ""
+                ? av.observacoes
+                : "Sem observações registradas."
+            }
+          </div>
+
+        </div>
+
+        <div style="
+          margin-top:40px;
+          padding-top:20px;
+          border-top:1px solid #e2e8f0;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          flex-wrap:wrap;
+          gap:12px;
+        ">
+
+          <div style="
+            color:#64748b;
+            font-size:13px;
+          ">
+            Documento gerado automaticamente pela suíte
+            <strong>DataInsight SST</strong>.
+          </div>
+
+          <div style="
+            text-align:center;
+            min-width:240px;
+          ">
+            <div style="
+              border-top:1px solid #0f172a;
+              margin-top:35px;
+              padding-top:8px;
+              font-size:13px;
+              color:#334155;
+            ">
+              Responsável Técnico
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
+
+  </div>
   `;
 }
 
-// Visualizar qualquer avaliação (usada pela lupinha)
 function visualizarNR17(av) {
+
   const html = montarHTMLRelatorio(av);
+
   const win = window.open("", "_blank");
+
   win.document.write(`
     <!doctype html>
     <html>
     <head>
       <meta charset="utf-8">
       <title>Relatório NR-17</title>
+
+      <style>
+        body{
+          margin:0;
+          background:#f1f5f9;
+        }
+
+        @media print{
+          button{
+            display:none;
+          }
+        }
+      </style>
     </head>
-    <body style="margin:20px;">${html}</body>
+
+    <body>
+
+      ${html}
+
+      <div style="
+        position:fixed;
+        bottom:20px;
+        right:20px;
+      ">
+        <button onclick="window.print()" style="
+          background:#2563eb;
+          color:white;
+          border:none;
+          border-radius:12px;
+          padding:12px 18px;
+          cursor:pointer;
+          font-size:14px;
+        ">
+          🖨️ Imprimir
+        </button>
+      </div>
+
+    </body>
     </html>
   `);
+
   win.document.close();
   win.focus();
 }
 
 function imprimirUltimaNR17() {
+
   const av = obterUltimaAvaliacaoNR17();
+
   if (!av) {
     alert("⚠️ Ainda não há avaliações NR-17 salvas.");
     return;
   }
 
-  const html = montarHTMLRelatorio(av);
-  const win = window.open("", "_blank");
-  win.document.write(`
-    <!doctype html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Relatório NR-17</title>
-    </head>
-    <body style="margin:20px;">${html}</body>
-    </html>
-  `);
-  win.document.close();
-  win.focus();
-  win.print();
+  visualizarNR17(av);
 }
 
 function exportarPDFUltimaNR17() {
+
   const av = obterUltimaAvaliacaoNR17();
+
   if (!av) {
     alert("⚠️ Ainda não há avaliações NR-17 salvas.");
     return;
   }
 
-  const container = document.getElementById("conteudoRelatorioNR17");
-  container.innerHTML = montarHTMLRelatorio(av);
-
-  const setorSlug = (av.setor || "setor").replace(/\s+/g, "_");
-
-  const opt = {
-    margin:       10,
-    filename:     `Relatorio_NR17_${setorSlug}.pdf`,
-    image:        { type: 'jpeg', quality: 0.95 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  html2pdf().from(container).set(opt).save();
+  visualizarNR17(av);
 }
