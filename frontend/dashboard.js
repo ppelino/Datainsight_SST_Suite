@@ -69,12 +69,8 @@ function asList(data) {
 // ---------- ASO ----------
 async function fetchASORecords() {
   const candidates = [
-    "/aso/records",
-    "/aso/records/",
-    "/api/aso/records",
-    "/pcmso/records",
-    "/pcmsos/records",
-  ];
+  "/api/aso/records"
+];
 
   for (const path of candidates) {
     try {
