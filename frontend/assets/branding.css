@@ -649,3 +649,120 @@ textarea:focus {
     padding: 20px;
   }
 }
+/* ===============================
+   AJUSTE RESPONSIVO ESPECÍFICO PGR
+   =============================== */
+
+@media (max-width: 1100px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px 12px 60px;
+    margin: 0;
+  }
+
+  .page > .wrap {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .pgr-header,
+  .pgr-actions,
+  .pgr-grid,
+  .stack-vertical,
+  .pgr-grid .card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .pgr-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .pgr-header {
+    padding: 22px;
+  }
+
+  .pgr-actions {
+    padding: 16px;
+  }
+
+  .pgr-actions .card-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .pgr-actions .btn {
+    width: 100% !important;
+  }
+
+  .table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    min-width: 620px;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav .wrap {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px;
+  }
+
+  .nav .wrap > div:last-child {
+    width: 100%;
+    margin-left: 0 !important;
+    flex-wrap: wrap !important;
+  }
+
+  .nav .wrap > div:last-child .btn {
+    width: 100%;
+  }
+
+  .page {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .pgr-header h1 {
+    font-size: 25px;
+  }
+
+  .pgr-header,
+  .pgr-actions,
+  .pgr-grid .card {
+    border-radius: 18px;
+  }
+
+  .pgr-grid .card {
+    padding: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .data-table {
+    min-width: 560px;
+    font-size: 13px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px;
+  }
+}
