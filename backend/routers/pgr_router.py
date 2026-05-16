@@ -58,10 +58,10 @@ def create_company(
     db.commit()
     db.refresh(company)
 
-    if is_gestor(current_user) and not current_user.company_id:
-        current_user.company_id = company.id
-        db.commit()
-        db.refresh(current_user)
+  if not is_admin(current_user):
+    current_user.company_id = company.id
+    db.commit()
+    db.refresh(current_user)
 
     return company
 
