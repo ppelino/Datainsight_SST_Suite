@@ -44,7 +44,9 @@ def validate_company_access(company_id: int, current_user: User):
 def create_company(
     data: dict,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+  db.add(company)
+db.commit()
+db.refresh(company)
 ):
     if not can_create_company(current_user):
         raise HTTPException(
