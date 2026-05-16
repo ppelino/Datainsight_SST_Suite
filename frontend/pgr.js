@@ -101,6 +101,9 @@ function clearCompanyForm() {
 async function loadCompanies() {
   try {
     const companies = await apiGet("/pgr/companies");
+
+    console.log("EMPRESAS RETORNADAS PELA API:", companies);
+
     renderCompanies(companies || []);
   } catch (err) {
     showError(err, "Erro ao carregar empresas.");
