@@ -10,6 +10,10 @@ let selectedSectorId = null;
 let selectedHazardId = null;
 let selectedRiskId = null;
 
+// ===============================
+// API HELPERS
+// ===============================
+
 async function handleResponse(res, method, path) {
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -71,8 +75,16 @@ function getTbody(tableId) {
   return document.querySelector(`#${tableId} tbody`);
 }
 
+// ===============================
+// EMPRESAS
+// ===============================
+
 function clearCompanyForm() {
   selectedCompanyId = null;
+  selectedSectorId = null;
+  selectedHazardId = null;
+  selectedRiskId = null;
+
   document.querySelector("#company-name").value = "";
   document.querySelector("#company-cnpj").value = "";
   document.querySelector("#company-address").value = "";
@@ -81,6 +93,9 @@ function clearCompanyForm() {
 
   const btn = document.querySelector("#btn-save-company");
   if (btn) btn.textContent = "Salvar empresa";
+
+  const label = document.querySelector("#current-company-label");
+  if (label) label.textContent = "Nenhuma empresa selecionada.";
 }
 
 async function loadCompanies() {
@@ -155,6 +170,9 @@ async function selectCompany(id) {
   try {
     const company = await apiGet(`/pgr/companies/${id}`);
     selectedCompanyId = company.id;
+    selectedSectorId = null;
+    selectedHazardId = null;
+    selectedRiskId = null;
 
     document.querySelector("#company-name").value = company.name || "";
     document.querySelector("#company-cnpj").value = company.cnpj || "";
@@ -162,10 +180,11 @@ async function selectCompany(id) {
     document.querySelector("#company-activity").value = company.atividade || "";
     document.querySelector("#company-risk").value = company.grau_risco ?? "";
 
-    document.querySelector("#current-company-label").textContent =
-      `Empresa selecionada: ${company.name}`;
+    const label = document.querySelector("#current-company-label");
+    if (label) label.textContent = `Empresa selecionada: ${company.name}`;
 
-    document.querySelector("#btn-save-company").textContent = "Atualizar empresa";
+    const btn = document.querySelector("#btn-save-company");
+    if (btn) btn.textContent = "Atualizar empresa";
 
     await loadSectors(id);
 
@@ -185,6 +204,10 @@ async function deleteCompany(id) {
     showError(err, "Erro ao excluir empresa.");
   }
 }
+
+// ===============================
+// SETORES
+// ===============================
 
 async function loadSectors(companyId) {
   const tbody = getTbody("sectors-table");
@@ -236,8 +259,10 @@ async function handleSaveSector(event) {
 
   try {
     await apiPost("/pgr/sectors", payload);
+
     document.querySelector("#sector-name").value = "";
     document.querySelector("#sector-description").value = "";
+
     await loadSectors(selectedCompanyId);
   } catch (err) {
     showError(err, "Erro ao salvar setor.");
@@ -246,7 +271,12 @@ async function handleSaveSector(event) {
 
 async function selectSector(id) {
   selectedSectorId = id;
-  document.querySelector("#current-sector-label").textContent = `Setor selecionado: ID ${id}`;
+  selectedHazardId = null;
+  selectedRiskId = null;
+
+  const label = document.querySelector("#current-sector-label");
+  if (label) label.textContent = `Setor selecionado: ID ${id}`;
+
   await loadHazards(id);
 }
 
@@ -260,6 +290,10 @@ async function deleteSector(id) {
     showError(err, "Erro ao excluir setor.");
   }
 }
+
+// ===============================
+// PERIGOS
+// ===============================
 
 async function loadHazards(sectorId) {
   const tbody = getTbody("hazards-table");
@@ -314,10 +348,12 @@ async function handleSaveHazard(event) {
 
   try {
     await apiPost("/pgr/hazards", payload);
+
     document.querySelector("#hazard-name").value = "";
     document.querySelector("#hazard-agent").value = "";
     document.querySelector("#hazard-source").value = "";
     document.querySelector("#hazard-description").value = "";
+
     await loadHazards(selectedSectorId);
   } catch (err) {
     showError(err, "Erro ao salvar perigo.");
@@ -326,7 +362,11 @@ async function handleSaveHazard(event) {
 
 async function selectHazard(id) {
   selectedHazardId = id;
-  document.querySelector("#current-hazard-label").textContent = `Perigo selecionado: ID ${id}`;
+  selectedRiskId = null;
+
+  const label = document.querySelector("#current-hazard-label");
+  if (label) label.textContent = `Perigo selecionado: ID ${id}`;
+
   await loadRisks(id);
 }
 
@@ -341,9 +381,15 @@ async function deleteHazard(id) {
   }
 }
 
+// ===============================
+// RISCOS
+// ===============================
+
 function calcRiskLevel(prob, sev) {
   if (!prob || !sev) return "-";
+
   const score = prob * sev;
+
   if (score <= 4) return "Baixo";
   if (score <= 9) return "Médio";
   if (score <= 16) return "Alto";
@@ -402,9 +448,11 @@ async function handleSaveRisk(event) {
 
   try {
     await apiPost("/pgr/risks", payload);
+
     document.querySelector("#risk-probability").value = "";
     document.querySelector("#risk-severity").value = "";
     document.querySelector("#risk-measures").value = "";
+
     await loadRisks(selectedHazardId);
   } catch (err) {
     showError(err, "Erro ao salvar risco.");
@@ -413,7 +461,10 @@ async function handleSaveRisk(event) {
 
 async function selectRisk(id) {
   selectedRiskId = id;
-  document.querySelector("#current-risk-label").textContent = `Risco selecionado: ID ${id}`;
+
+  const label = document.querySelector("#current-risk-label");
+  if (label) label.textContent = `Risco selecionado: ID ${id}`;
+
   await loadActions(id);
 }
 
@@ -427,6 +478,10 @@ async function deleteRisk(id) {
     showError(err, "Erro ao excluir risco.");
   }
 }
+
+// ===============================
+// AÇÕES
+// ===============================
 
 async function loadActions(riskId) {
   const tbody = getTbody("actions-table");
@@ -482,11 +537,13 @@ async function handleSaveAction(event) {
 
   try {
     await apiPost("/pgr/actions", payload);
+
     document.querySelector("#action-recommendation").value = "";
     document.querySelector("#action-type").value = "";
     document.querySelector("#action-deadline").value = "";
     document.querySelector("#action-responsible").value = "";
     document.querySelector("#action-status").value = "Pendente";
+
     await loadActions(selectedRiskId);
   } catch (err) {
     showError(err, "Erro ao salvar ação.");
@@ -504,8 +561,11 @@ async function deleteAction(id) {
   }
 }
 
-async function montarRelatorioPGRCompleto() {
+// ===============================
+// RELATÓRIO PGR COMPLETO
+// ===============================
 
+async function montarRelatorioPGRCompleto() {
   const empresa = document.querySelector("#company-name")?.value || "Empresa não informada";
   const cnpj = document.querySelector("#company-cnpj")?.value || "-";
   const atividade = document.querySelector("#company-activity")?.value || "-";
@@ -514,28 +574,22 @@ async function montarRelatorioPGRCompleto() {
   let setoresHTML = "";
 
   if (selectedCompanyId) {
-
     const setores = await apiGet(`/pgr/sectors/by-company/${selectedCompanyId}`);
 
-    for (const setor of setores) {
-
+    for (const setor of setores || []) {
       let perigosHTML = "";
 
       const perigos = await apiGet(`/pgr/hazards/by-sector/${setor.id}`);
 
-      for (const perigo of perigos) {
-
+      for (const perigo of perigos || []) {
         let riscosHTML = "";
 
         const riscos = await apiGet(`/pgr/risks/by-hazard/${perigo.id}`);
 
-        for (const risco of riscos) {
-
-          let acoesHTML = "";
-
+        for (const risco of riscos || []) {
           const acoes = await apiGet(`/pgr/actions/by-risk/${risco.id}`);
 
-          acoesHTML = acoes.map(acao => `
+          const acoesHTML = (acoes || []).map(acao => `
             <tr>
               <td>${acao.recomendacao || "-"}</td>
               <td>${acao.tipo || "-"}</td>
@@ -546,33 +600,24 @@ async function montarRelatorioPGRCompleto() {
           `).join("");
 
           riscosHTML += `
-            <div style="margin-top:20px; padding:15px; border:1px solid #e5e7eb; border-radius:12px;">
-              <h4 style="margin-bottom:10px;">
-                Risco: ${calcRiskLevel(risco.probabilidade, risco.severidade)}
-              </h4>
-
-              <p><strong>Probabilidade:</strong> ${risco.probabilidade || "-"}</p>
-              <p><strong>Severidade:</strong> ${risco.severidade || "-"}</p>
+            <div style="margin-top:18px; padding:16px; border:1px solid #e5e7eb; border-radius:14px;">
+              <h4 style="margin-bottom:10px;">Risco: ${calcRiskLevel(risco.probabilidade, risco.severidade)}</h4>
+              <p><strong>Probabilidade:</strong> ${risco.probabilidade ?? "-"}</p>
+              <p><strong>Severidade:</strong> ${risco.severidade ?? "-"}</p>
               <p><strong>Medidas existentes:</strong> ${risco.medidas_existentes || "-"}</p>
 
-              <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+              <table style="width:100%; border-collapse:collapse; margin-top:12px; font-size:13px;">
                 <thead>
                   <tr style="background:#f3f4f6;">
-                    <th style="padding:8px;">Recomendação</th>
-                    <th style="padding:8px;">Tipo</th>
-                    <th style="padding:8px;">Responsável</th>
-                    <th style="padding:8px;">Prazo</th>
-                    <th style="padding:8px;">Status</th>
+                    <th style="padding:9px; text-align:left;">Recomendação</th>
+                    <th style="padding:9px; text-align:left;">Tipo</th>
+                    <th style="padding:9px; text-align:left;">Responsável</th>
+                    <th style="padding:9px; text-align:left;">Prazo</th>
+                    <th style="padding:9px; text-align:left;">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${acoesHTML || `
-                    <tr>
-                      <td colspan="5" style="padding:10px;">
-                        Nenhuma ação cadastrada.
-                      </td>
-                    </tr>
-                  `}
+                  ${acoesHTML || `<tr><td colspan="5" style="padding:10px;">Nenhuma ação cadastrada.</td></tr>`}
                 </tbody>
               </table>
             </div>
@@ -580,38 +625,20 @@ async function montarRelatorioPGRCompleto() {
         }
 
         perigosHTML += `
-          <div style="
-            margin-top:25px;
-            background:#f8fafc;
-            padding:18px;
-            border-radius:14px;
-          ">
-            <h3 style="margin-bottom:10px;">
-              Perigo: ${perigo.nome || "-"}
-            </h3>
-
+          <div style="margin-top:22px; background:#f8fafc; padding:18px; border-radius:16px;">
+            <h3 style="margin-bottom:10px;">Perigo: ${perigo.nome || "-"}</h3>
             <p><strong>Agente:</strong> ${perigo.agente || "-"}</p>
             <p><strong>Fonte:</strong> ${perigo.fonte || "-"}</p>
             <p><strong>Descrição:</strong> ${perigo.descricao || "-"}</p>
-
-            ${riscosHTML || "<p>Nenhum risco cadastrado.</p>"}
+            ${riscosHTML || "<p style='margin-top:10px;'>Nenhum risco cadastrado.</p>"}
           </div>
         `;
       }
 
       setoresHTML += `
-        <div style="
-          margin-top:30px;
-          border-top:2px solid #e5e7eb;
-          padding-top:20px;
-        ">
+        <div style="margin-top:30px; border-top:2px solid #e5e7eb; padding-top:22px;">
           <h2>Setor: ${setor.nome || "-"}</h2>
-
-          <p>
-            <strong>Descrição:</strong>
-            ${setor.descricao || "-"}
-          </p>
-
+          <p><strong>Descrição:</strong> ${setor.descricao || "-"}</p>
           ${perigosHTML || "<p>Nenhum perigo cadastrado.</p>"}
         </div>
       `;
@@ -619,70 +646,36 @@ async function montarRelatorioPGRCompleto() {
   }
 
   return `
-    <div style="
-      font-family:Arial,sans-serif;
-      padding:40px;
-      background:#f1f5f9;
-    ">
-      <div style="
-        max-width:1100px;
-        margin:0 auto;
-        background:white;
-        border-radius:22px;
-        overflow:hidden;
-      ">
-
-        <div style="
-          background:#0f172a;
-          color:white;
-          padding:35px;
-        ">
+    <div style="font-family:Arial,sans-serif; padding:40px; background:#f1f5f9;">
+      <div style="max-width:1100px; margin:0 auto; background:white; border-radius:22px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.12);">
+        <div style="background:#0f172a; color:white; padding:35px;">
           <h1 style="margin:0;">DataInsight SST</h1>
-
-          <p style="margin-top:8px;">
-            Programa de Gerenciamento de Riscos — NR-01
-          </p>
+          <p style="margin-top:8px;">Programa de Gerenciamento de Riscos — NR-01</p>
         </div>
 
         <div style="padding:35px;">
+          <h2 style="margin-bottom:20px;">Relatório Completo PGR</h2>
 
-          <h2 style="margin-bottom:20px;">
-            Relatório Completo PGR
-          </h2>
-
-          <div style="
-            display:grid;
-            grid-template-columns:1fr 1fr;
-            gap:14px;
-            margin-bottom:30px;
-          ">
-
-            <div>
-              <strong>Empresa:</strong><br>
-              ${empresa}
-            </div>
-
-            <div>
-              <strong>CNPJ:</strong><br>
-              ${cnpj}
-            </div>
-
-            <div>
-              <strong>Atividade:</strong><br>
-              ${atividade}
-            </div>
-
-            <div>
-              <strong>Grau de risco:</strong><br>
-              ${grau}
-            </div>
-
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:30px;">
+            <div><strong>Empresa:</strong><br>${empresa}</div>
+            <div><strong>CNPJ:</strong><br>${cnpj}</div>
+            <div><strong>Atividade:</strong><br>${atividade}</div>
+            <div><strong>Grau de risco:</strong><br>${grau}</div>
           </div>
 
-          ${setoresHTML || `
-            <p>Nenhum setor cadastrado.</p>
-          `}
+          ${setoresHTML || `<p>Nenhum setor cadastrado ou nenhuma empresa selecionada.</p>`}
 
+          <div style="margin-top:45px; padding-top:20px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; gap:20px;">
+            <div style="font-size:13px; color:#64748b;">
+              Documento gerado automaticamente pela suíte <strong>DataInsight SST</strong>.
+            </div>
+
+            <div style="text-align:center; min-width:260px;">
+              <div style="border-top:1px solid #0f172a; padding-top:8px; margin-top:35px;">
+                Responsável Técnico
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -690,74 +683,58 @@ async function montarRelatorioPGRCompleto() {
 }
 
 async function visualizarRelatorioPGR() {
+  try {
+    const html = await montarRelatorioPGRCompleto();
+    const win = window.open("", "_blank");
 
-  const html = await montarRelatorioPGRCompleto();
+    win.document.write(`
+      <!doctype html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Relatório PGR</title>
 
-  const win = window.open("", "_blank");
+        <style>
+          @media print {
+            button {
+              display: none;
+            }
+          }
+        </style>
+      </head>
 
-  win.document.write(`
-    <!doctype html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Relatório PGR</title>
-    </head>
+      <body style="margin:0;background:#f1f5f9;">
+        ${html}
 
-    <body style="margin:0;background:#f1f5f9;">
+        <button onclick="window.print()" style="
+          position:fixed;
+          bottom:20px;
+          right:20px;
+          background:#2563eb;
+          color:white;
+          border:none;
+          border-radius:12px;
+          padding:12px 18px;
+          cursor:pointer;
+          font-size:16px;
+        ">
+          🖨️ Imprimir
+        </button>
+      </body>
+      </html>
+    `);
 
-      ${html}
+    win.document.close();
+    win.focus();
 
-      <button onclick="window.print()" style="
-        position:fixed;
-        bottom:20px;
-        right:20px;
-        background:#2563eb;
-        color:white;
-        border:none;
-        border-radius:12px;
-        padding:12px 18px;
-        cursor:pointer;
-        font-size:16px;
-      ">
-        🖨️ Imprimir
-      </button>
-
-    </body>
-    </html>
-  `);
-
-  win.document.close();
-  win.focus();
+  } catch (err) {
+    showError(err, "Erro ao gerar relatório PGR.");
+  }
 }
-  const win = window.open("", "_blank");
 
-  win.document.write(`
-    <!doctype html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Relatório PGR</title>
-    </head>
-    <body style="margin:0;background:#f1f5f9;">
-      ${montarRelatorioPGR()}
-      <button onclick="window.print()" style="
-        position:fixed;
-        bottom:20px;
-        right:20px;
-        background:#2563eb;
-        color:white;
-        border:none;
-        border-radius:12px;
-        padding:12px 18px;
-        cursor:pointer;
-      ">🖨️ Imprimir</button>
-    </body>
-    </html>
-  `);
-
-  win.document.close();
-  win.focus();
-}
+// ===============================
+// START
+// ===============================
 
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#btn-save-company")?.addEventListener("click", handleSaveCompany);
