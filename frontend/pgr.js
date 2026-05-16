@@ -504,32 +504,231 @@ async function deleteAction(id) {
   }
 }
 
-function montarRelatorioPGR() {
+async function montarRelatorioPGRCompleto() {
+
   const empresa = document.querySelector("#company-name")?.value || "Empresa não informada";
   const cnpj = document.querySelector("#company-cnpj")?.value || "-";
   const atividade = document.querySelector("#company-activity")?.value || "-";
   const grau = document.querySelector("#company-risk")?.value || "-";
 
-  return `
-    <div style="font-family:Arial,sans-serif;padding:40px;background:#f1f5f9;">
-      <div style="max-width:1000px;margin:0 auto;background:white;border-radius:22px;overflow:hidden;">
-        <div style="background:#0f172a;color:white;padding:30px;">
-          <h1>DataInsight SST</h1>
-          <p>Programa de Gerenciamento de Riscos — NR-01</p>
+  let setoresHTML = "";
+
+  if (selectedCompanyId) {
+
+    const setores = await apiGet(`/pgr/sectors/by-company/${selectedCompanyId}`);
+
+    for (const setor of setores) {
+
+      let perigosHTML = "";
+
+      const perigos = await apiGet(`/pgr/hazards/by-sector/${setor.id}`);
+
+      for (const perigo of perigos) {
+
+        let riscosHTML = "";
+
+        const riscos = await apiGet(`/pgr/risks/by-hazard/${perigo.id}`);
+
+        for (const risco of riscos) {
+
+          let acoesHTML = "";
+
+          const acoes = await apiGet(`/pgr/actions/by-risk/${risco.id}`);
+
+          acoesHTML = acoes.map(acao => `
+            <tr>
+              <td>${acao.recomendacao || "-"}</td>
+              <td>${acao.tipo || "-"}</td>
+              <td>${acao.responsavel || "-"}</td>
+              <td>${acao.prazo || "-"}</td>
+              <td>${acao.status || "-"}</td>
+            </tr>
+          `).join("");
+
+          riscosHTML += `
+            <div style="margin-top:20px; padding:15px; border:1px solid #e5e7eb; border-radius:12px;">
+              <h4 style="margin-bottom:10px;">
+                Risco: ${calcRiskLevel(risco.probabilidade, risco.severidade)}
+              </h4>
+
+              <p><strong>Probabilidade:</strong> ${risco.probabilidade || "-"}</p>
+              <p><strong>Severidade:</strong> ${risco.severidade || "-"}</p>
+              <p><strong>Medidas existentes:</strong> ${risco.medidas_existentes || "-"}</p>
+
+              <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+                <thead>
+                  <tr style="background:#f3f4f6;">
+                    <th style="padding:8px;">Recomendação</th>
+                    <th style="padding:8px;">Tipo</th>
+                    <th style="padding:8px;">Responsável</th>
+                    <th style="padding:8px;">Prazo</th>
+                    <th style="padding:8px;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${acoesHTML || `
+                    <tr>
+                      <td colspan="5" style="padding:10px;">
+                        Nenhuma ação cadastrada.
+                      </td>
+                    </tr>
+                  `}
+                </tbody>
+              </table>
+            </div>
+          `;
+        }
+
+        perigosHTML += `
+          <div style="
+            margin-top:25px;
+            background:#f8fafc;
+            padding:18px;
+            border-radius:14px;
+          ">
+            <h3 style="margin-bottom:10px;">
+              Perigo: ${perigo.nome || "-"}
+            </h3>
+
+            <p><strong>Agente:</strong> ${perigo.agente || "-"}</p>
+            <p><strong>Fonte:</strong> ${perigo.fonte || "-"}</p>
+            <p><strong>Descrição:</strong> ${perigo.descricao || "-"}</p>
+
+            ${riscosHTML || "<p>Nenhum risco cadastrado.</p>"}
+          </div>
+        `;
+      }
+
+      setoresHTML += `
+        <div style="
+          margin-top:30px;
+          border-top:2px solid #e5e7eb;
+          padding-top:20px;
+        ">
+          <h2>Setor: ${setor.nome || "-"}</h2>
+
+          <p>
+            <strong>Descrição:</strong>
+            ${setor.descricao || "-"}
+          </p>
+
+          ${perigosHTML || "<p>Nenhum perigo cadastrado.</p>"}
         </div>
-        <div style="padding:30px;">
-          <h2>Relatório PGR</h2>
-          <p><strong>Empresa:</strong> ${empresa}</p>
-          <p><strong>CNPJ:</strong> ${cnpj}</p>
-          <p><strong>Atividade:</strong> ${atividade}</p>
-          <p><strong>Grau de risco:</strong> ${grau}</p>
+      `;
+    }
+  }
+
+  return `
+    <div style="
+      font-family:Arial,sans-serif;
+      padding:40px;
+      background:#f1f5f9;
+    ">
+      <div style="
+        max-width:1100px;
+        margin:0 auto;
+        background:white;
+        border-radius:22px;
+        overflow:hidden;
+      ">
+
+        <div style="
+          background:#0f172a;
+          color:white;
+          padding:35px;
+        ">
+          <h1 style="margin:0;">DataInsight SST</h1>
+
+          <p style="margin-top:8px;">
+            Programa de Gerenciamento de Riscos — NR-01
+          </p>
+        </div>
+
+        <div style="padding:35px;">
+
+          <h2 style="margin-bottom:20px;">
+            Relatório Completo PGR
+          </h2>
+
+          <div style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:14px;
+            margin-bottom:30px;
+          ">
+
+            <div>
+              <strong>Empresa:</strong><br>
+              ${empresa}
+            </div>
+
+            <div>
+              <strong>CNPJ:</strong><br>
+              ${cnpj}
+            </div>
+
+            <div>
+              <strong>Atividade:</strong><br>
+              ${atividade}
+            </div>
+
+            <div>
+              <strong>Grau de risco:</strong><br>
+              ${grau}
+            </div>
+
+          </div>
+
+          ${setoresHTML || `
+            <p>Nenhum setor cadastrado.</p>
+          `}
+
         </div>
       </div>
     </div>
   `;
 }
 
-function visualizarRelatorioPGR() {
+async function visualizarRelatorioPGR() {
+
+  const html = await montarRelatorioPGRCompleto();
+
+  const win = window.open("", "_blank");
+
+  win.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Relatório PGR</title>
+    </head>
+
+    <body style="margin:0;background:#f1f5f9;">
+
+      ${html}
+
+      <button onclick="window.print()" style="
+        position:fixed;
+        bottom:20px;
+        right:20px;
+        background:#2563eb;
+        color:white;
+        border:none;
+        border-radius:12px;
+        padding:12px 18px;
+        cursor:pointer;
+        font-size:16px;
+      ">
+        🖨️ Imprimir
+      </button>
+
+    </body>
+    </html>
+  `);
+
+  win.document.close();
+  win.focus();
+}
   const win = window.open("", "_blank");
 
   win.document.write(`
