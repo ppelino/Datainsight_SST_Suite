@@ -735,15 +735,81 @@ async function visualizarRelatorioPGR() {
     win.document.close();
     win.focus();
 
-  } catch (err) {
-    showError(err, "Erro ao gerar relatório PGR.");
-  }
-}
+async function visualizarRelatorioPGR() {
+  try {
+    const html = await montarRelatorioPGRCompleto();
+
+    const win = window.open("", "_blank");
+
+    if (!win) {
+      alert("O navegador bloqueou a abertura do relatório. Permita pop-ups para este site e tente novamente.");
+      return;
+    }
+
+    win.document.open();
+
+    win.document.write(`
+      <!doctype html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Relatório PGR</title>
+
+        <style>
+          @media print {
+            button {
+              display: none;
+            }
+          }
+        </style>
+      </head>
+
+      <body style="margin:0;background:#f1f5f9;">
+        ${html}
+
+        <button onclick="window.print()" style="
+          position:fixed;
+          bottom:20px;
+          right:20px;
+          background:#2563eb;
+          color:white;
+          border:none;
+          border-radius:12px;
+          padding:12px 18px;
+          cursor:pointer;
+          font-size:16px;
+        ">
+          🖨️ Imprimir
+        </button>
+      </body>
+      </html>
+    `);
+
+    win.document.close();
+    win.focus();
 
   } catch (err) {
     showError(err, "Erro ao gerar relatório PGR.");
   }
 }
+
+// ===============================
+// START
+// ===============================
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelector("#btn-save-company")?.addEventListener("click", handleSaveCompany);
+  document.querySelector("#btn-save-sector")?.addEventListener("click", handleSaveSector);
+  document.querySelector("#btn-save-hazard")?.addEventListener("click", handleSaveHazard);
+  document.querySelector("#btn-save-risk")?.addEventListener("click", handleSaveRisk);
+  document.querySelector("#btn-save-action")?.addEventListener("click", handleSaveAction);
+
+  document.querySelector("#btn-clear-all")?.addEventListener("click", () => location.reload());
+  document.querySelector("#btn-print")?.addEventListener("click", visualizarRelatorioPGR);
+  document.querySelector("#btn-export-pdf")?.addEventListener("click", visualizarRelatorioPGR);
+
+  loadCompanies();
+});
 
 // ===============================
 // START
