@@ -26,7 +26,11 @@ function checkUnauthorized(status) {
 
 // ID do registro em edição (null = criando novo)
 let selectedLTCATId = null;
+function formatarDataBR(data) {
+  if (!data) return "-";
 
+  return new Date(data).toLocaleDateString("pt-BR");
+}
 // Ao carregar a página, garante token e busca registros do servidor
 document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("authToken");
@@ -237,7 +241,8 @@ function carregarLTCAT(listaFiltrada = null) {
   tbody.innerHTML = "";
 
   lista.forEach((item) => {
-    const data = item.data_avaliacao || item.data || "";
+    const dataOriginal = item.data_avaliacao || item.data || "";
+const data = formatarDataBR(dataOriginal);
     const linha = `
       <tr data-id="${item.id}">
         <td>${data}</td>
@@ -526,7 +531,10 @@ function montarHTMLRelatorioLTCAT(r) {
           ${cardLTCAT("Dias Semanais", `${r.dias_semana ?? r.diasSemana ?? "-"}`)}
           ${cardLTCAT("Tempo de Exposição", `${r.tempo_anos ?? r.tempoAnos ?? "-"} anos`)}
           ${cardLTCAT("EPI / EPC eficaz", r.epi_eficaz || r.epiEficaz || "-")}
-          ${cardLTCAT("Data da Avaliação", r.data_avaliacao || r.data || "-")}
+          ${cardLTCAT(
+  "Data da Avaliação",
+  formatarDataBR(r.data_avaliacao || r.data || "")
+)}
           ${cardLTCAT("Responsável Técnico", r.responsavel || "-")}
 
         </div>
