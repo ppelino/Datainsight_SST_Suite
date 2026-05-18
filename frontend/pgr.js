@@ -9,6 +9,10 @@ let selectedCompanyId = null;
 let selectedSectorId = null;
 let selectedHazardId = null;
 let selectedRiskId = null;
+function formatarDataBR(data) {
+  if (!data) return "-";
+  return new Date(data).toLocaleDateString("pt-BR");
+}
 
 // ===============================
 // API HELPERS
@@ -102,9 +106,7 @@ async function loadCompanies() {
   try {
     const companies = await apiGet("/pgr/companies");
 
-    console.log("EMPRESAS RETORNADAS PELA API:", companies);
-
-    renderCompanies(companies || []);
+       renderCompanies(companies || []);
   } catch (err) {
     showError(err, "Erro ao carregar empresas.");
   }
@@ -503,7 +505,7 @@ async function loadActions(riskId) {
         <td>${action.id}</td>
         <td>${action.recomendacao || "-"}</td>
         <td>${action.tipo || "-"}</td>
-        <td>${action.prazo || "-"}</td>
+        <td>${formatarDataBR(action.prazo)}</td>
         <td>${action.status || "-"}</td>
         <td class="actions-cell">
           <button class="icon-btn delete" onclick="deleteAction(${action.id})">🗑️</button>
