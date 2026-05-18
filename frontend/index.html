@@ -6,6 +6,9 @@
 
   <title>Login | Datainsight SST Suite</title>
 
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#081226" />
+
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 
@@ -99,6 +102,17 @@
   </main>
 
   <script src="assets/script.js"></script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then(() => console.log("PWA ativo"))
+          .catch((err) => console.log("Erro PWA:", err));
+      });
+    }
+  </script>
 
 </body>
 </html>
