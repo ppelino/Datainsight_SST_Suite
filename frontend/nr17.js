@@ -26,7 +26,11 @@ function checkUnauthorized(status) {
 
 // ID da avaliação em edição (null = criando nova)
 let selectedNR17Id = null;
+function formatarDataBR(data) {
+  if (!data) return "-";
 
+  return new Date(data).toLocaleDateString("pt-BR");
+}
 // Ao carregar a página, garante token e busca registros do servidor
 document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("authToken");
@@ -239,7 +243,8 @@ function carregarNR17(listaFiltrada = null) {
   tbody.innerHTML = "";
 
   lista.forEach(item => {
-    const data = item.data_avaliacao || item.dataAvaliacao || "";
+  const dataOriginal = item.data_avaliacao || item.dataAvaliacao || "";
+const data = formatarDataBR(dataOriginal);
     const tipoPosto = item.tipo_posto || item.tipoPosto || "";
     const risco = item.risco || "";
     const score = item.score ?? "";
@@ -442,7 +447,8 @@ function montarHTMLRelatorio(av) {
     av.risco === "Médio" ? "#f97316" :
     "#16a34a";
 
-  const data = av.data_avaliacao || av.dataAvaliacao || "-";
+ const dataOriginal = av.data_avaliacao || av.dataAvaliacao || "";
+const data = formatarDataBR(dataOriginal);
   const tipoPosto = av.tipo_posto || av.tipoPosto || "-";
 
   return `
