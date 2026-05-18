@@ -1,0 +1,21 @@
+{
+  "name": "DataInsight SST Suite",
+  "short_name": "DataInsight SST",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#081226",
+  "theme_color": "#081226",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/datainsight.jpg",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/datainsight.jpg",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
