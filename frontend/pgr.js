@@ -11,7 +11,14 @@ let selectedHazardId = null;
 let selectedRiskId = null;
 function formatarDataBR(data) {
   if (!data) return "-";
-  return new Date(data).toLocaleDateString("pt-BR");
+
+  const partes = String(data).split("-");
+
+  if (partes.length === 3) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+
+  return data;
 }
 
 // ===============================
@@ -599,7 +606,7 @@ async function montarRelatorioPGRCompleto() {
               <td>${acao.recomendacao || "-"}</td>
               <td>${acao.tipo || "-"}</td>
               <td>${acao.responsavel || "-"}</td>
-              <td>${acao.prazo || "-"}</td>
+              <td>${formatarDataBR(acao.prazo)}</td>
               <td>${acao.status || "-"}</td>
             </tr>
           `).join("");
